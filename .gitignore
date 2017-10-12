@@ -1,0 +1,15 @@
+*.depend
+*/*.depend
+*/.DS_Store
+*/*.zip
+*/*.gz
+hamlet*
+*.tmproj
+doc/*.aux
+doc/*.dvi
+doc/*.log
+doc/*.out
+doc/*.pdf
+doc/*.ps
+doc/*.toc
+*.bat

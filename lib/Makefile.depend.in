@@ -1,0 +1,10 @@
+# Library
+DYNAMIC_LIBRARY-sig.$(EXT) : ../eval/DynamicObjectsCore.$(EXT)
+DynamicLibrary.$(EXT) : DYNAMIC_LIBRARY-sig.$(EXT) ../elab/StaticObjectsCore.$(EXT) ../eval/DynamicObjectsCore.$(EXT) ../elab/StaticObjectsModule.$(EXT) ../eval/DynamicObjectsModule.$(EXT) ../syntax/IdsCore.$(EXT) ../syntax/IdStatus.$(EXT) ../syntax/IdsModule.$(EXT) ../eval/ExName.$(EXT) ../eval/State.$(EXT) ../eval/InitialDynamicBasis.$(EXT) ../eval/DynamicBasis.$(EXT) ../eval/SVal.$(EXT) ../eval/Val.$(EXT) Use.$(EXT) LibrarySVal.$(EXT) IdsLibrary.$(EXT) ../infrastructure/FinMapFn.$(EXT)
+IdsLibrary.$(EXT) : ../syntax/IdStatus.$(EXT) ../syntax/IdsCore.$(EXT)
+LIBRARY_SVAL-sig.$(EXT) :
+LibrarySVal.$(EXT) : LIBRARY_SVAL-sig.$(EXT)
+STATIC_LIBRARY-sig.$(EXT) : ../elab/StaticObjectsCore.$(EXT) ../elab/StaticObjectsModule.$(EXT)
+StaticLibrary.$(EXT) : STATIC_LIBRARY-sig.$(EXT) ../elab/StaticObjectsCore.$(EXT) ../elab/StaticObjectsModule.$(EXT) ../elab/TyName.$(EXT) ../elab/OverloadingClass.$(EXT) ../syntax/Lab.$(EXT) ../elab/Type.$(EXT) ../syntax/IdsCore.$(EXT) ../elab/TypeFcn.$(EXT) ../syntax/TyVar.$(EXT) ../elab/InitialStaticEnv.$(EXT) ../syntax/IdStatus.$(EXT) ../syntax/IdsModule.$(EXT) ../elab/StaticBasis.$(EXT) ../elab/InitialStaticBasis.$(EXT) LibrarySVal.$(EXT) IdsLibrary.$(EXT)
+USE-sig.$(EXT) :
+Use.$(EXT) : USE-sig.$(EXT)

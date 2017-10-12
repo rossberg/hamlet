@@ -1,0 +1,59 @@
+		HaMLet	SML/NJ	MosML	MLton	MLKit	Poly/ML	MLWorks	Alice
+		1.3.0	110.59	2.01	051202	4.3.0	5.0	2.0	1.4
+
+The following should be accepted and execute without raising an exception:
+
+abstype(4)	-	-	-	+	-	-	-	+
+asterisk	+	-	-	+	+	+	+	+
+exhaustive	+	-	+	+	+	-	+	+
+flexrecord	+	+	+	+	+	+	-	+
+fun-case(5)	-	-	-	-	-	-	-	-
+fun-infix	+	+	+	+	+	+	?	+
+fun-partial	+	+	+	+	-	+	?	+
+functor-poly	-	-	-	+	-	-	?	-
+generalise	+	+	+	+	+	-	?	+
+id		+	-	-	+	+	+	+	+
+open		+	-	+	+	+	+	-	-
+overloading	+	-	+	+	+	+	-	+
+poly-exception	+	-	-	-	-	-	?	-
+replication	+	-	+	+	+	-	?	+
+scon		+	-	+	+	-	+	-	+
+semicolon	+	+	+	+	+	-	+	+
+sharing		+	-	+	+	+	+	?	-
+typespec	+	+	-	+	+	-	+	+
+undetermined	+	-	+	+	-	+	+	+
+valrec		+	-	-(3)	-	-(2)	-(2)	-(3)	-
+where		+	-	-	+	+	-	-	-
+where-and	+	-	-	+	-	-	-	+
+withtype	+	-	+	+	+	+	+	+
+
+The following should be rejected or produce a warning:
+
+abstype2(4)	+	+	+	-	+	+	?	-
+dec-strdec(6)	+	+	-	+	+	-	?	+
+functor-poly2	+	+	+	-(8)	+	+	+	+
+nonexhaustive	+	+	+	+	+	+	+	+
+redundant(7)	-	-	-	+	-	-	+	-
+tyname(6)	+	-	+	+	+	-	?	-
+tyvar-shadowing	+	-	+	+	+	-	-	+
+undetermined3	+	+	-	+	+	+	?	+
+where2		+	-	+	+	+	+	-	+
+
+It is a matter of interpretation whether the following have to be accepted:
+
+flexrecord2	-	-	-	+	-	+	-	-
+undetermined2	-	-	+	+	+	-	?	+
+
+
+Notes:
+
+(1) Internal compiler error.
+(2) Internal runtime exception.
+(3) Deviating dynamic behaviour, which can be seen as fixing a bug in the
+    Definition.
+(4) It is practically impossible to be conforming wrt abstype and abstype2
+    at the same time.
+(5) It is practically infeasible to be conforming wrt fun-case.
+(6) Failure (acceptance) can be seen as a reasonable conservative extension.
+(7) Conformance is infeasible with separate compilation.
+(8) Only gives a generic warning not specific to the example.

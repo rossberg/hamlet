@@ -1,0 +1,289 @@
+2.0.0 (2013/10/10)
+
+Interpreter functionality:
+- Print source location for uncaught exceptions.
+- Abort on errors in batch modes.
+- New command line option -b to switch standard basis path (or omit it).
+- Fixed bug in lexing of negative hex constants (thanks to Matthew Fluet).
+- Fixed missing identifier status check for variable in `as' patterns.
+- Fixed missing type arity check for structure sharing derived form.
+- Slightly more faithful checking of syntactic restrictions (ignore duplicate
+  variables in matches).
+- Slightly more faithful handling of equality maximisation (don't substitute).
+- Slightly more faithful handling of sharing specifications
+  (don't generate new type names).
+
+Interpreter implementation:
+- Restructured AST to include annotations in the form of typed property list
+  (breaks all code based on HaMLet 1, sorry :( ).
+- Elaboration stores result of each rule as annotation in respective AST node.
+- Derived forms make sure to clone nodes where necessary.
+- Removed ad-hoc type annotation on SCons.
+- Split Library into StaticLibrary and DynamicLibrary, to support compilers.
+- Provide separate Elab/EvalProgram modules, to support compilers/interpreter.
+- Renamed *Grammar* structures to *Syntax*.
+- Tons of code clean-up and beautification.
+
+JavaScript compiler:
+- New HaMLet mode -j, "compile to JavaScript"".
+- Simple type-aware source-to-source translation into JavaScript.
+- JavaScript implementation of Standard Basis Library primitives.
+
+Basis:
+- Implemented CommandLine.
+- Skeletal implementation of OS.Process.
+- Implemented Substring.{position,tokens,fields}.
+
+Building:
+- Assume Moscow ML 2.10 by default.
+- Added String.concatWith and CharVector.all for (old versions of) Moscow ML.
+- Renamed hamlet-monolith.sml to hamlet-bundle.sml.
+
+Documentation:
+- Updated manual and man page.
+- Added lax datatype replication rules to issue list (suggested by Karl Crary).
+- Updated links.
+
+
+1.3.1 (2008/04/28)
+
+Building:
+- Removed some shell-specific stuff from Makefile.
+- Added preliminary support for SML#.
+- Use @SMLcmdname option for SML/NJ instead of hacking.
+- Avoid name clash with SML/NJ lib >110.66.
+
+Documentation:
+- Added man page.
+
+
+1.3 (2007/03/22)
+
+Interpreter:
+- Output abstract syntax tree in parsing mode.
+- Output type and signature environments in evaluation mode.
+- Fixed computation of tynames on a static basis.
+- Reorganised directory structure.
+- Some clean-ups.
+
+Documentation:
+- Updated a few out-of-sync sections.
+- Added typo in definition of cut-down operator (Section 7.2) to issues list.
+
+Test files:
+- Extended "sharing" and "where".
+- Updated conformance table.
+
+Building:
+- Support for Poly/ML 5.0.
+- Support for Alice ML 1.4.
+- Support for ML Kit 4.3.0.
+- Support for incremental batch compilation with Moscow ML and Alice ML.
+- Target to build a generic monolithic source file.
+- Work around calls to Unsafe structure in later versions of ML-Lex.
+
+
+1.2.4 (2006/08/14)
+
+Documentation:
+- Clarified license.
+
+
+1.2.3 (2006/07/18):
+
+Interpreter:
+- Fixed check for duplicate variables in records and layered patterns.
+- Added missing check for undetermined types in functor declarations.
+- Overhaul of line/column computation and management of source file names.
+
+Documentation:
+- Added principal typing problem with functors to issue list.
+
+Test files:
+- Added "fun-partial", "functor-poly" and "functor-poly2".
+- Updated conformance table.
+
+Building:
+- Improvements to Makefile.
+- Adapt to Basis library changes in newer versions of SML/NJ.
+- Adapt to ML-Lex in newer version of MLton that fix the token position bug.
+- Fixed time stamps for generated files.
+
+
+1.2.2 (2005/12/09):
+
+Interpreter:
+- Simplified implementation of pattern checker.
+
+Test files:
+- Added "fun-infix".
+
+Building:
+- Fixed problem with sed under Mac OS.
+
+
+1.2.1 (2005/07/27):
+
+Interpreter:
+- Fixed bug in implementation of rule 35.
+- Fixed bug in check for redundant match rules.
+
+Basis:
+- Fixed Substring.splitr.
+- Fixed border cases in OS.Path.{toString,joinBaseExt,mkAbsolute,mkRelative}.
+
+
+1.2 (2005/02/04):
+
+Interpreter:
+- Refactored code to avoid cross-module recursion issues and make experiments
+  with extensions more convenient: semantic objects are now collected in one
+  structure for each part of the semantics; type variable scoping and closure
+  computation (expansiveness check) are separated from elaboration module.
+- Made checking of syntactic restrictions a separate pass. This renders
+  parsing and evaluation-only functionality more accurate, though it complicates
+  things significantly, since it requires complete binding analysis.
+- Added missing check for bound variables in signature realisation.
+- Fixed precedence of environments for open declarations.
+- Fixed implementation of Abs operator for abstype.
+- Treat empty lines in sessions properly.
+- Print type name set T of inferred basis in elaboration mode.
+- Fixed parenthesisation in pretty printing type applications.
+
+Basis:
+- More correct path resolution for use function.
+- Added checkFloat to REAL signature so that bootstrapping actually works again.
+- Fixed ArraySlice.copy for overlapping ranges (test was the wrong way round).
+- Fixed ArraySlice.foldr[i].
+- Fixed Char.isSpace.
+- Fixed octal escapes in Char.fromCString.
+- Updated treatment of trailing gap escapes in Char.scan.
+- Updated scanning of hex prefix in Word.scan.
+- Fixed traversal order in Vector.map.
+
+Documentation:
+- Updated.
+- Added typo in rule 28 to issue list.
+
+Test files:
+- Added "generalise".
+- Extended "poly-exception".
+
+Building:
+- Fixed building with Moscow ML and some versions of SML/NJ.
+- Fixed building on Windows.
+- Fixed bootstrapping.
+
+
+1.1.2 (2005/01/14):
+
+Interpreter:
+- Fix parsing of sequential and sharing specs.
+- Add arity checks missing in rules 64 and 78 of the Definition.
+- Implement tyname equality as bool.
+
+Basis:
+- Fixed StringCvt.pad{Left,Right}.
+
+Workarounds:
+- Workaround for lack of ListPair.*Eq functions.
+- Workaround for type change in OS.Path.mkRelative.
+
+Documentation:
+- Add parsing ambiguity for sharing specs to issue list.
+- Add missing side conditions in rules 64 and 78 to issue list.
+- Added version history to appendix.
+
+Test files:
+- Added "poly-exception", "tyvar-shadowing", "where2".
+- Extended "id" and "valrec".
+- Updated conformance table (MLton 20041109, SML/NJ 110.52, Alice 1.0).
+
+
+1.1.1 (2004/04/17):
+
+Interpreter:
+- Disallow undetermined types (a.k.a. "free type variables") on toplevel.
+- Implement accurate scope checking for type names.
+- Fixed soundness bug wrt undetermined types in type scheme generalisation test.
+- Reject out-of-range real constants.
+- Accept multiple line input.
+- Output file name and line/columns with error messages.
+- Improved pretty printing.
+
+Basis:
+- Sync'ed with updates to the specification: overloaded ~ on words, added
+  Word.{from,to}Large[X], removed Substring.all, changed TextIO.inputLine,
+  changed Byte.unpackString[Vec].
+- Fixed String.isSubstring.
+- Fixed String.fields.
+- Fixed Vector.foldri.
+
+Workarounds:
+- Workaround for Mosml's broken real arithmetic (could raise Div).
+- Workarounds to adapt to recent changes in the Basis spec
+  (fix-Word.sml, fix-TextIO.sml).
+
+Makefile:
+- Support for working versions of SML/NJ with new CM.
+- Support for newest MLton.
+
+Test files:
+- Added "abstype2", "dec-strdec", "flexrecord2", "tyname", "undetermined2",
+  "undetermined3".
+- Split conformance table into different classes of deviation and updated to
+  most recent compiler versions.
+
+
+1.1 (2002/07/26):
+
+Basis:
+- Adapted signatures to latest version of the Basis spec.
+- Implemented library functions added to existing structures.
+- Adapted functions with changed semantics.
+- Implemented all signatures and structures dealing with
+  array and vector slices.
+- Implemented Text structure, along with previously missing
+  CharVector and CharArray structures.
+- Implemented previously missing Byte structure.
+- Removed SML90 structure and signature.
+- Opaque signature constraints where the spec uses them (with some
+  necessary exceptions).
+- Implemented previously missing Bool.{scan,fromString}.
+- Implemented previously missing Real.{pos,neg}Inf.
+- Handle exceptions from Char.chr correctly.
+- Fixed generation of \^X-escapes in Char.toString.
+- Fixed treatment of gap escapes in Char.scan.
+
+(See http://SML.sourceforge.net/Basis/history.html for a list of
+changes to the Basis specification.)
+
+Test files:
+- Added "replication".
+- Updated conformance table (MLton 20020410).
+
+SML/NJ Workaround:
+- Forgot to propagate 1.0.1 fixes in basis/Char to fix-Char.
+
+
+1.0.1 (2001/10/11):
+
+Some fixes in the Basis:
+- Ascii and Unicode escapes in Char.scan[C]
+  (and thus Char.from[C]String, String.fromString).
+- Octal escapes in Char.toCString (and thus String.toCString).
+- Possible NaN's in Real.scan for mantissa 0 and large exponents.
+
+Documentation:
+- Added issue of obligatory formatting characters to Appendix.
+- Some minor additions/clarifications in Appendix.
+
+Test files:
+- Added "redundant".
+- Removed carriage returns from "asterisk", "semicolon" and "typespec".
+- Small additions to "semicolon" and "valrec".
+
+
+1.0 (2001/10/04):
+
+Initial public release.

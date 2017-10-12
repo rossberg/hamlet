@@ -1,0 +1,71 @@
+rem (c) Andreas Rossberg 2001-2013
+rem
+rem Simple minded batch file to build HaMLet under Dos/Windows
+
+rem Currently, Moscow ML target is broken under Windows - have to wait
+rem for Moscow 2.03 (hopefully)
+
+set files=
+
+if "%1" == "with-alice" goto alice
+if "%1" == "with-mlkit" goto mlkit
+if "%1" == "with-mlton" goto mlton
+if "%1" == "with-mosml" goto mosml
+if "%1" == "with-poly"  goto poly
+if "%1" == "with-smlnj" goto smlnj
+if "%1" == "clean" goto clean
+if "%1" == "distclean" goto distclean
+
+:alice
+alicec --no-warn-conventions --no-warn-unused-imports --dependency-file Makefile-alice.depend --recursive-compilation -c main/wrap-alice.sml
+alicelink --include ${PWD} main/wrap-alice -o hamlet.ozf
+copy sh/hamlet-alice.sh${BAT} hamlet${BAT}
+goto end
+
+:mlkit
+echo ML Kit not supported via make.bat - please use Cygwin.
+goto end
+
+:mlton
+mlton -output hamlet.exe sources.cm
+goto end
+
+:mosml
+for %%file in (%files%) do mosmlc -c -toplevel %%file
+mosmlc -toplevel wrap-mosml.sml -o hamlet.exe
+goto end
+
+:poly
+echo Poly/ML not supported via make.bat - please use Cygwin.
+goto end
+
+:smlnj
+sml <main/wrap-smlnj.sml
+copy sh/hamlet-smlnj.sh.bat hamlet.bat
+goto end
+
+:clean
+del *.ui
+del *.uo
+del *.alc
+del *.ozf
+del *.o
+del */*.ui
+del */*.uo
+del */*.alc
+del */*.ozf
+deltree CM
+deltree .cm
+deltree MLB
+deltree */CM
+deltree */.cm
+deltree */MLB
+
+:distclean
+del *.exe
+ren make.bat make.bat.save
+del *.bat
+ren make.bat.save make.bat
+del hamlet-image.*
+
+:end

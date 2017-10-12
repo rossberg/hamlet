@@ -1,0 +1,818 @@
+\NeedsTeXFormat{LaTeX2e}
+\documentclass{article}
+\usepackage{times,alltt,url,a4}
+\usepackage{pst-node}
+\usepackage{color}
+\usepackage[dvips=true,bookmarks=true,bookmarksopen=true,
+pdfstartview=FitBH,pdfpagemode=UseOutlines,colorlinks=true,urlcolor=linkcolor,
+citecolor=linkcolor,linkcolor=linkcolor,menucolor=linkcolor]{hyperref}
+
+\setlength{\parskip}{1.4ex}
+\setlength{\parindent}{0mm}
+
+\definecolor{linkcolor}{rgb}{0,0,0.6}
+
+\newcommand{\m}[1]{$[\mathit{#1}]\;$}
+\newcommand{\major}{\m{major}}
+\newcommand{\minor}{\m{minor}}
+\newcommand{\pedantic}{\m{pedantic}}
+\newcommand{\typo}{\m{typo}}
+\newcommand{\void}[1]{}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Defects in the Revised Definition of Standard ML}
+
+\author{
+Andreas Rossberg \\
+\url{rossberg@mpi-sws.org}
+}
+
+\date{Updated 2013/09/18}
+
+\maketitle
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This document\footnote{This document has been derived from Appendix A of the documentation to HaMLet \cite{hamlet}} is intended to be a comprehensive list of all known bugs, ambiguities, problems and other `grey areas' in the revised Definition of Standard ML \cite{definition}. For better overview of what really is important the issues are classified into several categories:
+
+\begin{itemize}
+\item {\em major}: mistakes that compromise soundness without an obvious fix, that create problems for implementers, or lead to annoying incompatibles among implementations,
+\item {\em minor}: mistakes that leave open questions as well but do not seem to produce problems in practice,
+\item {\em pedantic}: nitpicking on issues that are not ``quite right'' but everybody knows how to interpret them,
+\item {\em typos}: obvious slips in formal bits.
+\end{itemize}
+
+The list marks with * all issues that have been newly introduced in SML'97. Others are inherited from SML'90 \cite{definition90}.
+
+Note that this compilation does not try to be a general critique of the language. It does not discuss design decisions or weaknesses of particular features, but merely lists problems with the specification of the language.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Section 2 (Syntax of the Core)}
+\label{bugschapter2}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Section 2.4 (Identifiers):
+%\nopagebreak
+
+%\begin{itemize}
+%\item \pedantic The treatment of {\tt =} as an identifier is extremely ad-hoc. The wording suggests that there are in fact two variants of the identifier class VId, one including and the other excluding {\tt =} . The former is used in expressions, the latter everywhere else.
+%\end{itemize}
+
+
+Section 2.5 (Lexical analysis):
+\nopagebreak
+
+\begin{itemize}
+\item \minor In Section 2.2 the Definition includes only space, tab, newline, and formfeed into the set of obligatory formatting characters, that are allowed in source code. However, some major platforms require use of the carriage return character in text files. In order to achieve portability of sources across platforms it should be included as well. Preferably, for consistency, all formatting characters should be included, for which there is explicit escape syntax.
+\end{itemize}
+
+
+Section 2.6 (Infixed Operators):
+\nopagebreak
+
+\begin{itemize}
+\item \minor The Definition says that ``the only required use of {\tt op} is in prefixing a non-infixed occurrence of an identifier which has infix status''. This is rather vague, since it is not clear whether occurrences in constructor and exception bindings count as ``non-infixed'' \cite{mistakes}.
+\end{itemize}
+
+
+Section 2.8 (Grammar), Figure 4 (Expressions, Matches, Declarations and Bindings):
+\nopagebreak
+
+\begin{itemize}
+\item \pedantic The syntax rules for $\mathit{dec}$ are highly ambiguous. The productions for empty declarations and sequencing allow the derivation of arbitrary sequences of empty declarations for any input.
+
+\item \pedantic Another ambiguity is that a sequence of the form $\mathit{dec}_1\;\mathit{dec}_2\;\mathit{dec}_3$ can be reduced in two ways to $\mathit{dec}$: either via $\mathit{dec}_{12}\;\mathit{dec}_3$ or via $\mathit{dec}_1\;\mathit{dec}_{23}$ \cite{mistakes}. See also section \ref{bugschapter3}.
+\end{itemize}
+
+
+Section 2.9 (Syntactic Restrictions):
+\nopagebreak
+
+\begin{itemize}
+\item \pedantic * The restriction that $\mathit{valbind}$s may not bind the same identifier twice (2nd bullet) is not a syntactic restriction as it depends on the identifier status of the $\mathit{vid}$s in the patterns of a $\mathit{valbind}$. Identifier status is derived by the elaboration rules. Similarly, the restriction on type variable shadowing (last bullet) is dependent on context and computation of unguarded type variables [Section 4.6].
+
+Ideally, all restrictions should be handled by appropriate side conditions in the rules of the static semantics instead. Interestingly, that is already the case for duplicate variables in patterns (rules 39 and 43), whereas these were still syntactic restrictions in the SML'90 edition.
+
+\item \minor * An important syntactic restriction is missing:
+
+\begin{quote}
+``Any $\mathit{tyvar}$ occurring on the right side of a $\mathit{typbind}$ or $\mathit{datbind}$ of the form $\mathit{tyvarseq}$ $\mathit{tycon}$ {\tt =} $\cdots$ must occur in $\mathit{tyvarseq}$.''
+\end{quote}
+
+This restriction is analogous to the one given for $\mathit{tyvar}$s in type specifications (section 3.5, item 4). Without it the type system would be unsound. \footnote{Interestingly enough, in the SML'90 Definition the restriction was present, but the corresponding one for specifications was missing \cite{commentary}.}
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Section 3 (Syntax of Modules)}
+\label{bugschapter3}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Section 3.4 (Grammar for Modules), Figure 6 (Structure and Signature Expressions):
+\nopagebreak
+
+\begin{itemize}
+\item \pedantic The syntax rules for $\mathit{strdec}$ contain the same ambiguities with respect to sequencing and empty declarations as those for $\mathit{dec}$ (see section \ref{bugschapter2}).
+
+\item \minor Moreover, there are two different ways to reduce a sequence $\mathit{dec}_1\;\mathit{dec}_2$ of core declarations into a $\mathit{strdec}$: via $\mathit{strdec}_1\;\mathit{strdec}_2$ and via $\mathit{dec}$ \cite{mistakes}. Both parses are not equivalent since they provide different contexts for overloading resolution (Appendix E). For example, appearing on structure level, the two declarations
+\begin{quote}
+\begin{alltt}
+fun f x = x + x
+val a = f 1.0
+\end{alltt}
+\end{quote}
+may be valid if parsed as $\mathit{dec}$, but do not type check if parsed as $\mathit{strdec}_1\;\mathit{strdec}_2$ because overloading of {\tt +} gets defaulted to {\tt int}. The problem does not seem to arise in practice, though, because most implementations use smaller contexts for overloading resolution (see section \ref{bugsappendixe}).
+
+\item \minor Similarly, it is possible to parse a structure-level {\tt local} declaration containing only core declarations in two ways: as a $\mathit{dec}$ or as a $\mathit{strdec}$ \cite{mistakes}. This produces the same semantic ambiguity.
+\end{itemize}
+
+
+Section 3.4 (Grammar for Modules), Figure 7 (Specifications):
+\nopagebreak
+
+\begin{itemize}
+\item \pedantic Similar as for $\mathit{dec}$ and $\mathit{strdec}$, there exist ambiguities in parsing empty and sequenced $\mathit{spec}$s.
+
+\item \minor The ambiguity extends to sharing specifications. Consider:
+\begin{quote}
+\begin{alltt}
+type t
+type u
+sharing type t = u
+\end{alltt}
+\end{quote}
+This snippet can be parsed in at least three ways, with the sharing constraint taking scope over either both, or only one, or neither type specification. Since only the first alternative can be elaborated successfully, the validity of the program depends on how the ambiguity is resolved.
+
+The proper and most permissive disambiguation rule is to make sequential specifications and sharing specifications both left associative at the same precedence level. It could be expressed as a syntactic restriction stating that ``The $\mathit{spec}_2$ in a sequential specification may not contain a sharing specification.''
+\end{itemize}
+
+
+Section 3.4 (Grammar for Modules), Figure 8 (Functors and Top-level Declarations):
+\nopagebreak
+
+\begin{itemize}
+\item \minor * Finally, another ambiguity exists for reducing a sequence $\mathit{strdec}_1\;\mathit{strdec}_2$ to a $\mathit{topdec}$: it can be done either by first reducing to $\mathit{strdec}$, or to $\mathit{strdec}_1\;\mathit{topdec}_2$. The latter is more restrictive with respect to free type variables (but see section \ref{bugsappendixg} with regard to this).
+\end{itemize}
+
+Altogether, ignoring the infinite number of derivations involving empty declarations, the grammar in the Definition allows three ambiguous ways to reduce a sequence of two $\mathit{dec}$s to a $\mathit{topdec}$, as shown by the following diagram. All imply different semantics. A further ambiguity arises at the program level (see section \ref{bugschapter8}).
+
+\begin{center}
+\psset{xunit=12mm,yunit=12mm,nodesep=3pt}
+\begin{pspicture}(2,3.5)
+  \rput(1,3.5){\rnode{decdec}{$\mathit{dec}_1\;\mathit{dec}_2$}}
+  \rput(0,2.5){\rnode{dec}{$\mathit{dec}$}}
+  \rput(2,2.5){\rnode{strdecstrdec}{$\mathit{strdec}_1\;\mathit{strdec}_2$}}
+  \rput(0,1){\rnode{strdec}{$\mathit{strdec}$}}
+  \rput(2,1){\rnode{strdectopdec}{$\mathit{strdec}_1\;\mathit{topdec}_2$}}
+  \rput(1,0){\rnode{topdec}{$\mathit{topdec}$}}
+  \ncline{-}{decdec}{dec}
+  \ncline{-}{decdec}{strdecstrdec}
+  \ncline{-}{dec}{strdec}
+  \ncline{-}{strdecstrdec}{strdec}
+  \ncline{-}{strdecstrdec}{strdectopdec}
+  \ncline{-}{strdec}{topdec}
+  \ncline{-}{strdectopdec}{topdec}
+\end{pspicture}
+\end{center}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Section 4 (Static Semantics for the Core)}
+\label{bugschapter4}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Section 4.8 (Non-expansive Expressions):
+\nopagebreak
+
+\begin{itemize}
+\item \minor * The definition of non-expansiveness is purely syntactic and does only consider the right-hand side of a binding. However, an exception may result from matching against a non-exhaustive pattern on the left-hand side. It is rather inconsistent to disallow {\tt raise} expressions in non-expansive bindings but allow implicit exceptions in the disguise of pattern match failure. More seriously, the possibility of exceptions stemming from polymorphic bindings is incompatible with type passing implementations.
+\end{itemize}
+
+
+Section 4.9 (Type Structures and Type Environments):
+\nopagebreak
+
+\begin{itemize}
+\item \pedantic The definition of the Abs operator demands introduction of ``new distinct'' type names. However, type names can only be new relative to a context. To be precise, Abs would thus need an additional argument $C$ \cite{addenda}.
+
+\item \minor Values in {\tt abstype} declarations that are potentially polymorphic but require equality have no principal type \cite{addenda}. For example, in the declaration
+\begin{quote}
+\begin{alltt}
+abstype t = T with
+    fun eq(x, y) = x = y
+end
+\end{alltt}
+\end{quote}
+the principal type of {\tt eq} {\em inside} the scope of {\tt abstype} clearly is {\tt ''a * ''a -> bool}. However, outside the scope this type is not principal because {\tt ''a} cannot be instantiated by {\tt t}. Neither would {\tt t * t -> bool} be principal, of course. Although not strictly a bug (there is nothing which enforces the presence of principal typings in the revised Definition), this semantics is very hard to implement faithfully, since type inference had to deal with unresolved type schemes and to cascadingly defer decisions about instantiation and generalisation until the correct choice is determined. Most if not all SML implementations assign {\tt eq} the type {\tt ''a * ''a -> bool}.
+
+\item \minor A related problem is the fact that the rules for {\tt abstype} may infer type structures that do not respect equality \cite{addenda}:
+\begin{quote}
+\begin{alltt}
+abstype t = T with
+    datatype u = U of t
+end
+\end{alltt}
+\end{quote}
+Outside the scope of this {\tt abstype} declaration type {\tt u} will still be an equality type. Values of type {\tt t} can thus be compared through the backdoor:
+\begin{quote}
+\begin{alltt}
+fun eqT(x, y) = U x = U y
+\end{alltt}
+\end{quote}
+\end{itemize}
+
+
+Section 4.10 (Inference Rules):
+\nopagebreak
+
+\begin{itemize}
+\item \pedantic * Rule 18 concerning datatype replication does not actually require the type to be a datatype. For example, the following is legal:
+\begin{quote}
+\begin{alltt}
+datatype t = datatype unit
+\end{alltt}
+\end{quote}
+The same applies to datatype replication in signatures (see \ref{bugschapter5}).
+
+\item \minor * The comment to rule 26 states that a declaration like
+\begin{quote}
+\begin{alltt}
+datatype t = T
+val rec T = fn x => x
+\end{alltt}
+\end{quote}
+is legal since $C+\mathit{VE}$ overwrites identifier status. However, this comment overlooks an important point: in the corresponding rule 126 of the dynamic semantics recursion is handled differently, so that the identifier status is {\em not} overwritten. Consequently, the second declaration will raise a {\tt Bind} exception. It clearly is an ill-design to infer inconsistent identifier status in the static and dynamic semantics, but fortunately it does not violate soundness in this case. Most implementations do not implement the `correct' dynamic semantics, though.
+
+\item \typo There is an unmatched left parenthesis in the consequent of rule 28.
+
+\void{
+\item \pedantic As an artefact of the treatment of type name generativity in the inference rules, the following expression is ill-typed according to the Definition \cite{mistakes}:
+\begin{quote}
+\begin{alltt}
+let
+    val r = ref NONE
+    datatype t = C
+in
+    r := SOME C
+end
+\end{alltt}
+\end{quote}
+This behaviour is very tedious to implement and there is no real argument for forbidding such examples. Consequently, all SML implementation seem to allow it. Fixing this in favour of a more ``natural'' implementation of generativity would require getting rid of $\oplus$ composition and infer type name sets explicitly.
+}
+\end{itemize}
+
+
+Section 4.11 (Further Restrictions):
+\nopagebreak
+
+\begin{itemize}
+\item \minor Under item 1 the Definition states that ``the program context'' must determine the exact type of flexible records, but it does not specify any bounds on the size of this context. Unlimited context is clearly infeasible since it is incompatible with separate compilation and with {\tt let} polymorphism: at the point of generalisation the structure of a type must be determined precisely enough to know what we have to quantify over.\footnote{Polymorphic approaches to record typing are clearly not supported by the Definition.} The context should thus be restricted to at least the innermost value declaration surrounding the flexible record pattern.
+
+\item \minor Under item 2 the Definition demands that a compiler must give warnings whenever a pattern is redundant or a match is non-exhaustive. However, this requirement is inconsistent for two reasons:
+
+\begin{enumerate}
+\item * There is no requirement for datatype constructors in sharing specifications or type realisations to be consistent. For example,
+\begin{quote}
+\begin{alltt}
+datatype t = A | B
+datatype u = C
+sharing type t = u
+\end{alltt}
+\end{quote}
+is a legal specification. Likewise,
+\begin{quote}
+\begin{alltt}
+sig datatype t = A | B end where type t = bool
+\end{alltt}
+\end{quote}
+is valid. Actually, this may be considered a serious bug on its own, although the Definition argues that inconsistent signatures are ``not very significant in practice'' (section G.9). If such an inconsistent signature is used to specify a functor argument, it allows a mix of constructors to appear in matches in the functor's body, rendering the terms of irredundancy and exhaustiveness completely meaningless.
+
+\item It is difficult in general to check equality of exception constructors -- they may or may not be aliased. Inside a functor, constructor equality might depend on the actual argument structure the functor is applied to. It is possible to check all this by performing a certain amount of partial evaluation (such that redundant matches are detected at functor application), but this is clearly infeasible weighed against the benefits, in particular in conjunction with separate compilation. The Definition should point out that it only requires considering syntactic equivalence in the case of exception constructors.
+\end{enumerate}
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Section 5 (Static Semantics for Modules)}
+\label{bugschapter5}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Section 5.7 (Inference Rules):
+\nopagebreak
+
+\begin{itemize}
+\item \pedantic * The rules 64 and 78 use the notation $\{t_1\mapsto\theta_1,\cdots,t_n\mapsto\theta_n\}$ to specify realisations. However, this notation is not defined anywhere in the Definition for infinite maps like realisations -- section 4.2 only introduces it for finite maps.
+
+\item \minor * More seriously, both rules lack side conditions to ensure consistent arities for domain and range of the constructed realisation. Because $\varphi$ can hence fail to be well-formed (section 5.2), the application $\varphi(E)$ is not well-defined. The necessary side conditions are:
+\setcounter{equation}{63}
+\begin{equation}
+t \in \mbox{TyName}^{(k)}
+\end{equation}
+\setcounter{equation}{77}
+\begin{equation}
+t_i \in \mbox{TyName}^{(k)}, i = 1..n
+\end{equation}
+
+\item \minor * The presence of functors provides a form of explicit polymorphism which interferes with principal typing in the core language. Consider the following example \cite{prinicipalmodules}:
+
+\begin{quote}
+\begin{alltt}
+functor F(type t) =
+    struct val id = (fn x => x) (fn x => x) end
+structure A = F(type t = int)
+structure B = F(type t = bool)
+val a = A.id 3
+val b = B.id true
+\end{alltt}
+\end{quote}
+
+The declaration of {\tt id} cannot be polymorphic, due to the value restriction. On the other hand, assigning it type {\tt t -> t} would make the program valid. However,\void{ as Dreyer at al.\ note \cite{typeclasses},} finding this type would require the type inference algorithm to skolemize all undetermined types in a functor body's result signature over the types appearing in its argument signature, and then perform a form of higher-order unification. Consequently, almost all existing implementations reject the program.\footnote{Interestingly, MLton accepts the program, thanks to its defunctorization approach. However, it likewise accepts similar programs that are {\it not} valid Standard ML, e.g.:
+\begin{quote}
+\begin{alltt}
+functor F() = struct val id = (fn x => x) (fn x => x) end\\
+structure A = F()\\
+structure B = F()\\
+val a = A.id 3\\
+val b = B.id true
+\end{alltt}
+\end{quote}
+}
+
+\item \pedantic * Just like in the core language (see \ref{bugschapter4}), rule 72 concerning datatype replication does not actually require the type to be a datatype.
+
+\item \minor * The side conditions on free type variables in rules 87 and 89 do not have the effect that obviously was intended, see section \ref{bugsappendixg} for details.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Section 6 (Dynamic Semantics for the Core)}
+\label{bugschapter6}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Section 6.4 (Basic Values):
+\nopagebreak
+
+\begin{itemize}
+\item \pedantic The APPLY function has no access to program state. This suggests that library primitives may not be stateful, implying that a lot of interesting primitives could not be added to the language without extending the Definition itself \cite{mistakes}.
+
+On the other hand, any non-trivial library type (e.g.\ arrays or I/O streams) requires extension of the definition of values or state anyway (and equality types -- consider {\tt array}). The Definition should probably contain a comment in this regard.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Section 7 (Dynamic Semantics for Modules)}
+\label{bugschapter7}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Section 7.2 (Compound Objects):
+\nopagebreak
+
+\begin{itemize}
+\item \typo * In the definition of the operator ${\downarrow}:\mbox{Env}\times\mbox{Int}\to\mbox{Env}$, the triple ``$(\mathit{SI},\mathit{TE},\mathit{VI})$'' should read ``$(\mathit{SI},\mathit{TI},\mathit{VI})$''.
+\end{itemize}
+
+
+Section 7.3 (Inference Rules):
+\nopagebreak
+
+\begin{itemize}
+\item \typo * Rule 182 contains a typo: both occurrences of $\mathit{IB}$ have to be replaced by $B$. The rule should actually read:
+
+%       Inter B |- sigexp => I    <B |- funbind => F>
+% ------------------------------------------------------- (182)
+% B |- funid ( strid : sigexp ) = strexp <and funbind> =>
+%                     {funid -> (strid:I,strexp,B)} <+ F>
+\setcounter{equation}{181}
+\begin{equation}
+\frac{
+\mbox{Inter} B \vdash \mathit{sigexp} \Rightarrow I
+\qquad
+\langle B \vdash \mathit{funbind} \Rightarrow F \rangle
+}{
+\begin{array}{@{}r@{}}
+B \vdash \mathit{funid}\;{\tt(}\;\mathit{strid}\;{\tt:}\;\mathit{sigexp}\;{\tt)}
+  \;{\tt=}\;\mathit{strexp}\; \langle {\tt and}\;\mathit{funbind} \rangle
+  \Rightarrow \\
+\{ \mathit{funid} \mapsto (\mathit{strid}:I, \mathit{strexp}, B) \}
+  \langle + F \rangle
+\end{array}
+}
+\end{equation}
+
+\item \typo * The rules for toplevel declarations are wrong: in the conclusions, the result right of the arrow must be $B' \langle+ B''\rangle$ instead of $B'\langle'\rangle$ in all three rules:
+
+% B |- strdec => E    B' = E in Basis    <B + B' |- topdec => B''>
+% ---------------------------------------------------------------- (184)
+%               B |- strdec <topdec> => B' <+ B''>
+\setcounter{equation}{183}
+\begin{equation}
+\frac{
+B \vdash \mathit{strdec} \Rightarrow E
+\qquad
+B' = \mbox{$E$ in Basis}
+\qquad
+\langle B+B' \vdash \mathit{topdec} \Rightarrow B'' \rangle
+}{
+B \vdash \mathit{strdec}\; \langle\mathit{topdec}\rangle
+  \Rightarrow B' \langle+ B''\rangle
+}
+\end{equation}
+
+% Inter B |- sigdec => G    B' = G in Basis    <B + B' |- topdec => B''>
+% ---------------------------------------------------------------------- (185)
+%                   B |- sigdec <topdec> => B' <+ B''>
+\begin{equation}
+\frac{
+\mbox{Inter} B \vdash \mathit{sigdec} \Rightarrow G
+\qquad
+B' = \mbox{$G$ in Basis}
+\qquad
+\langle B+B' \vdash \mathit{topdec} \Rightarrow B'' \rangle
+}{
+B \vdash \mathit{sigdec}\; \langle\mathit{topdec}\rangle
+  \Rightarrow B' \langle+ B''\rangle
+}
+\end{equation}
+
+% B |- fundec => F    B' = F in Basis    <B + B' |- topdec => B''>
+% ---------------------------------------------------------------- (186)
+%               B |- fundec <topdec> => B' <+ B''>
+\begin{equation}
+\frac{
+B \vdash \mathit{fundec} \Rightarrow F
+\qquad
+B' = \mbox{$F$ in Basis}
+\qquad
+\langle B+B' \vdash \mathit{topdec} \Rightarrow B'' \rangle
+}{
+B \vdash \mathit{fundec}\; \langle\mathit{topdec}\rangle
+  \Rightarrow B' \langle+ B''\rangle
+}
+\end{equation}
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Section 8 (Programs)}
+\label{bugschapter8}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{itemize}
+\item \minor The comment to rule 187 states that a failing elaboration has no effect. However, it is not clear what infix status is in scope after a failing elaboration of a program that contains top-level infix directives.
+
+\item \minor * There is another syntactic ambiguity for programs. A note in section 3.4, Figure 8 restricts the parsing of $\mathit{topdec}$s:
+\begin{quote}
+``No $\mathit{topdec}$ may contain, as an initial segment, a $\mathit{strdec}$ followed by a semicolon.''
+\end{quote}
+The intention obviously is to make parsing of toplevel semicolons unambiguous so that they always terminate a program. As a consequence of the parsing ambiguities for declaration sequences (see section \ref{bugschapter3}) the rule is not sufficient, however: a sequence $\mathit{dec}_1{\tt;}\;\mathit{dec}_2{\tt;}$ of core level declarations with a terminating semicolon can be first reduced to $\mathit{dec}{\tt;}$, then to $\mathit{strdec}{\tt;}$, and finally $\mathit{program}$. This derivation does not exhibit an ``initial $\mathit{strdec}$ followed by a semicolon.'' Consequently, this is a valid parse, which results in quite different behaviour with respect to program execution.
+
+\item \pedantic The negative premise in rule 187 has unfortunate implications: interpreted strictly it precludes any conforming implementation from providing any sort of conservative semantic extension to the language. Any extension that allows declarations to elaborate that would be illegal according to the Definition (e.g.\ consider polymorphic records) can be observed through this rule and change the behaviour of consecutive declarations. Consider for example:
+\begin{quote}
+\begin{alltt}
+val s = "no";
+\(\mathit{strdec}\)
+val s = "yes";
+print s;
+\end{alltt}
+\end{quote}
+where the $\mathit{strdec}$ only elaborates if some extension is supported. In that case the program will print {\tt yes}, otherwise {\tt no}.
+
+This probably indicates that formalising an interactive toplevel is not worth the trouble.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Appendix A (Derived Forms)}
+\label{bugsappendixa}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Text:
+\nopagebreak
+
+\begin{itemize}
+\item \pedantic The paragraph explaining rewriting of the $\mathit{fvalbind}$ form rules out mixtures of $\mathit{fvalbind}$s and ordinary $\mathit{valbind}$s. However, the way it is formulated it does not rule out all combinations. It should rather say that all value bindings of the form $\mathit{pat}\;{\tt=}\;\mathit{exp}\;{\tt and}\;\mathit{fvalbind}$ or ${\tt rec}\;\mathit{fvalbind}$ are disallowed.
+\end{itemize}
+
+
+Figure 15 (Derived forms of Expressions):
+\nopagebreak
+
+\begin{itemize}
+\item \pedantic The Definition is somewhat inaccurate about several of the derived forms of expressions and patterns. It does not make a proper distinction between atomic and non-atomic phrases. Some of the equivalent forms are not in the same syntactic class \cite{commentary, mistakes}.
+\end{itemize}
+
+
+Figure 17 (Derived forms of Function-value Bindings and Declarations):
+\nopagebreak
+
+\begin{itemize}
+\item \minor The syntax of $\mathit{fvalbind}$s as given in the Definition enforces that all type annotations are syntactically equal, if given. This is unnecessarily restrictive and almost impossible to implement \cite{mistakes}, and probably not what was intended. The obvious solution is the more permissive syntax:
+\begin{displaymath}
+\begin{array}{l@{\;}l@{\;}l@{\;}l@{\;}l@{\;}l@{\;}l@{\;}l}
+& \langle{\tt{op}}\rangle\mathit{vid} & \mathit{atpat}_{11} & \cdots & \mathit{atpat}_{1n} & \langle{\tt:}\mathit{ty}_1\rangle &{\tt =}& \mathit{exp}_1 \\
+{\tt|} & \langle{\tt{op}}\rangle\mathit{vid} & \mathit{atpat}_{21} & \cdots & \mathit{atpat}_{2n} & \langle{\tt:}\mathit{ty}_2\rangle &{\tt =}& \mathit{exp}_2 \\
+{\tt|} & & \cdots & & \cdots \\
+{\tt|} & \langle{\tt{op}}\rangle\mathit{vid} & \mathit{atpat}_{m1} & \cdots & \mathit{atpat}_{mn} & \langle{\tt:}\mathit{ty}_m\rangle &{\tt =}& \mathit{exp}_m \\
+\multicolumn{6}{r}{\langle {\tt and} \; \mathit{fvalbind} \rangle}
+\end{array}
+\end{displaymath}
+\end{itemize}
+
+
+Figure 19 (Derived forms of Specifications and Signature Expressions):
+\nopagebreak
+
+\begin{itemize}
+\item \minor * The derived form that allows several definitional type specifications to be connected via {\tt and} is defined in a way that makes its scoping rules inconsistent with all other occurrences of {\tt and} in the language. In the example
+\begin{quote}
+\begin{alltt}
+type t = int
+signature S =
+sig
+    type t = bool
+    and  u = t
+end
+\end{alltt}
+\end{quote}
+type {\tt u} will be equal to {\tt bool}, not {\tt int} like in equivalent declarations. It would have been more consistent to rewrite the derived form to
+\begin{quote}
+\begin{alltt}
+include
+  sig type \(\mathit{tyvarseq}\sb{1}\) \(\mathit{tycon}\sb{1}\)
+       and \(\cdots\)
+       \(\cdots\)
+       and \(\mathit{tyvarseq}\sb{n}\) \(\mathit{tycon}\sb{n}\)
+  end where type \(\mathit{tyvarseq}\sb{1}\) \(\mathit{tycon}\sb{1}\) = \(\mathit{ty}\sb{1}\)
+      \(\cdots\)
+      where type \(\mathit{tyvarseq}\sb{n}\) \(\mathit{tycon}\sb{n}\) = \(\mathit{ty}\sb{n}\)
+\end{alltt}
+\end{quote}
+and delete the separate derived form for single definitional specifications.
+
+\item \pedantic * The Definition defines the phrase
+\begin{quote}
+$\mathit{spec}$ {\tt sharing} $\mathit{longstrid}_1$ {\tt =} $\cdots$ {\tt =} $\mathit{longstrid}_n$
+\end{quote}
+as a derived form. However, this form technically is not a derived form, since it cannot be rewritten in a purely syntactic manner -- its expansion depends on the static environment.
+
+\item \major * The derived form for type realisations connected by {\tt and} is not only redundant and alien to the rest of the language ({\tt and} is nowhere else followed by a second reserved word), it also is tedious to parse, since this part of the grammar is LALR(2) as it stands. It can be turned into LALR(1) only by a bunch of really ugly transformations. Consequently, almost no SML system seems to be implementing it correctly. Even worse, several systems implement it in a way that leads to rejection of programs {\em not} using the form.
+% For example:
+%\begin{quote}
+%\begin{alltt}
+%signature A = S where type t = u
+%and       B = T
+%\end{alltt}
+%\end{quote}
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Appendix B (Full Grammar)}
+\label{bugsappendixb}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Text:
+\nopagebreak
+
+\begin{itemize}
+\item \pedantic The first sentence is not quite true since there is a derived form for programs (Figure 18). Moreover, it is not obvious why the appendix refrains from also providing a full version of the module and program grammar. It contains quite a lot of derived forms as well, and the section title leads the reader to expect it.
+
+\item \minor The Definition gives precedence rules for disambiguating expressions, stating that ``the use of precedence does not increase the class of admissible phrases''. However, the rules are not sufficient to disambiguate all possible phrases. Moreover, for some phrases they actually rule out {\em any} possible parse, e.g.
+\begin{quote}
+\begin{alltt}
+a andalso if b then c else d orelse e
+\end{alltt}
+\end{quote}
+has no valid parse according to these rules. So the above statement is rather inconsistent \cite{mistakes}. The common way to deal with this probably is to just use Yacc precedence declarations for expression keywords that correspond to the precedence hierarchy given in the Definition. This seems to be the best way to approximate the intention of the Definition's rules.
+
+\item \major There is no comment on how to deal with the most annoying problem in the full grammar, the infinite look-ahead required to parse combinations of function clauses and {\tt case} expressions, like in:
+\begin{quote}
+\begin{alltt}
+fun f x = case e1 of z => e2
+  | f y = e3
+\end{alltt}
+\end{quote}
+According to the grammar this ought to be legal. However, parsing this would either require horrendous grammar transformations, backtracking, or some nasty and expensive lexer hack \cite{mistakes}. Consequently, there is no SML implementation being able to parse the above fragment. To legalise the behaviour of implementations, an informal restriction of the form
+\begin{quote}
+The expressions $\mathit{exp}=1,\dots,\mathit{exp}_{m-1}$ in a $\mathit{fvalbind}$ may not terminate with a $\mathit{match}$.
+\end{quote}
+could be added.
+\end{itemize}
+
+
+Figure 21 (Grammar: Declarations and Bindings):
+\nopagebreak
+
+\begin{itemize}
+\item \minor The syntax given for $\mathit{fvalbind}$ is incomplete, as is pointed out by the corresponding note. This is not really a bug but sloppy enough to cause some divergence among implementations.
+\end{itemize}
+
+
+Figure 22 (Grammar: Patterns):
+\nopagebreak
+
+\begin{itemize}
+\item \minor While there are additional non-terminals $\mathit{infexp}$ and $\mathit{appexp}$ to disambiguate parsing of infix expressions, there is no such disambiguation for patterns. This implies that a pattern like {\tt x:t ++ y} could be parsed if {\tt ++} was an appropriate infix constructor \cite{addenda}. Of course, this would result in heavy grammar conflicts.
+
+This appears to be an oversight. The full grammar obviously implemented by all SML systems is something like:
+\begin{displaymath}
+\begin{array}{lcll}
+\mathit{atpat} &::=& \mbox{...like before...} \\
+\mathit{apppat} &::=& \mathit{atpat} \\
+&& \langle{\tt{op}}\rangle \mathit{longvid} \; \mathit{atpat} \\
+\mathit{infpat} &::=& \mathit{apppat} \\
+&& \mathit{infpat}_1 \; \mathit{vid} \; \mathit{infpat}_2 \\
+\mathit{pat} &::=& \mathit{infpat} \\
+&& \mathit{pat} \; {\tt:} \; \mathit{ty} \\
+&& \langle{\tt{op}}\rangle \mathit{vid} \; \langle{\tt:} \; \mathit{ty}\rangle
+	\; {\tt as} \; \mathit{pat}
+\end{array}
+\end{displaymath}
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Appendix D (The Initial Dynamic Basis)}
+\label{bugsappendixd}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{itemize}
+\item \minor The Definition does specify the minimal initial basis but it does not specify what the initial state has to contain. Of course, it should at least contain the exception names {\tt Match} and {\tt Bind}. The obvious definition thus is:
+\begin{displaymath}
+s_0 = (\{\}, \{{\tt Match}, {\tt Bind}\})
+\end{displaymath}
+
+\item \pedantic The Definition does nowhere demand that the basis a library provides has to be consistent in any way. Nor does it require consistency between intial basis and initial state.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Appendix E (Overloading)}
+\label{bugsappendixe}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{itemize}
+\item \major Overloading is the most hand-waving part of the otherwise pleasantly accurate Definition. Due to the lack of formalism and specific rules, overloading resolution does not work consistently among SML systems. For example, type-checking of the following declaration does not succeed on all systems:
+\begin{quote}
+\begin{alltt}
+fun f(x,y) = (x + y)/y
+\end{alltt}
+\end{quote}
+\item \minor The Definition defines the overloading mechanism by enumerating all overloaded entities the library provides. This is rather unfortunate. It would be desirable if the rules were more generic, avoiding hard-coding overloading classes and the set of overloaded library identifiers on one hand, and allowing libraries to extend it in systematic ways on the other. More generic rules could also serve as a better guidance for implementing overloading.
+
+A suitable formalisation of overloading classes might be as a pair of a type name set and the type name being the designated default:
+\begin{displaymath}
+(T,t) \in \mbox{OverloadingClass} = \mbox{Fin}(\mbox{TyName}^{(0)}) \times \mbox{TyName}^{(0)}
+\end{displaymath}
+An overloading class is {\em well-formed} iff the following properties hold:
+\begin{itemize}
+\item[] $t \in T$ \hfill (1)
+\item[] $\mbox{Eq}(T) = \emptyset \quad\vee\quad \mbox{$t$ admits equality}$ \hfill (2)
+\end{itemize}
+where $\mbox{Eq}(T) = \{ t \in T \;|\; \mbox{$t$ admits equality} \}$. A set $\{(T_1,t_1),\cdots,(T_n,t_n)\}$ of overloading classes is {\em consistent} iff
+\begin{itemize}
+\item[] for all $i\in\{1,..,n\}$, \quad $(T_i,t_i)$ well-formed \hfill (3)
+\item[] for all $i,j\in\{1,..,n\}$, \quad $T_i \cap T_j = \emptyset \quad\vee\quad |\{t_i,t_j\} \cap T_i \cap T_j| = 1$  \hfill (4)
+\end{itemize}
+
+The set of all overloading classes used in an initial basis must be consistent. A library could provide arbitrary overloading classes, as long as they adhere to these restrictions. The restrictions guarantee that intersection of overloading classes is reflexive, associative and commutative with respect to the default and that there always is a unique default. We claim that this is necessary to make defaulting unambiguous and enable a feasible type inference algorithm.
+
+\item \minor * The above properties hold for the minimal initial basis given in section E.1, but the Definition forgets to demand that any extension of the basic overloading classes must be consistent with respect to equality (well-formedness property (2)).
+
+\item \minor * The Definition specifies an {\em upper} bound on the context a compiler may consider to resolve overloading, which is quite odd -- of course, implementations cannot be prohibited to conservatively extend the language by making more programs elaborate. On the other hand, much more important would have been to specify a {\em lower} bound on what implementations {\em have to} support -- it is clearly not feasible to force the programmer to annotate every individual occurence of an overloaded identifier or special constant.
+
+A natural and sensible lower bound seems to be the smallest enclosing core declaration that an overloaded identifier or constant appears in, consistent with the treatment of flexible records (see section \ref{bugschapter4}). Preferably, this would also be the upper bound as far as the standard is concerned, in order to achieve consistent behaviour among implementations.
+\end{itemize}
+
+
+Figure 27 (Overloaded Identifiers):
+\nopagebreak
+
+\begin{itemize}
+\item \typo * The types for the comparison operators {\tt<}, {\tt>}, {\tt<=}, and {\tt>=} must correctly be ${\tt numtxt} \times {\tt numtxt} \to {\tt bool}$.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Issues in Appendix G (What's New?)}
+\label{bugsappendixg}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Section G.8 (Principal Environments):
+\nopagebreak
+
+\minor * At the end of the section the authors explain that the intent of the restrictions on free type variables at the toplevel (side-conditions in rules 87 and 89) is to avoid reporting free type variables to the user. However, judging from the rest of the paragraph, this reasoning confuses two notions of type variable: type variables as semantic objects, as appearing in the formal rules of the Definition, and the yet undetermined types during Hindley/Milner type inference, which are also typically represented by type variables. However, both kinds are variables on completely different levels: the former are part of the formal framework of the Definition, while the latter are an `implementation aspect' that lies outside the scope of the Definition's formalism. Let us distinguish both by referring to the former as {\em semantic type variables} and to the latter as {\em undetermined types}.
+
+The primary purpose of the aforementioned restrictions obviously is to avoid reporting {\em undetermined types} to the user. However, they fail to achieve that. In fact, it is impossible to enforce such behaviour within the formal framework of the Definition, since it essentially would require formalising type inference (the current formalism has no notion of undetermined type). Consequently, the comment in section G.8 about the possibility of relaxing the restrictions by substituting arbitrary monotypes misses the point as well.
+
+In fact, the formal rules of the Definition actually imply the exact opposite, namely that an implementation may {\em never} reject a program that results in undetermined types at the toplevel, and is thus compelled to report them. The reason is explicitly given in the same section: ``implementations should not reject programs for which successful elaboration is possible''. Consider the following program:
+\begin{quote}
+\begin{alltt}
+val r = ref nil;
+r := [true];
+\end{alltt}
+\end{quote}
+Rule 2 has to non-deterministically choose some type $\tau\;{\tt list}$ for the occurrence of {\tt nil}. The choice of $\tau$ is not determined by the declaration itself: it is not used, nor can it be generalised, due to the value restriction. However, {\tt bool} is a perfectly valid choice for $\tau$, and this choice will allow the entire program to elaborate. So according to the quote above, an implementation has to make exactly that choice. Now, if both declarations are entered separately into an interactive toplevel the implementation obviously has to defer commitment to that choice until it has actually seen the second declaration. Consequently, it can do nothing else but reporting an undetermined type for the first declaration. The only effect the side conditions in rules 87 and 89 have on this is that the types committed to later may not contain free semantic type variables -- but considering the way such variables are introduced during type inference (mainly by generalisation), the only possibility for this is through a toplevel exception declaration containing a type variable (and such a declaration is indeed ruled out by those side conditions).\footnote{Note that this observation gives rise to the question whether the claim about the existence of principal environments in section 4.12 of the SML'90 Definition \cite{definition90} was valid in the first place. It most likely was not: a declaration like the one for {\tt r} has no principal environment that would be expressible within the formalism of the Definition, despite allowing different choices of free imperative type variables. The reasoning that this relaxation was sufficient to regain principality is based on the same mix-up of semantic type variables and undetermined types as above. The relaxation does not solve the problem with expansive declarations, since semantic type variables are rather unrelated to it -- choosing a semantic type variable for an undetermined type is no more principal than choosing any particular monotype.}
+
+There are two possibilities of dealing with this matter: (1) take the formal rules as they are and ignore the comment in the appendix, or (2) view the comment as an informal ``further restriction'' and fix its actual formulation to match the obvious intent. Since the comments in Appendix G are not supposed to be a normative part of the Definition but merely explanatory, and moreover are somewhat inconsistent, strict reading should give the formal rules priority and choose option (1). Unfortunately, this interpretation is incompatible with implementation strategies relying on type passing, where all types must be determined prior to execution.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Acknowledgements}
+\label{acknowledgements}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Thanks go to the following people who helped with or without knowing in compiling this list: Stefan Kahrs, Claudio Russo, Matthias Blume, Stephen Weeks, John Reppy, and people on the sml-implementers list that recently came to life. And of course thanks go to the designers of ML and authors of the Definition for the magnificent programming language -- it seems to be the only serious language in existence, for which even a pedantic list of all defects fits on a couple of pages. {\tt ;-)}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vfill
+\pagebreak
+\begin{appendix}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{History}
+\label{history}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{itemize} \setlength{\itemsep}{0em}
+\item 2001/10/11: Added minor issue: carriage return is not included as supported control character in source code (Section 2.5). Some small clarifications.
+\item 2004/04/13: Reconsidered and removed scoping subtleties for type names as an issue (Section 4.10).
+\item 2004/06/22: Added minor issue: parsing ambiguities with sequential specifications make scoping of sharing constraints ambiguous (Section 3.4).
+\item 2005/01/13: Added minor issue: missing side conditions ensuring consistent arities in rules 64 and 78 (Section 5.7).
+\item 2005/01/26: Added typo in rule 28 (Section 4.10).
+\item 2006/07/18: Added principality issue with functors (Section 5.7).
+\item 2007/01/22: Added typo in definition of $\downarrow$ operator (Section 7.2).
+\item 2013/09/18: Added predantic issue: datatype replication rules 18 and 72 allow non-datatypes (Sections 4.10 and 5.7). Minor editorial tweaks.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{thebibliography}{MTHM97}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibitem[MTHM97]{definition}
+Robin Milner, Mads Tofte, Robert Harper, David MacQueen \\
+{\it The Definition of Standard ML} (Revised) \\
+The MIT Press, 1997
+
+\bibitem[MTH90]{definition90}
+Robin Milner, Mads Tofte, Robert Harper \\
+{\it The Definition of Standard ML} \\
+The MIT Press, 1990
+
+\bibitem[MT91]{commentary}
+Robin Milner, Mads Tofte \\
+{\it Commentary on Standard ML} \\
+The MIT Press, 1991
+
+\bibitem[K93]{mistakes}
+Stefan Kahrs \\
+{\it Mistakes and Ambiguities in the Definition of Standard ML} \\
+University of Edinburgh, 1993 \\
+{\small\tt{http://www.cs.ukc.ac.uk/pubs/1993/569/}}
+
+\bibitem[K96]{addenda}
+Stefan Kahrs \\
+{\it Mistakes and Ambiguities in the Definition of Standard ML -- Addenda} \\
+University of Edinburgh, 1996 \\
+{\small\tt{ftp://ftp.dcs.ed.ac.uk/pub/smk/SML/errors-new.ps.Z}}
+
+\bibitem[DB07]{prinicipalmodules}
+Derek Dreyer, Matthias Blume \\
+{\it Principal Type Schemes for Modular Programs} \\
+in: Proc. of the 2007 European Symposium on Programming \\
+Springer-Verlag, 2007
+
+\bibitem[R01]{hamlet}
+Andreas Rossberg \\
+{\it HaMLet -- To Be Or Not To Be Standard ML} \\
+{\small\tt{http://www.mpi-sws.org/~rossberg/hamlet/}}
+
+\void{
+\bibitem[DHCK06]{typeclasses}
+Derek Dreyer, Robert Harper, Manuel Chakravarty, Gabriele Keller \\
+{\it Modular Type Classes} \\
+Draft, 2006 \\
+{\small\tt{http://www.cs.cmu.edu/~rwh/papers/mtc/apr06.pdf}}
+}
+
+\end{thebibliography}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{appendix}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

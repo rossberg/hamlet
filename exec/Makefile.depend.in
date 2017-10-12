@@ -1,0 +1,9 @@
+# Execution
+BASIS-sig.$(EXT) : ../elab/StaticObjectsModule.$(EXT) ../eval/DynamicObjectsModule.$(EXT)
+Basis.$(EXT) : BASIS-sig.$(EXT) ../elab/StaticObjectsModule.$(EXT) ../eval/DynamicObjectsModule.$(EXT) ../elab/StaticBasis.$(EXT) ../eval/DynamicBasis.$(EXT)
+PPBasis.$(EXT) : PP_BASIS-sig.$(EXT) ../eval/DynamicObjectsCore.$(EXT) Basis.$(EXT) PPEnv.$(EXT) ../infrastructure/PrettyPrint.$(EXT) ../elab/PPStaticBasis.$(EXT)
+PPEnv.$(EXT) : PP_ENV-sig.$(EXT) ../elab/StaticObjectsCore.$(EXT) ../eval/DynamicObjectsCore.$(EXT) ../infrastructure/PrettyPrint.$(EXT) ../infrastructure/PPMisc.$(EXT) ../syntax/IdsCore.$(EXT) ../syntax/IdStatus.$(EXT) ../eval/PPVal.$(EXT) ../elab/PPType.$(EXT) ../elab/PPStaticEnv.$(EXT) ../elab/TyName.$(EXT)
+PP_BASIS-sig.$(EXT) : ../infrastructure/PrettyPrint.$(EXT) ../eval/DynamicObjectsCore.$(EXT) Basis.$(EXT)
+PP_ENV-sig.$(EXT) : ../infrastructure/PrettyPrint.$(EXT) ../elab/StaticObjectsCore.$(EXT) ../eval/DynamicObjectsCore.$(EXT)
+PROGRAM-sig.$(EXT) : ../syntax/Syntax.$(EXT) Basis.$(EXT) ../eval/State.$(EXT)
+Program.$(EXT) : PROGRAM-sig.$(EXT) ../eval/DynamicObjectsCore.$(EXT) ../elab/StaticBasis.$(EXT) ../eval/DynamicBasis.$(EXT) Basis.$(EXT) ../eval/EvalModule.$(EXT) ../syntax/Syntax.$(EXT) ../infrastructure/PrettyPrint.$(EXT) ../eval/PPVal.$(EXT) ../elab/PPStaticBasis.$(EXT) ../eval/PPDynamicBasis.$(EXT) PPBasis.$(EXT) ../elab/ElabModule.$(EXT) ../infrastructure/Error.$(EXT)

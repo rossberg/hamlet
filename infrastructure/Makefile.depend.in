@@ -1,0 +1,17 @@
+# Infrastructure
+ERROR-sig.$(EXT) : ../syntax/Source.$(EXT) ../syntax/IdsCore.$(EXT) ../syntax/IdsModule.$(EXT)
+Error.$(EXT) : ERROR-sig.$(EXT) ../syntax/Source.$(EXT) ../syntax/IdsCore.$(EXT) ../syntax/IdsModule.$(EXT) ../syntax/Lab.$(EXT) ../syntax/TyVar.$(EXT)
+FIN_MAP-sig.$(EXT) : ../smlnj-lib/ord-map-sig.$(EXT)
+FIN_SET-sig.$(EXT) : ../smlnj-lib/ord-set-sig.$(EXT)
+FinMapFn.$(EXT) : ../smlnj-lib/ord-key-sig.$(EXT) FIN_MAP-sig.$(EXT) ../smlnj-lib/binary-map-fn.$(EXT) ../smlnj-lib/lib-base.$(EXT)
+FinSetFn.$(EXT) : ../smlnj-lib/ord-key-sig.$(EXT) FIN_SET-sig.$(EXT) ../smlnj-lib/binary-set-fn.$(EXT) ../smlnj-lib/lib-base.$(EXT)
+GENERIC_ENV-sig.$(EXT) : ../syntax/IdsCore.$(EXT)
+GenericEnvFn.$(EXT) : GENERIC_ENV-sig.$(EXT) ../syntax/IdsCore.$(EXT)
+PPMisc.$(EXT) : PP_MISC-sig.$(EXT) PrettyPrint.$(EXT)
+PP_MISC-sig.$(EXT) : PrettyPrint.$(EXT)
+PRETTY_PRINT-sig.$(EXT) :
+PrettyPrint.$(EXT) : PRETTY_PRINT-sig.$(EXT)
+PROP-sig.$(EXT) :
+Prop.$(EXT) : PROP-sig.$(EXT)
+STAMP-sig.$(EXT) :
+Stamp.$(EXT) : STAMP-sig.$(EXT) FinMapFn.$(EXT)

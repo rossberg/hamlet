@@ -1,0 +1,327 @@
+Group is
+
+    (* Setup *)
+
+#if defined(SMLNJ_VERSION) && defined(NEW_CM)
+    $/basis.cm
+    $smlnj-tdp/back-trace.cm
+#endif
+
+#if defined(SMLNJ_VERSION)
+    fix/Word.sml
+    fix/Char.sml
+    fix/String.sml
+#if defined(SMLNJ_VERSION) && SMLNJ_MINOR_VERSION < 43
+    fix/ListPair.sml
+    fix/TextIO.sml
+    fix/OS.sml
+#endif
+#endif
+
+    smlnj-lib/smlnj-lib.cm
+    smlnj-lib/ml-yacc-lib.cm
+
+    (* Utilities *)
+
+    infrastructure/FIN_SET-sig.sml
+    infrastructure/FinSetFn.sml
+    infrastructure/FIN_MAP-sig.sml
+    infrastructure/FinMapFn.sml
+    infrastructure/STAMP-sig.sml
+    infrastructure/Stamp.sml
+
+    infrastructure/PROP-sig.sml
+    infrastructure/Prop.sml
+
+    syntax/SOURCE-sig.sml
+    syntax/Source.sml
+
+    (* Basic objects of the core
+       (plus TyName and OverloadingClass, needed by TyVar) *)
+
+    elab/TYNAME-sig.sml
+    elab/TyName.sml
+    elab/OVERLOADINGCLASS-sig.sml
+    elab/OverloadingClass.sml
+
+    syntax/TYVAR-sig.sml
+    syntax/TyVar.sml
+    syntax/SCON-sig.sml
+    syntax/SCon.sml
+
+    syntax/LAB-sig.sml
+    syntax/Lab.sml
+    syntax/ID-sig.sml
+    syntax/IdFn.sml
+    syntax/LONGID-sig.sml
+    syntax/LongIdFn.sml
+
+    syntax/IdsCore.sml
+    syntax/IdsModule.sml
+
+    infrastructure/GENERIC_ENV-sig.sml
+    infrastructure/GenericEnvFn.sml
+
+    (* Error handling *)
+
+    infrastructure/ERROR-sig.sml
+    infrastructure/Error.sml
+
+    (* Binding core objects *)
+
+    syntax/IDSTATUS-sig.sml
+    syntax/IdStatus.sml
+
+    parse/BindingObjectsCore.sml
+
+    parse/BINDING_ENV-sig.sml
+    parse/BindingEnv.sml
+    parse/BINDING_CONTEXT-sig.sml
+    parse/BindingContext.sml
+
+    (* Binding module objects *)
+
+    parse/BindingObjectsModule.sml
+
+    parse/BINDING_BASIS-sig.sml
+    parse/BindingBasis.sml
+
+    (* Static core objects *)
+
+    elab/StaticObjectsCore.sml
+
+    elab/TYPE-sig.sml
+    elab/Type.sml
+    elab/TYPESCHEME-sig.sml
+    elab/TypeScheme.sml
+    elab/TYPEFCN-sig.sml
+    elab/TypeFcn.sml
+    elab/STATIC_ENV-sig.sml
+    elab/StaticEnv.sml
+    elab/CONTEXT-sig.sml
+    elab/Context.sml
+
+    (* Static module objects *)
+
+    elab/StaticObjectsModule.sml
+
+    elab/SIG-sig.sml
+    elab/Sig.sml
+    elab/FUNSIG-sig.sml
+    elab/FunSig.sml
+    elab/STATIC_BASIS-sig.sml
+    elab/StaticBasis.sml
+
+    (* Syntax  *)
+
+    syntax/ANNOTATION-sig.sml
+    syntax/Annotation.sml
+
+    syntax/SyntaxCoreFn.sml
+    syntax/SyntaxModuleFn.sml
+    syntax/SyntaxProgramFn.sml
+    syntax/Syntax.sml
+
+    parse/DERIVED_FORMS_CORE-sig.sml
+    parse/DerivedFormsCore.sml
+    parse/DERIVED_FORMS_MODULE-sig.sml
+    parse/DerivedFormsModule.sml
+    parse/DERIVED_FORMS_PROGRAM-sig.sml
+    parse/DerivedFormsProgram.sml
+
+    (* Dynamic core objects *)
+
+    eval/ADDR-sig.sml
+    eval/Addr.sml
+    eval/EXNAME-sig.sml
+    eval/ExName.sml
+    lib/LIBRARY_SVAL-sig.sml
+    lib/LibrarySVal.sml
+    eval/SVAL-sig.sml
+    eval/SVal.sml
+
+    eval/DynamicObjectsCore.sml
+
+    eval/VAL-sig.sml
+    eval/Val.sml
+    eval/STATE-sig.sml
+    eval/State.sml
+    eval/DYNAMIC_ENV-sig.sml
+    eval/DynamicEnv.sml
+
+    (* Dynamic module objects *)
+
+    eval/DynamicObjectsModule.sml
+
+    eval/INTER-sig.sml
+    eval/Inter.sml
+    eval/DYNAMIC_BASIS-sig.sml
+    eval/DynamicBasis.sml
+    eval/INTBASIS-sig.sml
+    eval/IntBasis.sml
+
+    (* Program objects *)
+
+    exec/BASIS-sig.sml
+    exec/Basis.sml
+
+    (* Parsing *)
+
+    parse/INFIX-sig.sml
+    parse/Infix.sml
+    parse/INITIAL_INFIX_ENV-sig.sml
+    parse/InitialInfixEnv.sml
+
+#if ! defined(SMLNJ_VERSION)
+    parse/Parser-sig.sml
+    parse/Lexer.sml
+    parse/Parser.sml
+#else
+    parse/Lexer.lex
+    parse/Parser.grm
+#endif
+
+    parse/LocLexer.sml
+    parse/PARSE-sig.sml
+    parse/Parse.sml
+
+    (* Syntax analysis *)
+
+    elab/SCOPE_TYVARS-sig.sml
+    elab/ScopeTyVars.sml
+
+    parse/SYNTACTIC_RESTRICTIONS_CORE-sig.sml
+    parse/SyntacticRestrictionsCore.sml
+    parse/SYNTACTIC_RESTRICTIONS_MODULE-sig.sml
+    parse/SyntacticRestrictionsModule.sml
+    parse/SYNTACTIC_RESTRICTIONS_PROGRAM-sig.sml
+    parse/SyntacticRestrictionsProgram.sml
+
+    (* Environments and library *)
+
+    elab/INITIAL_STATIC_ENV-sig.sml
+    elab/InitialStaticEnv.sml
+    elab/INITIAL_STATIC_BASIS-sig.sml
+    elab/InitialStaticBasis.sml
+
+    eval/INITIAL_DYNAMIC_ENV-sig.sml
+    eval/InitialDynamicEnv.sml
+    eval/INITIAL_DYNAMIC_BASIS-sig.sml
+    eval/InitialDynamicBasis.sml
+
+    lib/USE-sig.sml
+    lib/Use.sml
+    lib/IdsLibrary.sml
+    lib/STATIC_LIBRARY-sig.sml
+    lib/StaticLibrary.sml
+    lib/DYNAMIC_LIBRARY-sig.sml
+    lib/DynamicLibrary.sml
+
+    eval/BASVAL-sig.sml
+    eval/BasVal.sml
+
+    (* Elaboration *)
+
+    elab/CLOS-sig.sml
+    elab/Clos.sml
+    elab/CHECK_PATTERN-sig.sml
+    elab/CheckPattern.sml
+    elab/ELAB_CORE-sig.sml
+    elab/ElabCore.sml
+
+    elab/ELAB_MODULE-sig.sml
+    elab/ElabModule.sml
+
+    (* Evaluation *)
+
+    eval/EVAL_CORE-sig.sml
+    eval/EvalCore.sml
+
+    eval/EVAL_MODULE-sig.sml
+    eval/EvalModule.sml
+
+    (* Pretty printing *)
+
+    infrastructure/PRETTY_PRINT-sig.sml
+    infrastructure/PrettyPrint.sml
+
+    infrastructure/PP_MISC-sig.sml
+    infrastructure/PPMisc.sml
+
+    elab/PP_TYPE-sig.sml
+    elab/PPType.sml
+    elab/PP_STATIC_ENV-sig.sml
+    elab/PPStaticEnv.sml
+    elab/PP_STATIC_BASIS-sig.sml
+    elab/PPStaticBasis.sml
+
+    eval/PP_VAL-sig.sml
+    eval/PPVal.sml
+    eval/PP_DYNAMIC_ENV-sig.sml
+    eval/PPDynamicEnv.sml
+    eval/PP_DYNAMIC_BASIS-sig.sml
+    eval/PPDynamicBasis.sml
+
+    exec/PP_ENV-sig.sml
+    exec/PPEnv.sml
+    exec/PP_BASIS-sig.sml
+    exec/PPBasis.sml
+
+    (* Pretty printing syntax *)
+
+    syntax/PP_SYNTAX-sig.sml
+    syntax/PPSyntax.sml
+
+    syntax/PP_CORE-sig.sml
+    syntax/PPCore.sml
+    syntax/PP_MODULE-sig.sml
+    syntax/PPModule.sml
+    syntax/PP_PROGRAM-sig.sml
+    syntax/PPProgram.sml
+
+    (* Program execution *)
+
+    exec/PROGRAM-sig.sml
+    exec/Program.sml
+
+    elab/ELAB_PROGRAM-sig.sml
+    elab/ElabProgram.sml
+
+    eval/EVAL_PROGRAM-sig.sml
+    eval/EvalProgram.sml
+
+    (* Compilation to JavaScript *)
+
+    compile-js/ID_SET_CORE-sig.sml
+    compile-js/ID_SET_MODULE-sig.sml
+    compile-js/IdSetCore.sml
+    compile-js/IdSetModule.sml
+    compile-js/JSSyntax.sml
+    compile-js/PP_JS-sig.sml
+    compile-js/PPJS.sml
+
+    compile-js/JS_TRANSLATE_SCON-sig.sml
+    compile-js/JS_TRANSLATE_ID-sig.sml
+    compile-js/JS_TRANSLATE_CORE-sig.sml
+    compile-js/JS_TRANSLATE_MODULE-sig.sml
+    compile-js/JS_TRANSLATE_PROGRAM-sig.sml
+    compile-js/JSTranslateSCon.sml
+    compile-js/JSTranslateId.sml
+    compile-js/JSTranslateCore.sml
+    compile-js/JSTranslateModule.sml
+    compile-js/JSTranslateProgram.sml
+
+    compile-js/COMPILE_JS-sig.sml
+    compile-js/CompileJS.sml
+
+    (* Main *)
+
+    main/SML-sig.sml
+    main/Sml.sml
+
+    main/MAIN-sig.sml
+    main/Main.sml
+
+#if ! defined(SMLNJ_VERSION)
+    main/wrap-mlton.sml
+#endif

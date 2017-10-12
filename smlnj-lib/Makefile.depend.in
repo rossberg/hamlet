@@ -1,0 +1,18 @@
+# SML/NJ library
+base.$(EXT) :
+binary-map-fn.$(EXT) : lib-base.$(EXT) ord-key-sig.$(EXT) ord-map-sig.$(EXT)
+binary-set-fn.$(EXT) : lib-base.$(EXT) ord-key-sig.$(EXT) ord-set-sig.$(EXT)
+fifo-sig.$(EXT) :
+fifo.$(EXT) : fifo-sig.$(EXT)
+join.$(EXT) : base.$(EXT)
+lib-base-sig.$(EXT) :
+lib-base.$(EXT) : lib-base-sig.$(EXT)
+lrtable.$(EXT) : base.$(EXT)
+ord-key-sig.$(EXT) :
+ord-map-sig.$(EXT) : ord-key-sig.$(EXT)
+ord-set-sig.$(EXT) : ord-key-sig.$(EXT)
+parser1.$(EXT) : base.$(EXT) lrtable.$(EXT) stream.$(EXT)
+parser2.$(EXT) : base.$(EXT) lrtable.$(EXT) stream.$(EXT)
+queue-sig.$(EXT) :
+queue.$(EXT) : queue-sig.$(EXT) fifo.$(EXT)
+stream.$(EXT) : base.$(EXT)

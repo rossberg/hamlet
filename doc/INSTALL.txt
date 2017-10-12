@@ -1,0 +1,39 @@
+To build a stand-alone HaMLet program under Unix-like systems,
+invoke one of the following commands:
+
+	make with-alice		(for Alice ML 1.4+)
+	make with-mlkit		(for ML Kit 4.3+)
+	make with-mlton		(for MLton 20010706+)
+	make with-mosml		(for Moscow ML 2.0+)
+	make with-poly		(for Poly/ML 5.0+)
+	make with-smlnj		(for SML/NJ 110+)
+	make with-smlsharp	(for SML# 0.20+)
+
+depending on what SML system you want to compile with.
+This will produce an executable named "hamlet".
+(For Moscow ML versions prior to 2.10 you will need to patch the definition of FIXES_mosml as indicated in the Makefile.)
+
+Alternatively, you can invoke
+
+	use "hamlet.sml";
+
+from an interactive SML prompt, which employs SML's `use' function.
+As yet another possibility, a single file containing all modules can be
+generated with
+
+	make hamlet-bundle.sml
+
+for easy compilation with systems not supporting any of the above options.
+
+To compile under DOS-based systems you can either use the simple-minded
+"make.bat" batch file that fakes the commands above, or you install some
+`make' substitute (e.g. via Cygwin) and patch the Makefile according to
+the contained comments. [Note: make.bat is currently broken.]
+
+Under Unixes, you have the option of installing HaMLet:
+
+	make INSTALLDIR=mypath install
+
+The default for mypath is /usr/local/hamlet.
+
+Please see the documentation in directory doc for more details.

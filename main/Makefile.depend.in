@@ -1,0 +1,6 @@
+# Main
+MAIN-sig.$(EXT) :
+Main.$(EXT) : MAIN-sig.$(EXT) Sml.$(EXT)
+SML-sig.$(EXT) :
+Sml.$(EXT) : SML-sig.$(EXT) ../parse/InitialInfixEnv.$(EXT) ../eval/InitialDynamicBasis.$(EXT) ../elab/InitialStaticBasis.$(EXT) ../lib/StaticLibrary.$(EXT) ../lib/DynamicLibrary.$(EXT) ../parse/Parse.$(EXT) ../parse/SyntacticRestrictionsProgram.$(EXT) ../exec/Program.$(EXT) ../lib/Use.$(EXT) ../infrastructure/Error.$(EXT) ../parse/Infix.$(EXT) ../parse/BindingBasis.$(EXT) ../elab/StaticBasis.$(EXT) ../exec/Basis.$(EXT) ../syntax/PPProgram.$(EXT) ../compile-js/CompileJS.$(EXT)
+wrap-$(SYSTEM).$(EXT) : Sml.$(EXT) Main.$(EXT)

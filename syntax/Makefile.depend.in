@@ -1,0 +1,34 @@
+# Syntax
+ANNOTATION-sig.$(EXT) : Source.$(EXT) ../infrastructure/PROP-sig.$(EXT)
+Annotation.$(EXT) : ANNOTATION-sig.$(EXT) Source.$(EXT) ../infrastructure/Prop.$(EXT)
+ID-sig.$(EXT) :
+IDSTATUS.$(EXT) :
+IdFn.$(EXT) : ID-sig.$(EXT) ../infrastructure/Stamp.$(EXT)
+IdStatus.$(EXT) : IDSTATUS-sig.$(EXT)
+IdsCore.$(EXT) : IdFn.$(EXT) LongIdFn.$(EXT) Lab.$(EXT) TyVar.$(EXT) ../infrastructure/FinSetFn.$(EXT) ../infrastructure/FinMapFn.$(EXT)
+IdsModule.$(EXT) : IdFn.$(EXT) ../infrastructure/FinSetFn.$(EXT) ../infrastructure/FinMapFn.$(EXT)
+LAB-sig.$(EXT) :
+LONGID-sig.$(EXT) : ID-sig.$(EXT)
+Lab.$(EXT) : LAB-sig.$(EXT) ../infrastructure/FinSetFn.$(EXT) ../infrastructure/FinMapFn.$(EXT)
+LongIdFn.$(EXT) : ID-sig.$(EXT) LONGID-sig.$(EXT)
+PPCore.$(EXT) : PP_CORE-sig.$(EXT) PPSyntax.$(EXT) Syntax.$(EXT) IdsCore.$(EXT) Lab.$(EXT) TyVar.$(EXT) SCon.$(EXT)
+PPSyntax.$(EXT) : PP_SYNTAX-sig.$(EXT)
+PPModule.$(EXT) : PP_MODULE-sig.$(EXT) PPSyntax.$(EXT) PPCore.$(EXT) Syntax.$(EXT) IdsModule.$(EXT)
+PPProgram.$(EXT) : PP_PROGRAM-sig.$(EXT) PPSyntax.$(EXT) PPModule.$(EXT) Syntax.$(EXT)
+PP_CORE-sig.$(EXT) : Syntax.$(EXT) IdsCore.$(EXT)
+PP_SYNTAX-sig.$(EXT) : Source.$(EXT)
+PP_MODULE-sig.$(EXT) : Syntax.$(EXT)
+PP_PROGRAM-sig.$(EXT) : Syntax.$(EXT)
+SCON-sig.$(EXT) :
+SCon.$(EXT) : SCON-sig.$(EXT)
+SOURCE-sig.$(EXT) :
+Source.$(EXT) : SOURCE-sig.$(EXT)
+SYNTAX_CORE-sig.$(EXT) : Annotation.$(EXT) SCon.$(EXT) Lab.$(EXT) IdsCore.$(EXT) TyVar.$(EXT)
+SYNTAX_MODULE-sig.$(EXT) : SYNTAX_CORE-sig.$(EXT) Annotation.$(EXT) IdsModule.$(EXT)
+SYNTAX_PROGRAM-sig.$(EXT) : SYNTAX_MODULE-sig.$(EXT) Annotation.$(EXT)
+SyntaxCoreFn.$(EXT) : SYNTAX_CORE-sig.$(EXT) Annotation.$(EXT) SCon.$(EXT) Lab.$(EXT) IdsCore.$(EXT) TyVar.$(EXT)
+SyntaxModuleFn.$(EXT) : SYNTAX_CORE-sig.$(EXT) SYNTAX_MODULE-sig.$(EXT) Annotation.$(EXT) IdsCore.$(EXT) IdsModule.$(EXT)
+SyntaxProgramFn.$(EXT) : SYNTAX_MODULE-sig.$(EXT) SYNTAX_PROGRAM-sig.$(EXT) Annotation.$(EXT)
+Syntax.$(EXT) : Source.$(EXT) SyntaxCoreFn.$(EXT) SyntaxModuleFn.$(EXT) SyntaxProgramFn.$(EXT) ../elab/StaticObjectsCore.$(EXT) ../elab/StaticObjectsModule.$(EXT)
+TYVAR-sig.$(EXT) : ../elab/OverloadingClass.$(EXT)
+TyVar.$(EXT) : TYVAR-sig.$(EXT) ../elab/OverloadingClass.$(EXT) ../infrastructure/Stamp.$(EXT) ../infrastructure/FinSetFn.$(EXT) ../infrastructure/FinMapFn.$(EXT)

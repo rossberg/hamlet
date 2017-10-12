@@ -1,0 +1,3027 @@
+\NeedsTeXFormat{LaTeX2e}
+\documentclass[twoside,titlepage]{article}
+\usepackage{times,alltt,url,a4}
+\usepackage[T1]{fontenc}
+\usepackage{enumitem}
+\usepackage{quoting}
+\usepackage{pst-node}
+\usepackage{color}\usepackage[dvips=true,bookmarks=true,bookmarksopen=true,pdfstartview=FitBH,pdfpagemode=UseOutlines,colorlinks=true,urlcolor=linkcolor,citecolor=linkcolor,linkcolor=linkcolor,menucolor=linkcolor]{hyperref}
+
+\setlength{\parskip}{1.5ex}
+\setlength{\parindent}{0mm}
+\setlist{topsep=0pt}
+%\itemsep0em
+\quotingsetup{vskip=1ex}
+
+\definecolor{linkcolor}{rgb}{0,0,0.6}
+
+\newcommand{\void}[1]{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{titlepage}
+\begin{center}
+
+\vspace*{5cm}
+{\Huge HaMLet} \\
+\vspace{5mm}
+{\large\it To Be Or Not To Be Standard ML} \\
+\vspace{1cm}
+% {\Large\sc Manual} \\
+
+\vspace{1cm}
+Version 2.0.0 \\
+2013/10/10
+
+\vspace{3cm}
+\large
+Andreas Rossberg \\
+\url{rossberg@mpi-sws.org}
+
+\end{center}
+\end{titlepage}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+{
+\setlength{\parskip}{0.5ex}
+\tableofcontents
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\vfill
+\pagebreak
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\label{intro}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+HaMLet is an implementation of Standard ML (SML'97), as defined in {\it The Definition of Standard ML} \cite{definition} -- simply referred to as the {\em Definition} in the following text. HaMLet mainly is an interactive interpreter but also provides several alternative ways of operation, including a simple compiler to JavaScript \cite{ecmascript}. Moreover, HaMLet can perform different phases of execution -- like parsing, type checking, and evaluation -- selectively. In particular, it is possible to execute programs in an untyped manner, thus exploring the space where ``programs can go wrong''.
+
+
+\subsection{Goals}
+\label{goals}
+
+The primary purpose of HaMLet is not to provide yet another SML system. Its goal is to be a faithful model implementation and a test bed for experimentation with the SML language semantics as specified in the Definition. It also might serve educational purposes. The main feature of HaMLet therefore is the design of its source code: it follows the formalisation of the Definition as closely as possible, only deviating where it is unavoidable. The idea has been to try to translate the Definition into an ``executable specification''. Much care has been taken to resemble names, operations, and rule structure used in the Definition and the {\em Commentary} \cite{commentary}. Moreover, the source code contains references to the corresponding sections in the Definition wherever available.
+
+On the other hand, HaMLet tries hard to get even the obscure details of the Definition right. There are some ``features'' of SML that are artefacts of its formal specification and are not straight-forward to implement. See the conclusion in Section \ref{conclusion} for an overview.
+
+Efficiency was not a goal. Execution speed of HaMLet is not competitive in any way, since it naively implements the interpretative evaluation rules from the Definition. Usability was no priority either. The error messages given by HaMLet are usually rudimentary, to avoid complicating the implementation.
+
+Since version 2, HaMLet stores the outcome of elaboration (type and environment information) into every node of a program's abstract syntax tree. We hope that this makes HaMLet more viable as a front-end for experimental language implementation work, for which the lack of access to type information in later phases turned out to be a major hurdle.
+
+HaMLet has of course been written entirely in SML'97 and is able to bootstrap itself (see \ref{bootstrapping}).
+
+
+\subsection{Bugs in the Definition}
+\label{definitionbugsoverview}
+
+The Definition is a complex formal piece of work, and so it is unavoidable that it contains several mistakes, ambiguities, and omissions. Many of these are inherited from the previous language version SML'90 \cite{definition90} and have been documented accurately by Kahrs \cite{mistakes, addenda}. Those, which still seem to be present or are new to SML'97, are listed in Appendix \ref{definitionbugs}.
+
+The general approach we take for resolving ambiguities and fixing bugs is doing it in the `most natural' way. Mostly, this is obvious, sometimes it is not. Moreover, in cases where the Definition allows implementations some freedom (e.g.\ the choice of context taken into account to resolve overloading) we choose the most restrictive view, so that HaMLet only accepts those programs that ought to be portable across all possible implementations. The appendix discusses the resolutions we chose.
+
+
+\subsection{Related Work}
+\label{related}
+
+HaMLet owes much of its existence to the first version of the ML Kit \cite{kit}. While the original Kit shared a similar motivation and a lot of inspiration came from that work, more recent versions moved the Kit into another direction. We hope that HaMLet can fill the resulting gap.
+
+We also believe that HaMLet is considerably simpler and closer to the Definition. Moreover, unlike the ML Kit, it even implements the dynamic semantics of SML directly.
+On the other hand, HaMLet is probably less suited to serve as a library for real world projects, since no part of it has been tuned for efficiency in any way.
+
+
+\subsection{Copyright}
+\label{copyright}
+
+Copyright of the HaMLet sources 1999-2013 by Andreas Rossberg.
+
+The HaMLet source package includes portions of the SML/NJ library, which is copyright 1989-1998 by Lucent Technologies.
+
+See {\tt LICENSE.txt} files for detailed copyright notices, licenses and disclaimers.
+
+HaMLet is free, and we would be happy if others experiment with it. Feel free to modify the sources in whatever way you want.
+
+Please post any questions, bug reports, critiques, and other comments to
+
+\begin{quoting}
+\url{rossberg@mpi-sws.org}
+\end{quoting}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Usage}
+\label{usage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Download}
+\label{download}
+
+HaMLet is available from the following web page:
+
+\begin{quoting}
+\url{http://www.mpi-sws.org/hamlet/}
+\end{quoting}
+
+The distribution contains a tar ball of the SML sources and this documentation.
+
+
+\subsection{Systems Supported}
+\label{systems}
+
+HaMLet can be readily built with the following SML systems:
+
+\begin{itemize}[nolistsep]
+\item SML of New Jersey (110 or higher) \cite{smlnj}
+\item Poly/ML (5.0 or higher) \cite{polyml}
+\item Moscow ML (2.0 or higher) \cite{mosml}
+\item Alice ML (1.4 or higher) \cite{alice}
+\item MLton (20010706 or higher) \cite{mlton}
+\item ML Kit (4.3.0 or higher) \cite{mlkit}
+\item SML\# (0.20 or higher) \cite{smlsharp}
+\end{itemize}
+
+You can produce an executable HaMLet standalone with all systems. The first four also allow you to use HaMLet from within their interactive toplevel. This gives access to a slightly richer interface (see Section \ref{usingembedded}).
+
+Other SML systems have not been tested, but should of course work fine provided they support the full language and a reasonable subset of the Standard Basis Library \cite{basis}.
+
+
+\subsection{Prerequisites}
+\label{prerequisites}
+
+HaMLet makes use of the Standard ML Basis Library \cite{basis}\footnote{Despite some incompatible changes between the two, HaMLet sources work with the latest specification of the Basis \cite{basis} as well as the previously available version \cite{basis-old}.}. In addition it uses two functors from the SML/NJ library \cite{njlib}, namely {\tt BinarySetFn} and {\tt BinaryMapFn}, to implement finite sets and maps.
+
+To generate lexer and parser, ML-Lex \cite{mllex} and ML-Yacc \cite{mlyacc} have been used. The distribution contains all generated files, though, so you only have to install those tools if you plan to modify the grammar.
+
+The SML/NJ library as well as ML-Lex and ML-Yacc are freely available as part of the SML of New Jersey distribution. However, the HaMLet distribution contains all necessary files from the SML/NJ library and the ML-Yacc runtime library. They can be found in the {\tt smlnj-lib} subdirectory, respectively.\footnote{The sources of the SML/NJ library are copyrighted \copyright1989-1998 by Lucent Technologies. See \url{http://cm.bell-labs.com/cm/cs/what/smlnj/license.html} for copyright notice, license and disclaimer.}
+
+
+\subsection{Installation}
+\label{installationstandalone}
+
+To build a stand-alone HaMLet program\void{ under Unix-like systems}, go to the HaMLet source directory and invoke one of the following commands:\footnote{Under DOS-based systems, Cygwin is required.}
+%
+\begin{quoting}
+\begin{alltt}
+make with-smlnj
+make with-mlton
+make with-poly
+make with-alice
+make with-mosml
+make with-mlkit
+make with-smlsharp
+\end{alltt}
+\end{quoting}
+%
+depending on what SML system you want to compile with. This will produce an executable named {\tt hamlet} in the same directory, which can be used as described in Section \ref{usingstandalone}.\footnote{If you are compiling with a version of Moscow ML prior to 2.10, then you need to patch the definition of {\tt FIXES\_mosml} as indicated in the {\tt Makefile}.}
+
+\void{
+To compile under DOS-based systems you\void{ can either use the simple-minded {\tt make.bat} batch file that is included in the HaMLet distribution and fakes the commands above, or you} have to install some `make' substitute (e.g.\ via Cygwin) and modify the makefile according to the contained comments.\footnote{This does not properly work for Moscow ML currently.}
+}
+
+The above {\tt make} targets use the fastest method of building HaMLet from scratch. Most SML systems allow for incremental compilation that, after changes, only rebuilds those parts of the system that are affected. To perform an incremental built, use the following commands, respectively:\footnote{Currently, this only matters for Moscow ML and Alice ML, which employ batch compilers. The other systems either always build incrementally (SML/NJ, ML Kit), or do not support separate compilation at all (MLton, Poly/ML).}
+
+\begin{quoting}
+\begin{alltt}
+make with-smlnj+
+make with-alice+
+make with-mosml+
+make with-mlkit+
+\end{alltt}
+\end{quoting}
+
+For other SML systems that are not directly supported, the makefile offers a way to build a single monolithic file containing all of the HaMLet modules:
+
+\begin{quoting}
+\begin{alltt}
+make hamlet-bundle.sml
+\end{alltt}
+\end{quoting}
+
+In principle, the resulting file should compile on all SML systems. In practice however, some might require additional tweaks to work around omissions or bugs in the provided implementation of the Standard Basis Library \cite{basis}.\footnote{Of the systems supported, SML/NJ, Moscow ML, the ML Kit, and SML\# required such work-arounds, which appear as wrapper files for Standard Basis modules in the {\tt fix} directory of the HaMLet source.}
+
+After HaMLet has been built, you should be able to execute it as described in \ref{usingstandalone}. Under Unixes, you have the option of installing HaMLet first:
+
+\begin{quoting}
+\begin{alltt}
+make INSTALLDIR=mypath install
+\end{alltt}
+\end{quoting}
+
+The default for {\tt mypath} is {\tt /usr/local/hamlet}. You should include your path in the {\tt PATH} environment variable, of course.
+
+
+\subsection{Using the HaMLet Stand-Alone}
+\label{usingstandalone}
+
+After building HaMLet successfully with one of the SML systems, you should be able to start a HaMLet session by simply executing the command
+
+\begin{quoting}
+\begin{alltt}
+hamlet [-{\it{mode}}] [{\it file} ...]
+\end{alltt}
+\end{quoting}
+
+The {\tt\it mode} option you can provide, controls how HaMLet processes its input. It is one of
+
+\begin{itemize}[nolistsep]
+\item {\tt -p}: parsing mode (only parse input)
+\item {\tt -l}: elaboration mode (parse and elaborate input)
+\item {\tt -v}: evaluation mode (parse and evaluate input)
+\item {\tt -x}: execution mode (parse, elaborate, and evaluate input)
+\item {\tt -j}: JavaScript compilation mode (parse, elaborate, and compile input)
+\end{itemize}
+
+Execution mode is the default behaviour. Parsing mode will output the abstract syntax tree of the program in an intuitive S-expression format that should be suitable for further processing by external tools. Elaboration mode only type-checks the program, without running it.
+
+Evaluation mode does not perform static analysis, so it can actually generate runtime type errors. They will be properly handled and result in corresponding error messages. Evaluation mode also has an unavoidable glitch with regard to overloaded constants: since no type information is available in evaluation mode, all constants will be assigned their default type. This can cause different results for some calculations. To see this, consider the following example:
+
+\begin{quoting}
+\begin{alltt}
+0w1 div (0w2 * 0w128)                {\rm and}
+0w1 div (0w2 * 0w128) : Word8.word
+\end{alltt}
+\end{quoting}
+
+Although both variants only differ in an added type annotation, the latter will have a completely different result -- namely cause a division by zero and thus a {\tt Div} exception (see also Appendix \ref{bugsappendixe}). In evaluation mode, however, both are indistinguishable, and the second will actually behave like the first. You can still force calculation to be performed in 8 bit words by performing explicit conversions:
+
+\begin{quoting}
+\begin{alltt}
+val word8 = Word8.fromLarge;
+word8 0w1 div (word8 0w2 * word8 0w128);
+\end{alltt}
+\end{quoting}
+
+Note that {\tt LargeWord.word} = {\tt word} in HaMLet.
+
+JavaScript compilation mode will parse and elaborate, and then output JavaScript statements that are equivalent to the SML source. See Section \ref{javascript} for more details.
+
+If no file argument has been given you will enter an interactive session in the requested mode, just like in other SML systems. Input may spread multiple lines and is terminated by either an empty line, or a line whose last character is a semicolon. Aborting the session via Ctrl-D will exit HaMLet (end of file, Ctrl-Z on DOS-based systems).
+
+Otherwise, all files are processed in order of appearance. HaMLet interprets the Definition very strictly and thus requires every source file to be terminated by a semicolon. A file name may be prefixed by {\tt@} in which case it is taken to be an indirection file containing a white space separated list of other file names and expands to that list. Expansion is done recursively, i.e.\ the file may contain {\tt@}-prefixed indirections on its own.
+
+HaMLet currently provides a considerable part, but not yet the complete obligatory subset of the Standard Basis Library \cite{basis}. In particular, support for OS functionality is weak. Most basic types and corresponding operations are fully implemented, though. Support for the Basis Library can be turned off by passing the flag ``{\tt -b -}'' on the command line (with an argument different from ``{\tt -}'' this flag actually changes the load path for the library).
+
+There are several things to note about HaMLet's output:
+
+\begin{itemize}
+\item Types and signatures are always fully expanded, in order to closely resemble the underlying semantic objects.
+\item Similarly, structure values are shown in full expansion.
+\item Signatures are annotated with the set of type names bound (as a comment).
+\item Similarly, the type name set of an inferred static basis is printed, though only elaboration mode.
+%\item Undetermined types (see \ref{bugsappendixg}) are reported in the form {\tt '2341} or {\tt ''2341}, depending on their inferred equality constraints. The number is a unique identifier for each type.
+\end{itemize}
+
+% The output contains more information than usually printed by SML systems:
+%
+% \begin{itemize}
+% \item Type constructors are annotated with their type name.
+% \item Signatures show the set of type names bound.
+% \item In elaboration mode the set of type names generated by the declarations is displayed.
+% \item Exception packages (raised exceptions) are annotated with their exception name.
+% \end{itemize}
+%
+% Type and exception names are represented as numbers.
+
+
+\subsection{Using HaMLet from within an SML System}
+\label{usingembedded}
+
+You can also use HaMLet from within the interactive toplevel of a given SML system. This allows you to access the various modules described in the following sections of this document directly and experiment with them.
+
+In most interactive SML systems -- particularly HaMLet itself, see \ref{bootstrapping} -- you should be able to load the HaMLet modules by evaluating
+
+\begin{quoting}
+\begin{alltt}
+use "hamlet.sml";
+\end{alltt}
+\end{quoting}
+
+As this requires recompiling everything, there are more comfortable ways for some particular systems:
+
+\begin{itemize}
+
+\item Under SML of New Jersey, it suffices to start SML/NJ in the HaMLet directory and evaluate\footnote{In ancient versions of SML/NJ, i.e., before 110.20, the proper call would be {\tt CM.make()}.}
+
+\begin{quoting}
+\begin{alltt}
+CM.make "sources.cm";
+\end{alltt}
+\end{quoting}
+
+\item Under Moscow ML, first go to the HaMLet directory and invoke
+
+\begin{quoting}
+\begin{alltt}
+make interactive-mosml
+\end{alltt}
+\end{quoting}
+
+Then start Moscow ML and type
+
+\begin{quoting}
+\begin{alltt}
+load "Sml";
+\end{alltt}
+\end{quoting}
+
+\end{itemize}
+
+Loading HaMLet into an SML session will create (besides others) a structure named {\tt Sml}, providing the following signature:
+
+\begin{quoting}
+\begin{alltt}
+signature SML =
+sig
+  val basisPath        : string option ref
+
+  val parseString      : string -> unit
+  val elabString       : string -> unit
+  val evalString       : string -> unit
+  val execString       : string -> unit
+  val compileJSString  : string -> unit
+
+  val parseFile        : string -> unit
+  val elabFile         : string -> unit
+  val evalFile         : string -> unit
+  val execFile         : string -> unit
+  val compileJSFile    : string -> unit
+
+  val parseFiles       : string list -> unit
+  val elabFiles        : string list -> unit
+  val evalFiles        : string list -> unit
+  val execFiles        : string list -> unit
+  val compileJSFiles   : string list -> unit
+
+  val parseSession     : unit -> unit
+  val elabSession      : unit -> unit
+  val evalSession      : unit -> unit
+  val execSession      : unit -> unit
+  val compileJSSession : unit -> unit
+end
+\end{alltt}
+\end{quoting}
+
+The functions here come in four obvious groups:
+
+\begin{itemize}[nolistsep]
+\item {\tt{\sl x}String} processes a program contained in the string given.
+\item {\tt{\sl x}File} processes a program contained in a file whose name is given.
+\item {\tt{\sl x}Files} processes a whole set of files in an incremental manner.
+\item {\tt{\sl x}Session} starts an interactive session, that can be exited by pressing Ctrl-D (end of file, Ctrl-Z on DOS-based systems).
+\end{itemize}
+
+Each call processes the program in the initial basis. For incremental processing, functions from the {\tt{\sl x}Files} or {\tt{\sl x}Session} group have to be used.
+
+In each group there are five functions providing selective phases of execution:
+
+\begin{itemize}[nolistsep]
+\item {\tt parse{\sl{X}}} just parses a program.
+\item {\tt elab{\sl{X}}} parses and elaborates a program.
+\item {\tt eval{\sl{X}}} parses and evaluates a program.
+\item {\tt exec{\sl{X}}} parses, elaborates, and evaluates a program.
+\item {\tt compileJS{\sl{X}}} parses, elaborates, and compiles a program to JavaScript.
+\end{itemize}
+
+These functions correspond to the different execution modes of the stand-alone HaMLet (see Section \ref{usingstandalone}). They all print the resulting environments on {\tt stdOut}, or a suitable error message on {\tt stdErr} if processing does not succeed (parse functions just print {\tt OK} on success). During processing of a file list or an interactive session, errors cause the current input to be skipped, but not abortion of the session.
+
+Finally, provides {\tt basisPath} gives a way to configure the directory from which HaMLet loads the Standard Basis Library. The default is {\tt SOME} {\tt "basis"}, as a path relative to the HaMLet binary. If set to {\tt NONE}, no library is loaded, and only a bare minimum environment is provided, roughly resembling the initial basis from the Definition (plus the magic {\tt use} function described in Section \ref{use}).
+
+
+\subsection{Bootstrapping}
+\label{bootstrapping}
+
+Since HaMLet has been written purely in strict SML'97, it is able to bootstrap itself. The file {\tt hamlet.sml} provided in the source directory allows bootstrapping an interactive HaMLet session by starting the HaMLet stand-alone via
+
+\begin{quoting}
+\begin{alltt}
+hamlet hamlet.sml wrap-hamlet.sml
+\end{alltt}
+\end{quoting}
+
+Alternatively, the file can be {\tt use}'d from within a HaMLet session. It will load all necessary modules enabling interactive use as described in \ref{usingembedded}.
+
+Beware that loading the full Basis Library in the bootstrapped version will require a huge amount of virtual memory. If you are brave and have {\em lots} of memory and patience you can even try a second bootstrapping iteration from within a session on the bootstrapped HaMLet. Then, HaMLet not only type-checks itself but does also execute the type checker and evaluator itself. You should expect at least two orders of magnitude slowdown for each bootstrapping iteration, due to the naive interpretative evaluation.
+
+
+\subsection{Limitations}
+\label{limitations}
+
+In its current version, HaMLet is not completely accurate with respect to some aspects of the SML language. The following list gives an overview:
+
+\begin{itemize}
+
+\item Parsing: The grammar in the Definition together with its informal disambiguation rules is rather over-ambitious. It is not possible to parse it with finite look-ahead, as required by conventional parsing technology -- at least not without performing a major nightmare of grammar transformations first. Consequently, all existing SML implementations disallow some phrases that ought to be legal according to the Definition. The most obvious examples are mixtures of $\mathit{fvalbind}$s and {\tt case} expressions like in
+
+\begin{quoting}
+\begin{alltt}
+fun f p1 = case e1 of p2 => e2
+  | f p3 = e3
+\end{alltt}
+\end{quoting}
+
+No effort has been made to get this working in HaMLet. However, HaMLet is still more accurate than other SML implementations. For example, it parses the dreaded {\tt where type} ... {\tt and type} derived form for signature expressions correctly (see Section \ref{ambiguities}).
+
+%\item Exhaustiveness of Patterns: checking of patterns is not fully accurate in the presence of overloaded special constants. Sometimes a match is flagged as non-exhaustive, although it is in the limited range of its actual type.
+
+\item Library: HaMLet does provide a significant portion of the Standard Basis Library, but it is not complete.
+\end{itemize}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview of the Implementation}
+\label{implementationoverview}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The implementation of HaMLet follows the Definition as closely as possible. The idea is to come as close as possible to the ideal of an executable version of the Definition. Where the sources deviate, they usually do so for one of the following reasons:
+
+\begin{itemize}
+\setlength{\parskip}{0ex}
+\item the non-deterministic nature of some of the rules (e.g.\ guessing the right types in the static semantics of the core),
+\item the informal style of some parts (e.g.\ the restrictions in [4.11]),
+%\item practicality (e.g.\ it is much easier to check the syntactic restrictions in [2.9] and [3.5] during elaboration than during syntax analysis)
+\item bugs or omissions in the Definition (see Appendix \ref{definitionbugs}).
+\end{itemize}
+
+We will explain non-trivial deviations from the Definition where appropriate.
+
+The remainder of this document does not try to explain details of the Definition -- the Commentary \cite{commentary} is much better suited for that purpose, despite being based on the SML'90 Definition \cite{definition90}. Neither is this document a tutorial to type inference. The explanations given here merely describe the relation between the HaMLet source code and the formalism of the Definition. We makes reference to both, so it's best if you have Definition and HaMLet sources side by side. We use section numbers in brackets as above to refer to individual sections of the Definition. Unbracketed section numbers are cross references within this document.
+
+Most explanations we give here will be rather terse and cover only general ideas without going into too much detail. The intention is that the source code speaks for itself for most part.
+
+
+\subsection{Structure of the Definition}
+\label{definitionstructure}
+
+The Definition specifies four main aspects of the SML language:
+
+\begin{enumerate}[nolistsep]
+\item Syntax
+\item Static semantics
+\item Dynamic semantics
+\item Program Execution
+\end{enumerate}
+
+Syntax is the most conventional part of a language definition. The process of recognizing and checking program syntax is usually referred to as {\em parsing}. The static semantics is mainly concerned with the typing rules. The process of checking validity of a program with respect to the static semantics is called {\em elaboration} by the Definition. The dynamic semantics specifies how the actual {\em evaluation} of program phrases has to be performed. The last aspect essentially describes how the interactive toplevel of an SML system should work, i.e.\ how parsing, elaboration, and evaluation are connected. The complete processing of a program, performing all three aforementioned phases, is known as {\em execution}.
+
+The four aspects are covered in separate chapters of the Definition. Further destructuring is done by distinguishing between core language and module language. This factorisation of the language specification is described in more detail in the preface and the first chapter of the Definition.
+
+% Execution of a program is done relative to a so-called _basis_ that describes the context of the execution. Corresponding to the three phases of execution such a basis is divided into three parts:
+%
+% - infix basis
+% - static basis
+% - dynamic basis
+%
+% The static basis is used by the static semantics and contains type information for all identifiers that are predefined (or have been introduced by previous execution steps). The dynamic basis collects the values of all predefined entities, and corresponds to the dynamic semantics, respectively. The infix basis records the all infix directions in scope. It is not made explicit by the Definition, but is required for parsing in analogy to the other parts.
+
+
+\subsection{Modularisation}
+\label{modularisation}
+
+HaMLet resembles the structure of the Definition quite directly. For most chapters of the Definition there is a corresponding module, or a group of modules, implementing that aspect of the language, namely these are:
+
+\begin{quoting}
+\begin{tabbing}
+Chapter 2 and 3\qquad\= {\tt parse/Lexer}, {\tt Parser}, {\tt SyntacticRestrictions}{\it X} \\
+Chapter 4	\> {\tt elab/ElabCore} \\
+Chapter 5	\> {\tt elab/ElabModule} \\
+Chapter 6	\> {\tt eval/EvalCore} \\
+Chapter 7	\> {\tt eval/EvalModule} \\
+Chapter 8	\> {\tt program/Program} \\
+Appendix A	\> {\tt parse/DerivedForms}{\it X} \\
+Appendix B	\> {\tt parse/Parser} \\
+Appendix C	\> {\tt elab/InitialStaticBasis} \\
+Appendix D	\> {\tt eval/InitialDynamicBasis} \\
+Appendix E	\> {\tt elab/OverloadingClass} (roughly)
+\end{tabbing}
+\end{quoting}
+
+Most other modules implement objects and operations defined at the beginning of each of the different chapters, which are used by the main modules. The source of every module cross-references the specific subsections of the Definition relevant for the types, operations, or rule implementations contained in it.
+
+Altogether, it should be quite simple to map particular HaMLet modules to concepts in the Definition and vice versa. To make the mapping as obvious as possible, we followed quite strict naming conventions (see \ref{naming}). Each of the following sections of this document will cover implementation of one of the language aspects mentioned in \ref{definitionstructure}. At the beginning of each section we will list all modules relevant to that part of the implementation.
+
+As a rule, each source file contains exactly one signature, structure, or functor. The only exceptions are the files {\tt Ids{\sl{X}}}, {\tt Syntax}, each containing a collection of simple functor applications, and the files containing the modules {\tt Addr}, {\tt ExName}, {\tt Lab}, {\tt Stamp}, {\tt TyName}, {\tt TyVar}, which also provide implementations of sets and maps of the corresponding objects.
+
+%We tried to keep things simple, so the architecture of HaMLet is quite flat: it does not make heavy use of functors. Functors only appear where the need to generate several instances of an abstract type (e.g.\ {\tt IdFn}) or parameterised types arises. Enthusiasts of the closed functor style may feel free to dislike this approach {\tt ;-)}.
+
+
+\subsection{Mapping Syntactic and Semantic Objects}
+\label{mapping}
+
+The sets representing the different phrase classes of the SML syntax are defined inductively through the BNF grammars in the Definition. These sets are mapped to appropriate SML datatypes in obvious ways, using fields of type {\tt option} for optional phrases.
+
+All sets defining semantic objects in the Definition have been mapped to SML types as directly as possible:
+
+\begin{quoting}
+\begin{tabbing}
+primitive objects (without structure)\qquad\= abstract types \\
+products ($A \times B$)			\> tuple types ({\tt A * B}) \\
+disjoint unions ($A \cup B$)		\> datatypes ({\tt A of A | B of B}) \\
+$k$-ary products ($\cup_{k\geq0} A^k$)	\> list types ({\tt A list}) \\
+finite sets ($\mbox{Fin}(A)$)		\> instances of the {\tt FinSet} functor \\
+finite maps ($A \stackrel{\mbox{\scriptsize fin}}{\rightarrow} B$)		\> instances of the {\tt FinMap} functor
+\end{tabbing}
+\end{quoting}
+
+In some places, we had to relax these conventions somewhat and turn some additional types into datatypes to cope with mutual recursion between definitions. For example, environments are always rendered as datatypes.
+
+Except for the primitive simple objects, no type definitions are abstract, i.e., type definitions representing structured sets from the semantics are always kept transparent. The sole reason is to allow the most literal translation of rules operating on semantic objects. Clearly, regarding this aspect, the HaMLet sources should not serve as an example for good modularisation practice...
+
+
+\subsection{Mapping Inference Rules}
+\label{mappingrules}
+
+Usually, each group of inference rules in the Definition is implemented by one function. For rules of the form
+%
+\begin{displaymath}
+A \vdash \mathit{phrase} \Rightarrow A'
+\end{displaymath}
+%
+the corresponding function has type
+
+\begin{quoting}
+\begin{alltt}
+\hfill A * phrase -> A' \hfill
+\end{alltt}
+\end{quoting}
+
+Each individual rule corresponds to one function clause. More specifically, an inference rule of the form:
+%
+\begin{displaymath}
+\frac{
+A_1 \vdash \mathit{phrase}_1 \Rightarrow A'_1
+\qquad
+\cdots
+\qquad
+A_n \vdash \mathit{phrase}_n \Rightarrow A'_n
+\qquad
+\mbox{side condition}
+}{
+A \vdash \mathit{phrase} \Rightarrow A'
+}
+\qquad (k)
+\end{displaymath}
+%
+maps to a function clause of the form:
+
+\begin{quoting}
+\begin{alltt}
+elabPhraseClass args (A, phrase) =
+(* [Rule k] *)
+let
+  val A1' = elabPhraseClass1(A1, phrase1)
+  (* ... *)
+  val An' = elabPhraseClassN(An, phraseN)
+in
+  if not(side condition) then
+    error("message")
+  else
+    A'
+end
+\end{alltt}
+\end{quoting}
+
+Here, {\tt args} denotes possible additional arguments that we sometimes need to pass around. There are exceptions to this scheme for rules that are not purely structural, e.g.\ rules 34 and 35 of the static semantics [4.10] are represented by one case only. Moreover, we deal slightly differently with the state and exception conventions in the dynamic semantics (see \ref{evaluationrules}).
+
+If one of a rule's premise is not met, an appropriate message is usually generated and an exception is raised through the {\tt Error} module.
+
+
+\subsection{Naming Conventions}
+\label{naming}
+
+Structures and functors are named after the main type they define, the objects they generate, or the aspects of the Definition they implement (with one exception: the structure containing type {\tt Int} is named {\tt Inter} to avoid conflicts with the structure {\tt Int} of the Standard Basis Library). The corresponding signatures are named accordingly.
+
+Several structures come in groups, representing the separation of core and module language (and even the program layer). Orthogonal grouping happens for aspects similar in the static and dynamic semantics. The structure names reflect those connections in an obvious way, by including the words {\tt -Core-}, {\tt -Module-}, or {\tt -Program-}, and {\tt -Static-} or {\tt -Dynamic-}.
+
+Types representing sets defined in the Definition are always named after that set even if this conflicts with the usual SML conventions with respect to capitalisation. Functions are also named after the corresponding operation if it is defined in the Definition or the Commentary \cite{commentary}. Variables are named as in the Definition, with Greek letters spelled out. Moreover, type definitions usually include a comment indicating how variables of that type will be named.
+
+On all other occasions obvious names have been chosen, following conventions established by the Standard Basis Library \cite{basis} or the SML/NJ library \cite{njlib} where possible.
+
+
+\subsection{Side Effects}
+\label{sideeffects}
+
+SML is not purely functional, and neither is the HaMLet implementation. It uses state whenever that is the most natural thing to do, or if it considerably simplifies code. State comes into play for the following:
+
+\begin{itemize}[nolistsep]
+\item inside the lexer, to handle nested comments,
+\item inside the parser, to maintain the infix environment,
+\item in the abstract syntax tree, to annotate elaboration results,
+\item to generate time stamps, e.g.\ for type and exception names,
+\item in the representation of type terms, to allow destructive unification,
+\item during elaboration, to collect unresolved overloaded and flexible types,
+\item during evaluation, to maintain the program's state.
+\end{itemize}
+
+And of course, the code generated by Lex and Yacc uses state internally.
+
+Other side effects are the output of error and warning messages in the Error structure.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Abstract Syntax and Parsing}
+\label{parsing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Files}
+\label{parsingfiles}
+
+The following modules are related to parsing and representation of the abstract syntax tree:
+
+\begin{quoting}
+\begin{tabbing}
+{\tt SyntacticRestrictionsProgram}\qquad \= \kill
+
+\hspace{-1em}{\tt syntax/} \\
+{\tt Source}		\> representation of source regions \\
+{\tt Annotation}		\> representation of AST annotations \\
+\\
+{\tt IdFn}		\> generic identifier representation \\
+{\tt LongIdFn}		\> \\
+{\tt IdsCore}		\> instantiated identifier classes \\
+{\tt IdsModule}		\> \\
+{\tt TyVar}		\> type variable representation \\
+{\tt Lab}		\> label representation \\
+{\tt SCon}		\> special constants \\
+\\
+{\tt SyntaxCoreFn}	\> abstract syntax tree definition \\
+{\tt SyntaxModuleFn}	\> \\
+{\tt SyntaxProgramFn}	\> \\
+{\tt Syntax}		\> AST instantiations \\
+\\
+{\tt PPCore}		\> printing of core AST \\
+{\tt PPModule}		\> printing of module AST \\
+{\tt PPProgram}		\> printing of program AST \\
+{\tt PPSyntax}		\> auxiliary PP functions \\
+\\
+{\tt IdStatus}		\> identifier status \\
+\\
+\hspace{-1em}{\tt parse/} \\
+{\tt Lexer}		\> lexical analysis (via ML-Lex) \\
+{\tt LocLexer}	\> wrapper computing line locations \\
+{\tt Parser}		\> syntactical analysis (via ML-Yacc) \\
+{\tt Infix}		\> infix parser \\
+{\tt Parse}		\> parser plugging \\
+\\
+{\tt DerivedFormsCore}	\> derived forms transformation \\
+{\tt DerivedFormsModule} \> \\
+{\tt DerivedFormsProgram} \> \\
+\\
+{\tt BindingObjectsCore} \> objects for binding analysis \\
+{\tt BindingObjectsModule} \> \\
+%{\tt GenericEnvFn}	\> generic environment operations \\
+{\tt BindingEnv}	\> operations on binding environment \\
+{\tt BindingContext}	\> operations on binding context \\
+{\tt BindingBasis}	\> operations on binding basis \\
+\\
+{\tt SyntacticRestrictionsCore}	\> verifying syntactic restrictions \\
+{\tt SyntacticRestrictionsModule} \> \\
+{\tt SyntacticRestrictionsProgram} \> \\
+\\
+\hspace{-1em}{\tt elab/} \\
+{\tt ScopeTyVars}	\> scoping analysis for type variables\\
+\end{tabbing}
+\end{quoting}
+
+
+\subsection{Abstract Syntax Tree and Annotations}
+\label{ast}
+
+The abstract syntax tree (AST) is split into three layers, corresponding to the SML core and module language and the thin program toplevel, respectively (modules {\tt Grammar$X$Fn}). It represents the bare grammar, without derived forms. One notable exception has been made for structure sharing constraints, which are included since they cannot be handled as a purely syntactic derived form (see \ref{bugsappendixa}). Infix directives [2.6] and application have been dropped from the core grammar, as they do not appear in the semantic rules of the Definition. However, we have to keep occurrences of the {\tt op} keyword in order to do infix resolution (see \ref{infix}).
+
+Each identifier class is represented by its own abstract type. Most of them -- except {\tt TyVar} and {\tt Lab}, which require special operations -- are generated from the {\tt IdFn} and {\tt LongIdFn} functors.
+
+Special constants are represented as strings containing the distinguished part of their lexical appearance -- their actual values cannot be calculated before overloading resolution.
+
+AST nodes consist of two parts: the actual syntax datatype and an annotation. The module {\tt Annotation} defines an auxiliary datatype with an infix constructor to make construction and matching of nodes convenient:
+
+\begin{quoting}
+\begin{alltt}
+datatype ('a, 'b) phrase = @@ of 'a * 'b annotation
+\end{alltt}
+\end{quoting}
+
+With this type, the AST representation of an application expression can be written and pattern-matched as {\tt APPExp(func, arg)@@A}, for example, where {\tt A} is the annotation for this AST node.
+
+The annotation itself is a static property list containing at least a {\tt loc} property recording the character region in the original source text that this node corresponds to. The tail of each property list is functorised per phrase class in the AST definitions (functors {\tt Syntax*Fn}).
+
+The respective instantiations (file {\tt Syntax}) define these property lists to contain a property {\tt elab}, which will contain the outcome of elaboration to every node. For phrase types, it consists of the exact result returned by the respective elaboration rule, whereas identifier nodes are annotated with the classification these identifiers had in the environment at the respective point of use or definition (in particular, value identifiers are annotated with their respective polymorphic type scheme, whereas the expression node containing them is annotated with the instantiated type).
+Match and ValBind phrases have an additional property {\tt exhaustive} that records whether the respective pattern is exhaustive.
+
+More concretely, the source location of an AST node can be retrieved by invoking the function {\tt Annotation.loc A} on its annotation value {\tt A}; the static semantic object associated with a node via {\tt Annotation.get(Annotation.elab A)} (after successful elaboration, otherwise the access will fail with an {\tt Option} exception). The implementation of the JavaScript compiler (see Section \ref{javascript}) contains some examples of such usage.
+
+
+\subsection{Parsing and Lexing}
+\label{parser}
+
+Parser and lexer have been generated using ML-Yacc \cite{mlyacc} and ML-Lex \cite{mllex} which are part of the SML/NJ distribution \cite{smlnj}. The parser builds an abstract syntax tree using the syntax types described in Section \ref{ast}.
+
+Most parts of the parser and lexer specifications (files {\tt Parser.grm} and {\tt Lexer.lex}) are straightforward.
+%In particular, we use a rather dumb and direct way to recognize keywords in the lexer.
+However, we have to take some care to handle all those overlapping lexical classes correctly, which requires the introduction of some additional token classes (see comments in {\tt Lexer.lex}). Nested comments are treated through a side-effecting counter for nesting depth.
+
+A substantial number of grammar transformations is unavoidable to deal with LALR conflicts in the original SML grammar (see \ref{ambiguities} and comments in {\tt Parser.grm}). Some hacking is necessary to do infix resolution directly during parsing (see \ref{infix}).
+
+Semantic actions of the parser apply the appropriate constructors of the grammar types or a transformation function provided by the modules handling derived forms (see \ref{derived}).
+
+%Note that syntactic restrictions are checked during elaboration. One reason is the fact that the restriction on binding an identifier multiple times in a $\mathit{valbind}$ requires identifier status information which is not available before doing a complete binding analysis (see \ref{bugschapter2}). To be consistent, we uniformingly defer all checks until elaboration.
+
+
+\subsection{Grammar Ambiguities and Parsing Problems}
+\label{ambiguities}
+
+ML-Yacc is a conventional LALR(1) parser generator. Unfortunately, the exact grammar given in the Definition, together with the disambiguation rules given in its [Appendix A] define a language that cannot be parsed by standard parsing technology, as it would require infinite look-ahead. The HaMLet parser is therefore incapable of handling all language constructs that are legal according to a strict reading of the Definition. The most annoying example of a problematic phrase is a {\tt case} expression as right hand side of a function binding (see \ref{bugsappendixb}). Most people consider this a bug on the side of the Definition. Consequently, we make no attempt to fix it in HaMLet. It could only be dealt with correctly either by horrendous grammar transformations or by some really nasty and expensive lexer hack \cite{mistakes}. 
+
+Disambiguation of expressions is left to ML-Yacc, we simply specify suitable keyword precedences. This seems to be the most appropriate thing to do, as the disambiguation rules in the Definition are ambiguous an contradictory by themselves (see \ref{bugsappendixb}).
+
+The SML grammar contains several other ambiguities on the declaration level (see \ref{bugschapter2}, \ref{bugschapter3} and \ref{bugschapter8}). We resolve them in the `most natural' ways:
+
+\begin{itemize}
+\setlength{\parskip}{0ex}
+\item Semicolons are simply parsed as declarations or specifications, not as separators (cf.\ \ref{bugschapter2}).
+\item Sequential declarations and specifications are parsed left associative.
+\item Sharing specifications are also left associative, effectively at the same precedence level as sequential specifications.
+\item Core level declarations are reduced to structure declarations as soon as possible. This determines ambiguous {\tt local} declarations (cf.\ \ref{bugschapter3}).
+\end{itemize}
+
+Several auxiliary phrase classes have been introduced to implement these disambiguations.
+
+Some heavy transformations of the grammar are necessary to deal with the dreaded {\tt where type} \dots {\tt and type} derived form for signature expressions [Appendix A, Figure 19]: for every nonterminal $x$ that can end in a $\mathit{sigexp}$ and may be followed by another subphrase $y$ separated by the keyword `{\tt{and}}' we had to introduce auxiliary nonterminals of the form
+
+\begin{quoting}
+{\tt {\sl{x}}\_\_AND\_{\sl{y}}}
+\end{quoting}
+
+whose semantic actions build two parts of the abstract syntax tree: the subtree for $x$ and the subtree for $y$.
+
+Further grammar transformations are needed to cope with {\tt as} patterns and datatype declaration vs.\ datatype replication.
+
+
+\subsection{Infix Resolution}
+\label{infix}
+
+Since ML-Yacc does not support attributes, and we did not want to introduce a separate infix resolution pass, the parser maintains an infix environment $J$ which is initialised and updated via side effects in the semantic actions of several pseudo productions. Applications -- infix or not -- are first parsed as lists of atomic symbols and then transformed by the module {\tt Infix} which is invoked at the appropriate places in the semantic actions. The infix parser in that module is essentially a simple hand-coded LR Parser.
+
+The parser is parameterised over its initial infix environment. After successful parsing it returns the modified infix environment along with the AST.
+
+
+\subsection{Derived Forms}
+\label{derived}
+
+To translate derived forms, three modules corresponding to the three grammar layers provide transformation functions that rewrite the grammatical forms to their equivalent forms, as specified in Appendix A of the Definition (modules {\tt DerivedForms$X$}). These functions are named similar to the constructors in the AST types so that the parser itself does not have to distinguish between constructors of bare syntax forms and pseudo constructors for derived forms. To ensure that all node annotations are unique (given that they are stateful), some of the rewritings perfermed by these functions need to duplicate annotations accordingly.
+
+The Definition describes the $\mathit{fvalbind}$ derived form rather inaccurately. We made it a bit more precise by introducing several additional phrase classes (see \ref{bugsappendixb}). Most of the parsing happens in the {\tt Infix} module in this case, though.
+
+Note that the structure sharing syntax is not a proper derived form since it requires context information about the involved structures (see \ref{bugsappendixa}). It therefore was moved to the bare grammar.
+
+
+\subsection{Syntactic Restrictions}
+\label{restrictions}
+
+The BNF grammar given in the Definition actually specifies a superset of all legal programs, which is further restricted by a set of syntactic constraints [Section 2.9, 3.5]. The parser accepts this precise superset, and the syntactic restrictions are verified in a separate pass.
+
+Unfortunately, not all of the restrictions given in the Definition are purely syntactic (see \ref{bugschapter2}). In general, it requires full binding analysis to infer identifier status and type variable scoping.
+
+Checking of syntactic restrictions has hence been implemented as a separate inference pass over the whole program. The pass closely mirrors the static semantics. It computes respective binding environments that record the identifier status of value identifiers. For modules, it has to include structures, functors and signatures as well, because the effect of {\tt open} relies on the environments they produce. Likewise, type environments are needed to reflect the effect of datatype replication. In essence, binding environments are isomorphic to interfaces in the dynamic semantics [Section 7.2]. As an extension, a binding basis includes signatures and functors. For the latter, we only need to maintain the result environment. Last, a binding context includes a set of bound type variables.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Elaboration}
+\label{elaboration}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Files}
+\label{elaborationfiles}
+
+The following modules represent objects of the static semantics and implement elaboration:
+
+\begin{quoting}
+\begin{tabbing}
+{\tt OverloadingClass\ \ }\qquad\= overloading classes
+\kill
+
+\hspace{-1em}{\tt elab/} \\
+{\tt StaticObjectsCore}	\> definition of semantic objects \\
+{\tt StaticObjectsModule} \> \\
+
+%{\tt TyVar}		\> type variables \\
+{\tt TyName}		\> type names \\
+\\
+{\tt Type}		\> operations on types \\
+{\tt TypeFcn}		\> operations on type functions \\
+{\tt TypeScheme}	\> operations on type schemes \\
+{\tt OverloadingClass}	\> overloading classes \\
+\\
+%{\tt GenericEnvFn}	\> generic environment operations \\
+{\tt StaticEnv}		\> environment instantiation \\
+{\tt Sig}		\> operations on signatures \\
+{\tt FunSig}		\> operations on functor signatures \\
+{\tt StaticBasis}	\> operations on basis \\
+\\
+{\tt ElabCore}		\> implementation of elaboration rules \\
+{\tt ElabModule}	\> \\
+{\tt Clos}		\> expansiveness check and closure \\
+{\tt CheckPattern}	\> pattern redundancy and exhaustiveness checking \\
+\end{tabbing}
+\end{quoting}
+
+
+\subsection{Types and Unification}
+\label{types}
+
+Types are represented according to the mapping explained in Section \ref{mapping} (see the modules {\tt StaticObjectsCore} and {\tt Type}). However, since type inference has to do unification (see \ref{typeinference}), which we prefer to do destructively for simplicity, each type node actually is wrapped into a reference. A simple graph algorithm is required to retain sharing when cloning types. All other type operations besides unification have functional semantics.
+
+In order to avoid confusion (cf.\ \ref{bugsappendixg}) our type representation distinguishes undetermined types (introduced during type inference, see \ref{typeinference}) from explicit type variables. This requires an additional kind of node in our type representation. Moreover, we have another kind of undetermined type node to deal with overloaded types (see \ref{overloading}). Finally, we need a third additional node that replaces undetermined types once they become determined, in order to retain sharing.
+
+All operations on types have been implemented in a very straightforward way. To keep the sources simple and faithful to the Definition we chose not to use any optimisations like variable levels or similar techniques often used in real compilers.
+
+
+\subsection{Type Names}
+\label{tynames}
+
+Type names (module {\tt TyName}) are generated by a global stamp generator (module {\tt Stamp}). As described in the Definition, they carry attributes for arity and equality.
+
+\void{
+The equality attribute of type names is used in the Definition to determine whether a type admits equality. Those rules treat {\tt ref} in a special way. To generalise the treatment of {\tt ref} and allow for similar types like {\tt array} (which strictly speaking could not be added to SML without modifying the Definition), equality has not been implemented as a boolean attribute but via a tailor-made datatype allowing a third value of `special', {\tt ref}-like equality that is independent of particular argument types.
+}
+
+To simplify the task of checking exhaustiveness of patterns type names have been equipped with an additional attribute denoting the {\em span} of the type, i.e. the number of constructors (see \ref{patterns}). For pretty printing purposes, we also remember the original type constructor of each type name.
+
+
+\subsection{Environment Representation}
+\label{env}
+
+In order to share as much code as possible between the rather similar environments of the static and the dynamic semantics, as well as the interfaces Int in the dynamic semantics of modules, we introduce a functor {\tt GenericEnvFn} that defines the representation and implements the common operations on environments.
+
+Unfortunately, there exists a mutual recursion between environments and their range sets, in the static semantics (via TyStr) as well as in the dynamic semantics (via Val and FcnClosure). This precludes passing the environment range types as functor arguments. Instead, we make all environment types polymorphic over the corresponding range types. The instantiating modules ({\tt{StaticEnv}}, {\tt DynamicEnv}, and {\tt Inter}) tie the knot appropriately.
+
+
+\subsection{Elaboration Rules}
+\label{elaborationrules}
+
+Elaboration implements the inference rules of sections [4.10] and [5.7] (modules {\tt ElabCore} and {\tt ElabModule}). It also checks the further restrictions in [4.11].
+
+The inference rules have been mapped to SML functions as described in \ref{mappingrules}. They store the result of elaboration into the {\tt elab} property of the respective AST annotations. To this end, the modules {\tt Annotation} and {\tt AnnotationElab} (the latter in file {\tt Syntax}) specify two convenient  operators, {\tt -->} and {\tt |->}. This information can be retrieved from the AST as described in Section \ref{ast}.
+
+Additional arguments needed in some places of Core elaboration are encapsulated in an auxiliary record {\tt deferred}: a flag indicating whether we are currently elaborating a toplevel declaration (in order to implement restriction 3 in [4.11] properly), a list of unresolved types (for overloading resolution and flexible records, see \ref{overloading}), and a list of {\tt fn} $\mathit{match}$es (to defer checking of exhaustiveness until after overloading resolution, see \ref{patterns} and \ref{overloading}). For modules, we pass down the equality attribute of type descriptions (see \ref{moduleelaboration}).
+
+Note that most of the side conditions on type names could be ignored since they are mostly ensured by construction using stamps. We included them anyway, to be consistent and to have an additional sanity check. At some places these checks are not accurate, though, since the types examined can still contain type inference holes which may be filled with type names later. To be faithful, we hence employ time stamps on type names and type holes, such that violations of prior side conditions can be discovered during type inference, as we explain in the next section.
+
+
+\subsection{Type Inference}
+\label{typeinference}
+
+The inference rules for core elaboration are non-deterministic. For example, when entering a new identifier representing a pattern variable into the environment, rule 34 [4.10] essentially guesses its correct type. A deterministic implementation of type inference is the standard algorithm W by Damas/Milner \cite{principal}. Informally, when it has to guess a type non-deterministically it introduces a fresh type variable as a placeholder. We prefer to speak of undetermined types instead, since type variables already exist in a slightly different sense in the semantics of SML (cf.\ \ref{bugsappendixg}).
+
+Wherever an inference rule imposes an equality constraint on two types because the same meta-variable appears in different premises, the algorithm tries to unify the two types derived.  After a value declaration has been checked, one can safely turn remaining undetermined types into type variables and universally quantify the inferred type over them, if they do not appear in the context. SML's value restriction does restrict this closure to non-expansive declarations, however [4.7, 4.8]. Note that (explicit) type variables can only be unified with themselves.
+
+We use an imperative variant of the algorithm where unification happens destructively \cite{typechecking}, so that we do not have to deal with substitutions, and the form of the elaboration functions is kept more in line with the inference rules in the Definition.
+
+Undetermined types are identified by stamps. They carry two additional attributes: an equality constraint, telling whether the type has to admit equality, and a time stamp, which records the relative order in which undetermined types and type names have been introduced. During unification with undetermined types we have to take care to properly enforce and propagate these attributes.
+
+When instantiating type variables to undetermined types [4.10, rule 2], the undetermined type inherits the equality attribute from the variable. An undetermined equality type induces equality on any type it is unified with. In particular, if an undetermined equality type is unified with an undetermined non-equality type, equality is induced on the latter (function {\tt Type.unify}).
+
+Likewise, when a type is unified with an undetermined type, the latter's time stamp is propagated to all subterms of the former. That is, nested undetermined types inherit the time stamp if their own is not older already. Type names must always be older than the time stamp -- unification fails, when a type name is encountered that is newer. This mechanism is used to prevent unification with types which contain type names that have been introduced {\em after} the undetermined type. For example, the snippet
+
+\begin{quoting}
+\begin{alltt}
+let
+  val r = ref NONE
+  datatype t = C
+in
+  r := SOME C
+end
+\end{alltt}
+\end{quoting}
+
+must not type-check -- the type of {\tt r} may not mention {\tt t} (otherwise the freshness side condition on names for datatypes [4.10, rule 17] would be violated). However, type inference can only find out about this violation at the point of the assignment expression. By comparing the time stamp of the undetermined type introduced when elaborating the declaration of {\tt r}, and the stamp of the type name {\tt t}, our unification algorithm will discover the violation.
+
+More importantly, the mechanism is sufficient to preclude unification of undetermined types with {\em local} type names, as in the following example:
+
+\begin{quoting}
+\begin{alltt}
+val r = ref NONE
+functor F(type t; val x : t) =
+struct
+  val _ = r := SOME C
+end
+\end{alltt}
+\end{quoting}
+
+Obviously, allowing this example would be unsound.
+
+%Similarly, the time stamp mechanism is used to prevent invalid unification of monomorphic undetermined types remaining due to the value restriction, with type variables, see Section \ref{typeschemes}.
+
+To cope with type inference for records, we have to represent partially determined rows. The yet undetermined part of a row is represented by a special kind of type variable, a {\em row variable}. This variable has to carry the same attributes as an undetermined type, i.e.\ an equality flag and a time stamp, both of which have to be properly propagated on unification. See also Section \ref{overloading}.
+
+
+\subsection{Type Schemes}
+\label{typeschemes}
+
+Type schemes represent polymorphic types, i.e. a type prefixed by a list of quantified type variables. The only non-trivial operation on type schemes is generalisation [4.5].
+
+We implement the generalisation test via unification: in order to test for $\forall\alpha^{(k)}.\tau \succ \tau'$, we instantiate $\alpha^{(k)}$ with undetermined types $\tau^{(k)}$ and test whether $\tau[\tau^{(k)}/\alpha^{(k)}]$ can be unified with $\tau'$.
+
+To test generalisation between type schemes, $\forall\alpha^{(k)}.\tau \succ \forall\alpha^{(k')}.\tau'$, we first skolemise the variables $\alpha^{(k')}$ on the right-hand side by substituting them with fresh type names $t^{(k')}$. Then we proceed by testing for $\forall\alpha^{(k)}.\tau \succ \tau'[t^{(k')}/\alpha^{(k')}]$ as described before.
+
+Note that $\tau$ may contain undetermined types, stemming from ``expansive'' declarations for which the value restriction prevented generalisation. These have to be kept monomorphic, but naive unification might identify them with one of the skolem types $t^{(k')}$ (or a type containing one) -- and hence effectively turn them into polymorphic types! For example, when checking the signature ascription in the following example,
+
+\begin{quoting}
+\begin{alltt}
+signature S = sig val f : 'a -> 'a option end
+structure X : S =
+struct
+    val r = ref NONE
+    fun f x = !r before r := SOME x
+end
+\end{alltt}
+\end{quoting}
+
+the type inferred for the function {\tt f} contains an undetermined type, the content type of {\tt r}. It must be monomorphic, hence the type of {\tt f} does not generalise the polymorphic type specified in the signature.\footnote{Several SML implementations currently get this wrong, opening a soundness hole in their type checkers.} Comparison of the time stamps of the undetermined type and the newer type name generated during skolemisation of {\tt 'a} makes unification between the two properly fail with our algorithm.
+
+
+\subsection{Overloading and Flexible Records}
+\label{overloading}
+
+Overloading is the least formal part of the Definition (see \ref{bugsappendixe}). It is just described in an appendix, as special case treatment for a handful of given operators and constants. We tried to generalise the mechanism indicated in the Definition in order to have something a bit less ad hoc that smoothly integrates with type inference.
+
+To represent type schemes of overloaded identifiers we allow type variables to be constrained with overloading classes in a type scheme, i.e.\ type variables can carry an overloading class as an additional optional attribute. When instantiated, such variables are substituted by overloaded type nodes, constrained by the same overloading class (constructor {\tt Type.Overloaded}). When we unify an overloaded type with another, determined type we have to check whether that other type is a type name contained in the given overloading class. If yes, overloading has been resolved, if no there is a type error (function {\tt Type.unify}).
+
+When unifying two overloaded types, we have to calculate the intersection of the two overloading classes. So far, everything is pretty obvious. The shaky part is how to propagate the default types associated with the classes when we perform intersection.
+
+We formalise an overloading class as a pair of its type name set and the type name being the designated default:
+%
+\begin{displaymath}
+(T,t) \in \mbox{OverloadingClass} = \mbox{TyNameSet} \times \mbox{TyName}
+\end{displaymath}
+%
+Now when we have to intersect two overloading classes $(T_1,t_1)$ and $(T_2,t_2)$, there may be several cases. Let $T = T_1 \cap T_2$:
+
+\begin{enumerate}
+\item\label{intersectempty} $T = \emptyset$. In this case, the constraints on the types are inconsistent and the program in question is ill-typed.
+
+\item\label{defaultequal} $T \neq \emptyset$ and $t_1 = t_2 \in T$. The overloading has (possibly) been narrowed down and the default types are consistent.
+
+\item\label{uniquedefault} $T \neq \emptyset$ and $t_1 \neq t_2$ and $|\{t_1,t_2\} \cap T| = 1$. The overloading has been narrowed down. The default types differ but only one of them still applies.
+
+\item\label{ambiguousdefault} $T \neq \emptyset$ and $|\{t_1,t_2\} \cap T| \neq 1$. The overloading could be narrowed down, but there is no unambiguous default type.
+\end{enumerate}
+
+Case (\ref{uniquedefault}) is a bit subtle. It occurs when checking the following declaration:
+
+\begin{quoting}
+\begin{alltt}
+fun f(x,y) = (x + y)/y
+\end{alltt}
+\end{quoting}
+
+Both, {\tt +} and {\tt /} are overloaded and default to different types, but in this combination only {\tt real} remains as a valid default so that the type of {\tt f} should default to ${\tt real}\times{\tt real}\to{\tt real}$.\footnote{In fact, some SML implementations do not handle this case properly.}
+
+There are two ways to deal with case (\ref{ambiguousdefault}): either rule it out by enforcing suitable well-formedness requirements on the overloading classes in the initial basis, or handle it by generalising overloading classes to contain {\em sets} of default values (an error would be flagged if defaulting actually had to be applied for a non-singular set). We settled for the former alternative as it seems to be more in spirit with the Definition and it turns out that the overloading classes specified in the Definition satisfy the required well-formedness constraints.\footnote{A previous version of HaMLet used the latter alternative. It allows more liberal overloading but may lead to typing errors due to ambiguous overloading, despite the default mechanism. Moreover, in full generality it raises additional issues regarding monotonicity of overloading resolution when extending the library.}
+
+Consequently, we demand the following properties for all pairs of overloading classes $(T,t)$, $(T',t')$ appearing in a basis:
+
+\begin{enumerate}[nolistsep]
+\item\label{defaultcontained} $t \in T$
+\item\label{equalityconsistent} $\mbox{Eq}(T) = \emptyset \quad\vee\quad \mbox{$t$ admits equality}$
+\item\label{intersectionunique} $T \cap T' = \emptyset \quad\vee\quad |\{t,t'\} \cap T \cap T'| = 1$
+\end{enumerate}
+
+where $\mbox{Eq}(T) = \{ t \in T \;|\; \mbox{$t$ admits equality} \}$.
+
+The reason for (\ref{defaultcontained}) is obvious. (\ref{equalityconsistent}) guarantees that we do not loose the default by inducing equality. (\ref{intersectionunique}) ensures a unique default whenever we have to unify two overloaded types. (\ref{equalityconsistent}) and (\ref{intersectionunique}) also allow the resulting set to become empty which represents a type error.
+
+Defaulting is implemented by collecting a list of all unresolved types -- this includes flexible records -- during elaboration of value declarations (contained in the additional argument record {\tt D} {\tt :} {\tt deferred}). Before closing an environment, we iterate over this list to default remaining overloaded types or discover unresolved flexible records. This implies that the context determining an overloaded type or flexible record type is the smallest enclosing core-level declaration of the corresponding overloaded identifier, special constant, or flexible record, respectively (cf.\ \ref{bugschapter4} and \ref{bugsappendixe}).
+
+Special constants, which are also overloaded, have to be range-checked with respect to their resolved type [Section E.1]. For this purpose, the list of unresolved types can carry optional associated special constants. During defaulting we hence also do the corresponding range checking for all collected special constants.
+
+
+\subsection{Recursive Bindings and Datatype Declarations}
+\label{recursive}
+\label{datatype}
+
+Value bindings with {\tt rec} and datatype declarations are recursive. The inference rules (26, 17 and 19) use the same environment $\mathit{VE}$ or $\mathit{TE}$ on the left hand side of the turnstile that is to be inferred on its right hand side.
+
+To implement this we build a tentative environment in a first iteration that is not complete but already contains enough information to perform the actual inference in the second iteration. For recursive value bindings we insert undetermined types as placeholders for the actual types (and unify later), for datatype bindings we leave the constructor environments empty.
+
+Datatype declarations bring an additional complication because of the side condition that requires $\mathit{TE}$ to maximise equality. This is being dealt with by first assuming equality for all new type names and later adjusting all invalid equality attributes in a fixpoint iteration, until all type structures respect equality (function {\tt StaticEnv.maximiseEquality}).
+
+
+\subsection{Module Elaboration}
+\label{moduleelaboration}
+
+Like for the core language, the inference rules for modules are non-deterministic. In particular, several rules have to guess type names that have to be consistent with side conditions enforced further down the inference tree. However, most of these side conditions just ensure that type names are unique, i.e.\ fresh type names are chosen where new types are introduced. Since we create type names through a stamp mechanism, most of these side conditions are trivially met. The remaining cases are dealt with by performing suitable renaming of bound type names with fresh ones, as the Definition already suggests in the corresponding comments (module {\tt ElabModule}).
+
+The other remaining bits of non-determinism are guessing the right equality attribute for type descriptions, which is dealt with by simply passing the required attribute down as an additional assumption (function {\tt ElabModule.elabTypDesc}), and for datatype specifications, which require the same fixpoint iteration as datatype declarations in the core (see \ref{datatype}).
+
+
+\subsection{Signature Matching}
+\label{matching}
+
+Signature matching is the most complex operation in the SML semantics. As the Definition describes, it is a combination of realisation and enrichment.
+
+To match an environment $E'$ against a signature $\Sigma = (T,E)$ we first calculate an appropriate realisation $\varphi$ by traversing $E$: for all flexible type specifications in $E$ (i.e.\ those whose type functions are equal to type names bound in $T$) we look up the corresponding type in $E'$ and extend $\varphi$ accordingly. Then we apply the resulting realisation to $E$ which gives us the potential $E^-$. For this we just have to check whether it is enriched by $E'$ which can be done by another simple traversal of $E^-$ (functions {\tt Sig.match} and {\tt StaticEnv.enriches}).
+
+The realisation calculated during matching is also used to propagate type information to the result environment of functor applications (rule 54, module {\tt ElabModule}). A functor signature has form $(T_1)(E_1,(T'_1)E'_1)$. To obtain a suitable functor instantiation $(E'',(T')E')$ for rule 54 we simply match the environment $E$ of the argument structure to the signature $(T_1)E_1$ which gives $E''$ and a realisation $\varphi$. We can apply $\varphi$ to the functor's result signature $(T'_1)E'_1$ to get -- after renaming all $t \in T'_1$ to fresh names $t' \in T'$ -- the actual $(T')E'$ appearing in the rule.
+
+
+\subsection{Checking Patterns}
+\label{patterns}
+
+Section [4.11], items 2 and 3 require checking exhaustiveness and irredundancy of patterns (module {\tt CheckPattern}). The basic idea of the algorithm is to perform {\em static matching}, i.e.\ to traverse the decision tree corresponding to a match and propagate information about the value to be matched from the context of the current subtree. The knowledge available on a particular subterm is described by the {\tt description} type. Moreover, a {\tt context} specifies the path from the root to the current subtree.
+
+The algorithm is loosely based on \cite{patterns}, where more details can be found. To enable this algorithm, type names carry an additional attribute denoting their {\em span}, i.e.\ the number of constructors the type possesses (see \ref{tynames}). We extend the ideas in the paper to cover records (behave as non-positional tuples), exception constructors (have infinite span), and constants (treated like constructors with appropriate, possibly infinite span). Note that we have to defer checking of patterns until overloading resolution for contained constants has been performed -- otherwise we will not know their span.
+
+A context description is not simply a list of constructor applications to term descriptions as in the paper, but separates constructor application from record aggregation and uses a nested definition. Instead of lists of negative constructors (and constants) we use sets for descriptions. Record descriptions are maps from labels to descriptions.
+
+During traversal we construct two sets that remembers the region of every match we encountered, and every match we reached. In the end we can discover redundant matches by taking the difference of the sets. Non-exhaustiveness is detected by remembering whether we reached a failure leaf in the decision tree.
+
+In the case of exception constructors, equality can only be checked on a syntactic level. Since there may be aliasing this is merely an approximation (see \ref{bugschapter4}).
+
+There is a problem with the semantics of sharing and {\tt where} constraints, which allow inconsistent datatypes to be equated (see \ref{bugschapter4}). In this case, no meaningful analysis is possible, resulting warnings may not make sense. There is nothing we can do but ignore this problem.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Evaluation}
+\label{evaluation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Files}
+\label{evaluationfiles}
+
+Objects of the dynamic semantics and evaluation rules are implemented by the following modules:
+
+\begin{quoting}
+\begin{tabbing}
+{\tt DynamicObjectsModule}\qquad\= generic environment representation
+\kill
+
+\hspace{-1em}{\tt eval/} \\
+{\tt DynamicObjectsCore} \> definition of semantic objects \\
+{\tt DynamicObjectsModule} \> \\
+
+{\tt Addr}		\> addresses \\
+{\tt ExName}		\> exception names \\
+{\tt BasVal}		\> basic values \\
+{\tt SVal}		\> special values \\
+\\
+{\tt Val}		\> operations on values \\
+{\tt State}		\> operations on state \\
+\\
+%{\tt GenericEnvFn}	\> generic environment operations \\
+{\tt DynamicEnv}	\> operations on environments \\
+{\tt Inter}		\> operations on interfaces \\
+{\tt DynamicBasis}	\> operations on basis \\
+{\tt IntBasis}		\> operations on interface basis \\
+\\
+{\tt EvalCore}		\> implementation of evaluation rules \\
+{\tt EvalModule}	\> \\
+\end{tabbing}
+\end{quoting}
+
+
+\subsection{Value Representation}
+\label{values}
+
+Values are represented by a datatype corresponding to what is defined in Section [6.3] of the Definition (module {\tt DynamicObjectsCore}). Special values are simply represented by the corresponding SML types (module {\tt SVal}). Currently, only the default types and {\tt Word8.word} are implemented, which represents the minimum requirement of the Standard Basis.
+
+Basic values are simply represented by strings (module {\tt DynamicObjectsCore}). However, the only basic value defined in the Definition is the polymorphic equality {\tt =}, everything else is left to the library. Consequently, the implementation of the APPLY function in module {\tt BasVal} only handles {\tt =}. For all other basic values it dispatches to the {\tt DynamicLibrary} module, which provides an extended, library-specific version of the APPLY function (see Section \ref{lib}).
+
+The special value FAIL, which denotes pattern match failure, is not represented directly but has rather been defined as an exception (see \ref{evaluationrules}).
+
+
+\subsection{Evaluation Rules}
+\label{evaluationrules}
+
+The rules of the dynamic semantics have been translated to SML following similar conventions as for the static semantics (see Section \ref{mappingrules}). However, to avoid painfully expanding out all occurrences of the state and exception conventions, we deal with state and exceptions in an imperative way. State is not passed around as a functional value but rather as a reference to the actual state map (module {\tt State}) that gets updated on assignments. This avoids threading the state back with the result values. Exception packages (module {\tt Pack}) are not passed back either, but are rather transferred by raising a {\tt Pack} exception. Similarly, FAIL has been implemented as an exception.
+
+So state is implemented by state and exceptions by exceptions -- not really surprising. Consequently, rules of the form
+%
+\begin{displaymath}
+s,A \vdash \mathit{phrase} \Rightarrow A'/p,s'
+\end{displaymath}
+%
+become functions of type
+
+\begin{quoting}
+\begin{alltt}
+\hfill State ref * A * phrase -> A' \hfill
+\end{alltt}
+\end{quoting}
+
+which may raise a {\tt Pack} exception -- likewise for rules including FAIL results. We omit passing in the state where it is not needed. This way the code follows the form of rules using the state and exception conventions as close as possible (modules {\tt EvalCore} and {\tt EvalModule}).
+
+Failure with respect to a rule's premise corresponds to a runtime type error. This may actually occur in evaluation mode and is flagged accordingly.% Note however, that some invariants assumed in the dynamic semantics of the Definition are not met in evaluation mode as they are ensured through syntactic restrictions, which we check during elaboration only.
+
+Evaluation of special constant behaves differently in execution and evaluation mode. In the former, constants will have been annotated with a proper type name by overloading resolution (see \ref{overloading}). In evaluation mode this annotation is missing and the function {\tt valSCon} will assume the default type of the corresponding overloading class, respectively. This implies that the semantics may change (see \ref{usingstandalone}).
+
+Note that the rules 182 and 184--186 of the dynamic semantics for modules contain several errors (see \ref{bugschapter7}).
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Toplevel}
+\label{toplevel}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Files}
+\label{toplevelfiles}
+
+The remaining modules implement program execution and interactive toplevel:
+
+\begin{quoting}
+\begin{tabbing}
+{\tt InitialDynamicBasis}\qquad\= \kill
+
+\hspace{-1em}{\tt exec/} \\
+{\tt Basis}			\> the combined basis \\
+{\tt Program}			\> implementation of rules for programs \\
+\\
+\hspace{-1em}{\tt elab/} \\
+{\tt ElabProgram}		\> separate elaboration \\
+\hspace{-1em}{\tt eval/} \\
+{\tt EvalProgram}		\> separate evaluation \\
+\\
+\hspace{-1em}{\tt parse/} \\
+{\tt InitialInfixEnv}		\> initial environments \\
+\hspace{-1em}{\tt elab/} \\
+{\tt InitialStaticEnv}		\> \\
+{\tt InitialStaticBasis}	\> \\
+\hspace{-1em}{\tt eval/} \\
+{\tt InitialDynamicEnv}		\> \\
+{\tt InitialDynamicBasis}	\> \\
+\\
+\hspace{-1em}{\tt infrastruture/} \\
+{\tt PrettyPrint}		\> pretty printing engine \\
+{\tt PPMisc}			\> auxiliary pretty printing functions \\
+\hspace{-1em}{\tt elab/} \\
+{\tt PPType}			\> pretty printing of types \\
+{\tt PPStaticEnv}		\> ... static environment \\
+{\tt PPStaticBasis}		\> ... static basis \\
+\hspace{-1em}{\tt eval/} \\
+{\tt PPVal}			\> ... values \\
+{\tt PPDynamicEnv}		\> ... dynamic environment \\
+{\tt PPDynamicBasis}		\> ... dynamic basis \\
+\hspace{-1em}{\tt exec/} \\
+{\tt PPEnv}			\> ... combined environment \\
+{\tt PPBasis}			\> ... combined basis \\
+\\
+%{\tt Use}			\> the {\tt use} queue \\
+%\\
+\hspace{-1em}{\tt main/} \\
+{\tt Sml}			\> main HaMLet interface \\
+{\tt Main}			\> wrapper for stand-alone version \\
+\end{tabbing}
+\end{quoting}
+
+
+\subsection{Program Execution}
+\label{execution}
+
+The module {\tt Program} implements the rules in Chapter 8 of the Definition. It follows the same conventions as used for the evaluation rules (see \ref{mappingrules} and \ref{evaluationrules}).
+
+In addition to the `proper' implementation of the rules as given in the Definition (function {\tt execProgram}) the module also features two straightforward variations that suppress evaluation and elaboration, respectively ({\tt elabProgram} and {\tt evalProgram}).
+
+Note that a failing elaboration as appearing in rule 187 corresponds to an {\tt Error} exception. However, in evaluation mode, any {\tt Error} exception will instead originate from a runtime type error.
+
+The remaining task after execution is pretty printing the results. We use an extended version of a generic pretty printer proposed by Wadler \cite{pretty} which features more sophisticated grouping via {\em boxes} (modules {\tt PrettyPrint} and {\tt PP}$xxx$).
+
+In addition to the rule implementations in module {\tt Program}, which implement interactive execution as prescribed by the Definition, we also provide two separate modules {\tt ElabProgram} and {\tt EvalProgram}, which implement separate elaboration and evaluation for program phrases in a manner consistent with the rules for the rest of the language. These modules are not used for program execution by HaMLet itself, but intended as a building blocks for language implementations on top of HaMLet. In particular, HaMLet's JavaScript compilation mode (Section \ref{javascript}) uses {\tt ElabProgram}.
+
+
+\subsection{Plugging}
+\label{plugging}
+
+The {\tt Sml} module sets up the standard library (see Section \ref{lib}), does all necessary I/O interaction and invokes the parser and the appropriate function in module {\tt Program}, passing the necessary environments.
+
+After processing the input itself the functions in the {\tt Sml} module process all files that have been entered into the {\tt use} queue during evaluation (see \ref{use}). That may add additional entries to the queue.
+
+The {\tt Main} module is only needed for the stand-alone version of HaMLet. It parses the command line and either starts an appropriate session or reads in the given files.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Library}
+\label{lib}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Files}
+\label{libfiles}
+
+The library only consists of a hook module and the library implementation files written in the target language:
+
+\begin{quoting}
+\begin{tabbing}
+{\tt DynamicLibrary}\qquad\= \kill
+
+\hspace{-1em}{\tt lib/} \\
+{\tt StaticLibrary}			\> primitive part of the library (static definitions) \\
+{\tt DynamicLibrary}			\> primitive part of the library (dynamic definitions) \\
+\\
+{\tt Use}			\> {\tt use} queue \\
+\\
+\hspace{-1em}{\tt basis/}			\> the actual library modules\\
+\end{tabbing}
+\end{quoting}
+
+
+\subsection{Language/Library Interaction}
+\label{libhooks}
+
+The Definition contains several hooks where it explicitly delegates mechanics to the library:
+
+\begin{itemize}[nolistsep]
+\item the set BasVal of basic values and the APPLY function [6.4],
+\item the initial static basis $B_0$ and infix status [Appendix C],
+\item the initial dynamic basis $B_0$ [Appendix D],
+\item the basic overloading classes Int, Real, Word, String, Char [E.1].
+\end{itemize}
+
+Realistically, it also would have to allow extending the sets SVal [6.2] and Val [6.3], and enable the APPLY function to modify the program state (cf. \ref{bugschapter6}). HaMLet currently only extends SVal, while other library types are mapped to what is there already (see \ref{primtypes}).
+%
+All respective library extensions are encapsulated into a pair of modules {\tt StaticLibrary} and {\tt DynamicLibrary} that define the parts of these objects that are left open by the Definition.
+
+However, we split up implementation of the overall library into two layers:
+
+\begin{itemize}[nolistsep]
+\item the {\em primitive} layer contains all that cannot be self-hosted in the implemented SML,
+\item the {\em surface} layer defines the actual library.
+\end{itemize}
+
+Let us call the instance of SML that HaMLet implements the {\it hosted} language, while the SML universe {\em in} which HaMLet is implemented the {\it hosting} language.
+Many library entities are definable within the hosted language itself, e.g.\ the standard {\tt !} function. There are basically three reasons that can force us to make an entity primitive:
+
+\begin{itemize}[nolistsep]
+\item its behaviour cannot be implemented out of nowhere (e.g. I/O operations),
+\item it is dependent on system properties (e.g. numeric limits), or
+\item it possesses a special type (e.g. overloaded identifiers).
+\end{itemize}
+
+The {\tt StaticLibrary} and {\tt DynamicLibrary} modules define everything in the hosting language that has to be primitive (see \ref{primitives}), while the rest is implemented within the hosted language in the modules inside the {\tt basis} directory (see \ref{basis}). These modules have to make assumptions about what is defined by the primitive library modules, so that both layers should be seen in conjunction.
+
+
+\subsection{Primitives}
+\label{primitives}
+
+Primitive operations are implemented by means of the APPLY function. Most of them just fall back to the corresponding operations of the host system.\footnote{Unfortunately, most SML implementations lack a lot of the obligatory functionality of the Standard Basis Library. To stay portable among systems we currently restrict ourselves to the common subset.} We only have to unpack and repack the value representation and remap possible exceptions. 
+Overloaded primitives have to perform a trivial type dispatch.
+% Moreover, in order to approximate typed behaviour as far as possible even in pure evaluation mode, we allow implicit conversions from default types of an overloading class to any other type of the same class (see also \ref{usingstandalone}). Of course, this conversions will never be performed in a typed program.
+
+Despite implementing a large number of primitives, the static and dynamic basis exported does only contain a few things:
+
+\begin{itemize}[nolistsep]
+\item the {\tt vector} type,
+\item all overloaded functions,
+\item the exceptions used by primitives,
+\item the function {\tt use}.
+\end{itemize}
+
+(Non-toplevel primitive types and exceptions, like {\tt Word8.word} and {\tt IO.Io}, are wrapped into their residuent structures.) Everything else can be defined from these in the hosted language.
+
+To enable the hosted language to bind the basic values defined by the primitive library, we piggy-back the {\tt use} function. Its dynamic semantics is overloaded and in the static basis exported by the {\tt StaticLibrary} module it is given type {\tt $\alpha\to\beta$}. Applying it to a record of type $\{{\tt{b}}:{\tt{string}}\}$ will return the basic value denoted by the string {\tt b} Primitive constants of type $\tau$ are available as functions ${\tt unit}\to\tau$. Once all primitives are extracted, the self-hosted library implementation restricts {\tt use} to its proper safe type through a type-annotated rebinding.
+
+%The {\tt use} function has been chosen for this purpose since its existence cannot be encapsulated in the library anyway -- the interpreter has to know about it (see \ref{use}). Once all necessary basic values have been bound, the library source code should hide the additional, unsafe functionality of {\tt use} by rebinding it with its properly restricted type ${\tt string}\to{\tt unit}$.
+
+
+\subsection{Primitive Library Types}
+\label{primtypes}
+
+The dynamic semantics of the Definition do not really allow the addition of arbitrary library types -- in general this would require extending the set Val [6.3]. Moreover, the APPLY function might require access to the state (see \ref{bugschapter6}).
+
+But we can at least encode vectors by abusing the record representation. Arrays can then be implemented on top of vectors and references within the target language. However, this has to make their implementation type transparent in order to get the special equality for arrays.\void{\footnote{Although HaMLet already generalises the special equality characteristics of references (see \ref{tynames}) we do not currently use that for arrays because it would require making them primitive.}}
+
+I/O stream types can only be implemented magically as indices into a stateful table that is not captured by the program state defined in [6.3].
+
+
+\subsection{The {\tt use} Function}
+\label{use}
+
+The `real' behaviour of {\tt use} is implemented by putting all argument strings for which it has been called into a queue managed by module {\tt Use}. The {\tt Sml} module looks at this queue after processing its main input (see \ref{plugging}).
+
+The argument strings are interpreted as file paths, relative paths being resolved with respect to the current working directory before putting them into the queue. The function reading source code from a file ({\tt Sml.fromFile}) always sets the working directory to the base path of the corresponding file before processing it. This way, {\tt use} automatically interprets its argument relative to the location of the current file.
+
+
+\subsection{Library Implementation}
+\label{basis}
+
+The surface library is loaded on startup\void{ (or during built in the case of SML/NJ)}. The function {\tt Sml.loadLib} just silently executes the file {\tt basis/all.sml}. This file is the hook for reading the rest of the library, it contains a bunch of calls to {\tt use} that execute all library modules in a suitable order. Note that the library files always have to be {\em executed}, even if HaMLet is just running in parsing or elaboration mode -- otherwise the contained {\tt use} applications would not take effect.
+
+The library modules themselves mostly contain straightforward implementations of the structures specified in the Standard Basis Manual \cite{basis}. Like the implementation of the language, the library implementation is mostly an executable specification with no care for efficiency. All operations not directly implementable and thus represented as primitive basic values are bound via the secret functionality of the {\tt use} function (see \ref{primitives}).
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Compilation to JavaScript}
+\label{javascript}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Since version 2, HaMLet provides an additional mode of operation under which the input is translated to equivalent JavaScript code (compatible with EcmaScript edition 3 and later \cite{ecmascript}).
+The main motivation for adding this mode was to provide an example of a simple compiler that uses HaMLet's parser and elaborator as its front-end, and especially, uses the elaboration annotations on the AST (cf.\ Section \ref{ast}). The JavaScript compiler utilises this elaboration information in several ways:
+
+\begin{itemize}[nolistsep]
+\item to statically resolve uses of overloaded operators,
+\item to do arity conversion for functions and constructors,
+\item to distinguish variable bindings from constructors in patterns,
+\item to distinguish datatype from exception constructors in patterns,
+\item to compile {\tt open} declarations and datatype replications,
+\item to compile scoping of {\tt local} and {\tt abstype} declarations,
+\item to detect shadowing between sequential declarations.
+\end{itemize}
+
+Some of these uses are described below.
+
+
+\subsection{Usage}
+\label{javascriptusage}
+
+JavaScript compilation mode is activated from the command line via the flag {\tt -j} (cf.\ Section \ref{usingstandalone}). With embedded usage it can be invoked through one of the respective {\tt compileJS}{\it xxx} functions from the {\tt Sml} module (cf.\ Section \ref{usingembedded}).
+
+HaMLet then outputs JavaScript source code to the standard output, which can be redirected to a file and be executed in a browser console or a JavaScript shell. The generated code assumes presence of the runtime functionality provided with the file {\tt runtime.js}, and a (translation of) the Standard Basis Library. Invoking
+%
+\begin{quoting}
+\begin{alltt}
+make js
+\end{alltt}
+\end{quoting}
+%
+creates a file {\tt basis.js} in the HaMLet root directory that bundles both of these (the displayed shadowing warnings can be safely ignored in this case). This file either has to be loaded into the browser or JavaScript shell first, or it can be prepended to the output generated for the user program.
+
+HaMLet can bootstrap itself on top of JavaScript: invoking
+%
+\begin{quoting}
+\begin{alltt}
+make hamlet.js
+\end{alltt}
+\end{quoting}
+%
+creates a bundled implementation of HaMLet in JavaScript (including the contents of {\tt basis.js}). However, it may be necessary to bump the stack size limit of the respective JavaScript environment to actually execute the generated file.
+
+Some caveats apply when translating SML to JavaScript:
+
+\begin{itemize}
+\setlength{\parskip}{0ex}
+
+\item The compiler needs to use some coding tricks to implement shadowing within the same declaration scope. In interactive mode, this is not always possible, and a warning is generated if the compiler discovers toplevel shadowing (see \ref{javascripttranslation} for details).
+
+\item The standard JavaScript execution environment in the browser does not provide any real I/O capabilities. The runtime library emulates {\tt TextIO}'s standard \emph{output} ({\tt stdOut}) through the {\tt console.log} function. It also emulates a simple file system in memory to fake file I/O and provide the functionality from {\tt OS.FileSys}. However, standard {\em input} from a user can only be simulated statically, by defining a fixed string for the contents of {\tt TextIO.stdIn} (see \ref{javascriptruntime} for details).
+
+\item JavaScript does not (yet) support tail-call optimisation. Our simple translation makes no attempt to simulate it.
+
+\end{itemize}
+
+The former two issues are described in more detail in Section \ref{javascripttranslation}.
+
+In general, our translation is more a proof of concept than an efficient compiler. For example, it will naively create a lot of nested closures to directly simulate SML scoping, instead of renaming identifiers in a whole-program manner. For a more production-quality compiler, see e.g. SMLtoJs \cite{smltojs}, which is based on the ML Kit \cite{kit}.
+
+
+\subsection{Files}
+\label{javascriptfiles}
+
+The compiler isn't particularly voluminous:
+
+\begin{quoting}
+\begin{tabbing}
+{\tt JSTranslateProgram}\qquad\= \kill
+
+\hspace{-1em}{\tt compile-js/} \\
+{\tt JSSyntax}			\> JavaScript kernel AST \\
+{\tt PPJS}			\> JavaScript pretty printer \\
+\\
+{\tt IdSetCore}			\> computation of free and bound identifiers \\
+{\tt IdSetModule}			\> \\
+\\
+{\tt JSTranslateSCon}			\> compilation \\
+{\tt JSTranslateId}			\> \\
+{\tt JSTranslateCore}			\> \\
+{\tt JSTranslateModule}			\> \\
+{\tt JSTranslateProgram}			\> \\
+{\tt CompileJS}			\> main compiler entry point \\
+\\
+{\tt runtime.js}			\> runtime library \\
+\end{tabbing}
+\end{quoting}
+
+
+\subsection{Translation}
+\label{javascripttranslation}
+
+To a large extent, the compilation scheme we implement is straightforward. Most types of SML values have fairly direct counterparts in JavaScript:
+
+\begin{itemize}
+\setlength{\parskip}{0ex}
+
+\item Values of {\em primitive types} are translated to the respective JavaScript types: integers, words and reals to numbers; strings and characters to strings. The respective operations over these types are implemented accordingly.
+
+\item The {\tt unit} value {\tt ()} is mapped to {\tt undefined} in JavaScript.
+
+\item Other {\em records} are translated directly to JavaScript objects with the respective property names. In particular, that results in {\em tuples} being represented as JavaScript arrays, e.g., the SML tuple {\tt (3,} {\tt 4)} corresponds to the JS array {\tt [3,} {\tt 4]}. Projection hence simply becomes property access, with numeric labels shifted by 1.
+
+\item {\em Functions} obviously map to JavaScript functions. However, functions whose argument is an $n$-ary tuple will be converted to an $n$-ary function. See below for more details.
+
+\item {\em Datatype values} are represented as either strings (for nullary constructors) or objects (for constructors with arguments). In the former case, the string simply contains the constructor's name, in the latter the object has one property named after the constructor, which carries the constructor argument. For example, {\tt NONE} becomes {\tt 'NONE'}, and {\tt SOME 3} becomes {\tt \{'SOME':} {\tt 3\}},and {\tt 1::2::nil}, which is short for {\tt ::(1,} {\tt ::(2,} {\tt nil))} in SML, becomes {\tt \{'::':} {\tt [1,} {\tt \{'::':} {\tt [2,} {\tt 'nil']\}]\}}. Pattern matching simply does the respective string comparison, or checks for the presence of a property with the constructor's name (via JavaScript's {\tt in} operator).
+
+{\em Constructors} themselves (i.e., $n$-ary constructors) are represented by functions, in order to enable using them in a first-class fashion. Like for other functions, tupled arguments will be flattened into an $n$-ary argument list.
+
+\item {\em Exceptions} are represented as either instances of JavaScript's {\tt Error} function (for nullary exceptions) or as instances of a new function, named after the exception, whose prototype is {\tt Error} (for constructors with arguments). In the former case, the constructor's name is used as the error name, in the latter, the error value will have a property {\tt "of"} carrying the argument (in contrast to datatype constructors we cannot use the constructor name, since that can be aliased). Tupled arguments to exception functions will again be flattened into an $n$-ary argument list. Pattern matching a nullary exception is a simple identity comparison, whereas matching other exceptions becomes an {\tt instanceof} test.
+
+\item {\em References} are represented as objects of the form {\tt \{ref:} {\tt x\}}.
+
+\item {\em Vectors} and {\em arrays} are mapped to JavaScript arrays.
+
+\item {\em Structures} and {\em functors} become objects and functions in the obvious manner. Signature annotations yield a new object with only the exported fields.
+
+\item Finally, {\em types} and {\em signatures} are completely erased by the translation.
+
+\end{itemize}
+
+SML identifiers are mostly mapped to JavaScript identifiers directly. However, in some cases some extra work is required:
+
+\begin{itemize}
+\setlength{\parskip}{0ex}
+
+\item JavaScript keywords are escaped with a leading underscore.
+
+\item The tick {\tt '} in alphanumeric identifiers is replaced by {\tt \$}.
+
+\item Symbolic identifiers are translated into clear text, escaped and separated by underscores. For example, {\tt :=} becomes {\tt \_colon\_equal}.
+
+\item To separate structure and functor name spaces from values, identifiers in these spaces are escaped with {\tt \$} and {\tt \$\$}, respectively. (Types and signatures are erased, so don't matter.)
+
+\end{itemize}
+
+Note that identifiers starting with an underscore {\tt \_} or tick {\tt '} are not valid SML, so we can make liberal use of both initial underscores or {\tt \$} for escaping.
+
+Most other language constructs can also be translated fairly directly.
+However, there are two aspects to the translation that require a bit more work: arity conversion for functions and non-trivial scoping. We sketch these briefly in the following.
+
+
+\subsubsection*{Arity Conversion}
+
+To produce the most natural JavaScript functions in the common case, we translate all functions that have a tuple type for argument (including {\tt unit} as the 0-tuple) to a Java\-Script function with the respective number of arguments. Analogously, all calls with a tuple as argument are converted to a call with an argument list.
+
+Unfortunately, these transformations induce extra complications due to polymorphism and abstract types:
+
+\begin{itemize}
+\setlength{\parskip}{0ex}
+
+\item When calling a function with an abstract type for argument, this type may actually be implemented as a tuple, and consequently, the function may expect an unboxed argument list. In these cases, we introduce a runtime check for a tuple (i.e., an array on the Javacript side) before the call, and if so, call the function via JavaScript's {\tt apply} method, which performs the unboxing (after slicing off the hole at position 0 of the array representing the tuple).
+
+For example, given the functions {\tt f} {\tt:} {\tt t} {\tt->} {\tt unit}, where {\tt t} is an abstract type, the call {\tt f} {\tt x} generates the following JavaScript:
+
+\begin{quoting}
+\begin{alltt}\small
+(_SML._isTuple(x) ? f.apply(undefined, x) : f(x))
+\end{alltt}
+\end{quoting}
+
+where {\tt \_SML.\_isTuple} is a function from the runtime library (see Section \ref{javascriptruntime}) implemented as follows:
+
+\begin{quoting}
+\begin{alltt}\small
+function _isTuple(x) \textbraceleft
+  return x instanceof _JS.Array
+    && !(x instanceof _SML.Vector._constructor);
+\textbraceright
+\end{alltt}
+\end{quoting}
+
+\item Dually, if a function is defined with a single parameter of abstract type (including a polymorphic type variable), it might actually be instantiated to a tuple. Hence, for such polymorphic functions we insert a transformation that boxes the {\tt arguments} array into a tuple if its length is not 1 at runtime (where `boxing' the empty array produces the {\tt undefined} value).
+
+For example,
+
+\begin{quoting}
+\begin{alltt}\small
+fun id x = x
+\end{alltt}
+\end{quoting}
+
+will be translated into
+
+\begin{quoting}
+\begin{alltt}\small
+var id = function() \textbraceleft
+  var x = _SML._tuplifyArgs(arguments);
+  return x;
+\textbraceright
+\end{alltt}
+\end{quoting}
+
+to make sure that a call like {\tt id(3,} {\tt 4)} actually returns a tuple.
+Here, the function {\tt \_SML.\_tuplifyArgs} is again part of our runtime, and defined as:
+
+\begin{quoting}
+\begin{alltt}\small
+function _tuplifyArgs(args) \textbraceleft
+  return args.length <= 1 ? args[0] : [].slice.call(args);
+\textbraceright
+\end{alltt}
+\end{quoting}
+
+If the arguments object consists of multiple arguments, this function converts them into our representation of a tuple (see above). Otherwise, if there is only one value, it is returned. Or, if the arguments array happens to be empty, {\tt x[0]} produces the value {\tt undefined}, as desired.
+
+\end{itemize}
+
+Performing these dynamic conversions avoid the need for monomorphisation and defunctorisation that would otherwise be necessary to fully handle arity conversion.
+
+
+\subsubsection*{Scoping}
+
+A second problem is the lack of suitable scoping constructs in JavaScript, which complicates the translation of SML declarations. For starters, JavaScript has no {\tt let}-like construct, so we have to simulate local scopes through a function abstraction.
+For example,
+
+\begin{quoting}
+\begin{alltt}
+3 + let val x = 1; val y = 2 in x + y end
+\end{alltt}
+\end{quoting}
+
+becomes
+
+\begin{quoting}
+\begin{alltt}
+3 + (function()\textbraceleft var x = 1; var y = 2; return x + y \textbraceright)()
+\end{alltt}
+\end{quoting}
+
+But SML also allows {\em shadowing} within a single scope. We want to avoid renaming, so we deal with these cases by splitting a scope where an overlap is introduced, such that the shadowing happens in a nested (function) scope on the JavaScript side. From there, all non-shadowed variables are returned packed up as an object, which is then ``opened'' in the original scope.  For example,
+
+\begin{quoting}
+\begin{alltt}
+val a = 1
+val f = fn() => a
+val a = 2
+val b = (f(), a)  (* b = (1, 2) *)
+\end{alltt}
+\end{quoting}
+
+is translated to the following JavaScript:
+
+\begin{quoting}
+\begin{alltt}
+var _x1 =
+  (function() \textbraceleft
+    var a = 1;
+    return (function() \textbraceleft
+        var f = function() \textbraceleft return a; \textbraceright;
+        var a = 2;
+        var b = [f(), a];  // b == [1, 2]
+        return {\textbraceleft}a: a, b: b, f: f\textbraceright;
+      \textbraceright)();
+  \textbraceright)();
+var a = _x1.a;
+var b = _x1.b;
+var f = _x1.f;
+\end{alltt}
+\end{quoting}
+
+A similar scheme is used to translate {\tt local} and {\tt abstype} declarations.
+
+One caveat with this transformation is that it requires the whole extent of the remaining scope to be known, so that it can be wrapped into the auxiliary functions. Consequently, it does not generally work in the toplevel scope, which is allowed to be extended and compiled incrementally. Every $\mathit{program}$ phrase will create global bindings, which in JavaScript are mutable. If a $\mathit{program}$ shadows a previous binding, its translation hence will \emph{overwrite} (i.e., mutate) that binding. For example, the slight variation of the previous examples with extra semicolons (which turns each declaration into a separate $\mathit{program}$ phrase),
+
+\begin{quoting}
+\begin{alltt}
+val a = 1;
+val f = fn() => a;
+val a = 2;
+val b = (f(), a);  (* b = (1, 2) *)
+\end{alltt}
+\end{quoting}
+
+simply becomes
+
+\begin{quoting}
+\begin{alltt}
+var a = 1;
+var f = function() \textbraceleft return a; \textbraceright;
+var a = 2;
+var b = [f(), a];  // b == [2, 2] !
+\end{alltt}
+\end{quoting}
+
+which obviously is incorrect.
+
+A warning is generated if the compiler discovers toplevel shadowing that could potentially yield to incorrect code.  To avoid this issue, either avoid top-level shadowing, or do not use semicolons as separators.
+(If we did not compile the toplevel that way, then it would not be possible to concatenate translated programs.)
+  
+
+\subsection{Runtime}
+\label{javascriptruntime}
+
+In the interpreted mode of execution, HaMLet self-hosts all SML language primitives in SML itself, as we described in Section \ref{lib}. These primitives are made available to the hosted language via the {\tt use} function.  When compiling to JavaScript, the same primitives (including the {\tt use} function itself) must be implemented in JavaScript.
+
+The implementation of this runtime library lives in {\tt runtime.js}. It contains the initial dynamic basis, i.e., all primitive toplevel values, and an object {\tt \_SML} that hosts all internal runtime functionality. In particular, all library primitives accessible via the {\tt use} function are located in nested objects (corresponding to library structures) of {\tt \_SML}. In addition, it contains a couple of internal helpers and internal store, distinguished by attribute names starting with an underscore.
+
+Most of the runtime implementation is straightforward, only I/O requires jumping through some hoops:
+
+
+%\subsubsection*{I/O Emulation}
+\begin{itemize}
+
+\item The standard JavaScript execution environment is the browser, and hence does not provide any real I/O capabilities. The runtime library emulates {\tt TextIO.stdOut} and {\tt TextIO.stdErr} through the {\tt console.log} function (with extra buffering).
+
+{\tt TextIO.stdIn} cannot be emulated directly, but a fixed input can be simulated by the runtime with its internal {\tt \_SML.TextIO.\_stdIn.content} reference. By setting it to an appropriate string before running the generated program, the runtime will pretend actual input. For example, assigning
+
+\begin{quoting}
+\begin{alltt}
+_SML.TextIO._stdIn.content =
+  "input line 1{\textbackslash}ninput line 2{\textbackslash}ninput line{\textbackslash}n";
+\end{alltt}
+\end{quoting}
+
+(in JavaScript land) will make the runtime behave as if the user had input three respective lines and then generated EOF (e.g., as if pressing Ctrl-D on a Unix system).
+
+\item A similar work-around is available for emulating the command line. From within JavaScript, one can set the values of {\tt \_SML.CommandLine.\_name} (initially, the string {\tt "hamlet"}) and {\tt \_SML.CommandLine.\_arguments} (by default an empty array) to customise the results of the respective functions from the {\tt CommandLine} structure.
+
+\item The runtime also simulates a simple file system in memory. This is initially empty, consisting only of the root directory. A directory structure can easily be created in SML. It can also be pre-configured on the JavaScript side, by appropriate calls to {\tt \_SML.OS.FileSys.mkdir}, and can then be pre-populated with files via the convenience function {\tt \_SML.OS.FileSys.file}. For example, the JavaScript calls
+
+\begin{quoting}
+\begin{alltt}
+_SML.OS.FileSys.mkDir("a");
+_SML.OS.FileSys.mkDir("a/b");
+_SML.file("foo.txt", "Hello");
+_SML.file("a/bar.txt", "world{\textbackslash}n");
+_SML.file("a/b/baz.bin", "{\textbackslash}x53{\textbackslash}x4d{\textbackslash}x4c");
+\end{alltt}
+\end{quoting}
+
+would create a simple directory structure with three files.
+
+\end{itemize}
+
+Given these hacks, it should be sufficiently easy to run SML programs with simple simulated I/O in the browser.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+\label{conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+HaMLet has been implemented with the idea of transforming the formalism of the Definition into SML source code as directly as possible. Not everything can be translated 1-to-1, though, because of the non-deterministic nature of some aspects of the rules, and also due to the set of additional informal rules that describe parts of the language.
+
+Still, much care has been taken to get even the obscure details of these parts of the semantics right. For example, HaMLet goes to some length to treat the following correctly:
+
+\begin{itemize}[nolistsep]
+\item not accepting additional syntactic phrases (e.g.\ with {\tt as} or {\tt fun}),
+\item parsing of the {\tt where type} ... {\tt and} derived form,
+\item expansion of derived forms (e.g.\ {\tt withtype}, definitional type specifications),
+\item checking syntactic restrictions separately,
+\item {\tt val} {\tt rec} (binding rules, dynamic semantics),
+\item distinction of type variables from undetermined types,
+\item overloading resolution,
+\item flexible records,
+\item dynamic semantics.
+\end{itemize}
+
+The {\tt test} directory in the HaMLet distribution contains some contrived examples exercising these corner cases and other code that is rejected by several SML systems despite being correct according to the Definition. HaMLet accepts all but two of them. Consequently, we are positive that HaMLet is more accurate in implementing the SML language specification than most other systems. There still are some deviations, though:
+
+\begin{itemize}[nolistsep]
+\item inability to parse some legal SML programs (especially {\tt fun}/{\tt case}, see \ref{ambiguities}),
+\item non-principal types for equality polymorphic functions in {\tt abstype} (see \ref{bugschapter4}),
+\item non-principal types for non-generalized declarations in functors (see \ref{bugschapter5}).
+\end{itemize}
+
+We consider all of these minor, since no existing SML implementations is able to deal with them. They are arguably mistakes on the side of the Definition, see \ref{bugsappendixa}, \ref{bugschapter2} and \ref{bugschapter4}. Still, we hope to fix these issues in future releases. Moreover, we plan to provide a more complete implementation of the Standard Basis Library.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Acknowledgements}
+\label{acknowledgements}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Thanks go to the following people who knowingly or unknowingly helped in putting together HaMLet and its documentation:
+
+\begin{itemize}
+\setlength\parskip{0pt}
+\item Stefan Kahrs, Claudio Russo, Matthias Blume, Matthew Fluet, Derek Dreyer, Stephen Weeks, Bob Harper, Greg Morrisett, John Reppy, John Dias, David Matthews, Yan Chen, and people on the sml-implementers list for discussions about aspects and rough edges of the SML semantics,
+\item all people participating in the discussions on the sml-evolution list, the Successor ML wiki, and the SML evolution meeting,
+\item the authors of the original ML Kit \cite{kit}, for their great work that inspired HaMLet,
+\item of course, the designers of ML and authors of the Definition, for the magnificent language. :)
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vfill
+\pagebreak
+\begin{appendix}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Mistakes and Ambiguities in the Definition}
+\label{definitionbugs}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This appendix lists all bugs, ambiguities and `grey areas' in the Definition that are known to the author. Many of them were already present in the previous SML'90 version of the Definition \cite{definition90} (besides quite a lot that have been corrected in the revision) and are covered by Kahrs \cite{mistakes, addenda} in detail. Bugs new to SML'97 or not covered by Kahrs are marked with * and (*), respectively.
+
+Where appropriate we give a short explanation and rationale of how we fixed or resolved an issue for HaMLet.
+
+
+\subsection{Issues in Chapter 2 (Syntax of the Core)}
+\label{bugschapter2}
+
+Section 2.4 (Identifiers):
+
+\begin{itemize}
+\item The treatment of {\tt =} as an identifier is extremely ad-hoc. The wording suggests that there are in fact two variants of the identifier class VId, one including and the other excluding {\tt =} . The former is used in expressions, the latter everywhere else.
+\end{itemize}
+
+
+Section 2.5 (Lexical analysis):
+\nopagebreak
+
+\begin{itemize}
+\item In [2.2] the Definition includes only space, tab, newline, and formfeed into the set of obligatory formatting characters that are allowed in source code. However, some major platforms require use of the carriage return character in text files. In order to achieve portability of sources across platforms it should be included as well.
+
+For consistency, HaMLet allows all formatting characters, for which there is explicit escape syntax, i.e. it includes vertical tab and carriage return.
+\end{itemize}
+
+
+Section 2.6 (Infixed Operators):
+
+\begin{itemize}
+
+\item The Definition says that ``the only required use of {\tt op} is in prefixing a non-infixed occurrence of an identifier which has infix status''. This is rather vague, since it is not clear whether occurrences in constructor and exception bindings count as ``non-infixed'' \cite{mistakes}.
+
+We assume that {\tt op} is only necessary in expressions and patterns and completely optional in constructor and exception bindings. This is consistent with the fact that {\tt op} is not even allowed in the corresponding descriptions in signatures.
+
+\end{itemize}
+
+Section 2.8 (Grammar), Figure 4 (Expressions, Matches, Declarations and Bindings):
+
+\begin{itemize}
+
+\item (*) The syntax rules for $\mathit{dec}$ are highly ambiguous. The productions for empty declarations and sequencing allow the derivation of arbitrary sequences of empty declarations for any input.
+
+HaMLet does not allow empty declarations as part of sequences without a separating semicolon. On the other hand, every single semicolon is parsed as a sequence of two empty declarations.
+
+\item Another ambiguity is that a sequence of the form $\mathit{dec}_1\;\mathit{dec}_2\;\mathit{dec}_3$ can be reduced in two ways to $\mathit{dec}$: either via $\mathit{dec}_{12}\;\mathit{dec}_3$ or via $\mathit{dec}_1\;\mathit{dec}_{23}$ \cite{mistakes}. See also \ref{bugschapter3}.
+
+We choose right associative sequencing, i.e.\ the latter parse, because that is most in line with the syntax for toplevel declarations.
+
+\end{itemize}
+
+
+Section 2.9 (Syntactic Restrictions):
+
+\begin{itemize}
+
+\item * The restriction that $\mathit{valbind}$s may not bind the same identifier twice (2nd bullet) is not a syntactic restriction as it depends on the identifier status of the $\mathit{vid}$s in the patterns of a $\mathit{valbind}$. Identifier status is derived by the elaboration rules. Similarly, the restriction on type variable shadowing (last bullet) is dependent on context and computation of unguarded type variables [Section 4.6].
+
+We implement checks for syntactic restrictions as a separate inference pass over the complete program that closely mirrors the static semantics. Ideally, all syntactic restrictions rather should have been defined as appropriate side conditions in the rules of the static \emph{and} dynamic semantics by the Definition.  Interestingly, semantic checks are already done for duplicate variables in patterns (rules 39 and 43), whereas these were still syntactic restrictions in the SML'90 edition.
+
+\item * An important syntactic restriction is missing:
+
+\begin{quote}
+``Any $\mathit{tyvar}$ occurring on the right side of a $\mathit{typbind}$ or $\mathit{datbind}$ of the form $\mathit{tyvarseq}$ $\mathit{tycon}$ {\tt =} $\cdots$ must occur in $\mathit{tyvarseq}$.''
+\end{quote}
+
+This restriction is analogous to the one given for $\mathit{tyvar}$s in type specifications [3.5, item 4]. Without it the type system would be unsound. \footnote{Interestingly enough, in the SML'90 Definition the restriction was present, but the corresponding one for specifications was missing \cite{commentary, mistakes}.}
+
+We added a corresponding check.
+
+\end{itemize}
+
+
+\subsection{Issues in Chapter 3 (Syntax of Modules)}
+\label{bugschapter3}
+
+Section 3.4 (Grammar for Modules), Figure 6 (Structure and Signature Expressions):
+
+\begin{itemize}
+
+\item The syntax rules for $\mathit{strdec}$ contain the same ambiguities with respect to sequencing and empty declarations as those for $\mathit{dec}$ (see \ref{bugschapter2}).
+
+Consequently, we use equivalent disambiguation rules.
+
+\item Moreover, there are two different ways to reduce a sequence $\mathit{dec}_1\;\mathit{dec}_2$ of core declarations into a $\mathit{strdec}$: via $\mathit{strdec}_1\;\mathit{strdec}_2$ and via $\mathit{dec}$ \cite{mistakes}. Both parses are not equivalent since they provide different contexts for overloading resolution [Appendix E]. For example, appearing on structure level, the two declarations
+
+\begin{quoting}
+\begin{alltt}
+fun f x = x + x
+val a = f 1.0
+\end{alltt}
+\end{quoting}
+
+may be valid if parsed as $\mathit{dec}$, but do not type check if parsed as $\mathit{strdec}_1\;\mathit{strdec}_2$ because overloading of {\tt +} gets defaulted to {\tt int}.
+
+We choose to always reduce to $\mathit{strdec}$ as soon as possible, because that variant is simpler to implement and solves other problems as well (see \ref{bugschapter8}). Note that we use smaller contexts for overloading resolution (see \ref{overloading}) so that the way of parsing here actually would have no effect on the admissibility of programs.
+
+\item Similarly, it is possible to parse a structure-level {\tt local} declaration containing only core declarations in two ways: as a $\mathit{dec}$ or as a $\mathit{strdec}$ \cite{mistakes}. This produces the same semantic ambiguity.
+
+As above, we reduce to $\mathit{strdec}$ as early as possible.
+
+\end{itemize}
+
+
+Section 3.4 (Grammar for Modules), Figure 7 (Specifications):
+
+\begin{itemize}
+
+\item Similar as for $\mathit{dec}$ and $\mathit{strdec}$, there exist ambiguities in parsing empty and sequenced $\mathit{spec}$s.
+
+We resolve them consistently.
+
+\item The ambiguity extends to sharing specifications. Consider:
+
+\begin{quoting}
+\begin{alltt}
+type t
+type u
+sharing type t = u
+\end{alltt}
+\end{quoting}
+
+This snippet can be parsed in at least three ways, with the sharing constraint taking scope over either both, or only one, or neither type specification. Since only the first alternative can be elaborated successfully, the validity of the program depends on how the ambiguity is resolved.
+
+We always extend the scope of a sharing constraint as far to the left as possible. That is a conservative choice, since all shared types must be specified in the respective scope and specifications may not contain duplicate type constructors.
+
+\end{itemize}
+
+
+Section 3.4 (Grammar for Modules), Figure 8 (Functors and Top-level Declarations):
+
+\begin{itemize}
+
+\item * Finally, another ambiguity exists for reducing a sequence $\mathit{strdec}_1\;\mathit{strdec}_2$ to a $\mathit{topdec}$: it can be done either by first reducing to $\mathit{strdec}$, or to $\mathit{strdec}_1\;\mathit{topdec}_2$. The latter is more restrictive with respect to free type variables (but see \ref{bugsappendixg} with regard to this).
+
+We use a consistent disambiguation method, i.e., reduce as early as possible.
+
+\end{itemize}
+
+Altogether, ignoring the infinite number of derivations involving empty declarations, the grammar in the Definition allows three ambiguous ways to reduce a sequence of two $\mathit{dec}$s to a $\mathit{topdec}$, as shown by the following diagram. All imply different semantics. The corresponding diagram for a sequence of three declarations would merely fit on a page. A further ambiguity arises at the program level (see \ref{bugschapter8}).
+
+\begin{center}
+\begin{pspicture}(3,4)
+\psset{xunit=12mm,yunit=12mm,nodesep=3pt}
+  \rput(1,3.5){\rnode{decdec}{$\mathit{dec}_1\;\mathit{dec}_2$}}
+  \rput(0,2.5){\rnode{dec}{$\mathit{dec}$}}
+  \rput(2,2.5){\rnode{strdecstrdec}{$\mathit{strdec}_1\;\mathit{strdec}_2$}}
+  \rput(0,1){\rnode{strdec}{$\mathit{strdec}$}}
+  \rput(2,1){\rnode{strdectopdec}{$\mathit{strdec}_1\;\mathit{topdec}_2$}}
+  \rput(1,0){\rnode{topdec}{$\mathit{topdec}$}}
+  \ncline{-}{decdec}{dec}
+  \ncline{-}{decdec}{strdecstrdec}
+  \ncline{-}{dec}{strdec}
+  \ncline{-}{strdecstrdec}{strdec}
+  \ncline{-}{strdecstrdec}{strdectopdec}
+  \ncline{-}{strdec}{topdec}
+  \ncline{-}{strdectopdec}{topdec}
+\end{pspicture}
+\end{center}
+
+
+\subsection{Issues in Chapter 4 (Static Semantics for the Core)}
+\label{bugschapter4}
+
+Section 4.8 (Non-expansive Expressions):
+
+\begin{itemize}
+\item * The definition of non-expansiveness is purely syntactic and does only consider the right-hand side of a binding. However, an exception may result from matching against a non-exhaustive pattern on the left-hand side. It is rather inconsistent to disallow {\tt raise} expressions in non-expansive bindings but allow implicit exceptions in the disguise of pattern match failure. More seriously, the possibility of exceptions stemming from polymorphic bindings is incompatible with type passing implementations.
+
+This is no real bug but rather a design error. HaMLet implements the Defintion as is.
+\end{itemize}
+
+
+Section 4.9 (Type Structures and Type Environments):
+
+\begin{itemize}
+
+\item The definition of the Abs operator demands introduction of ``new distinct'' type names. However, type names can only be new relative to a context. To be precise, Abs would thus need an additional argument $C$ \cite{addenda}.
+
+This is no issue on the implementation side, since fresh type names can simply be generated through stamping.
+
+\item Values in {\tt abstype} declarations that are potentially polymorphic but require equality have no principal type \cite{addenda}. For example, in the declaration
+
+\begin{quoting}
+\begin{alltt}
+abstype t = T with
+  fun eq(x, y) = x = y
+end
+\end{alltt}
+\end{quoting}
+
+the principal type of {\tt eq} {\em inside} the scope of {\tt abstype} clearly is {\tt ''a * ''a -> bool}. However, outside the scope this type is not principal because {\tt ''a} cannot be instantiated by {\tt t}. Neither would {\tt t * t -> bool} be principal, of course. Although not strictly a bug (there is nothing which enforces the presence of principal typings in the revised Definition), this semantics is very hard to implement faithfully, since type inference would have to deal with unresolved type schemes and to cascadingly defer decisions about instantiation and generalisation until the correct choice is determined.
+
+Like all other SML implementations, HaMLet assigns {\tt eq} the type {\tt ''a * ''a -> bool}.
+
+\item A related problem is the fact that the rules for {\tt abstype} may infer type structures that do not respect equality \cite{addenda}:
+
+\begin{quoting}
+\begin{alltt}
+abstype t = T with
+  datatype u = U of t
+end
+\end{alltt}
+\end{quoting}
+
+Outside the scope of this {\tt abstype} declaration type {\tt u} will still be an equality type. Values of type {\tt t} can thus be compared through the backdoor:
+
+\begin{quoting}
+\begin{alltt}
+fun eqT(x, y) = U x = U y
+\end{alltt}
+\end{quoting}
+
+HaMLet conforms to the behaviour implied by the Definition.
+
+\end{itemize}
+
+
+Section 4.10 (Inference Rules):
+
+\begin{itemize}
+
+\item * Rule 18 concerning datatype replication does not actually require the type to be a datatype. For example, the following is legal:
+
+\begin{quoting}
+\begin{alltt}
+datatype t = datatype unit
+\end{alltt}
+\end{quoting}
+The same applies to datatype replication in signatures (see \ref{bugschapter5}).
+
+Arguably, this is a design mistake, but we have no reason to change it for HaMLet.
+
+\item * The comment to rule 26 states that a declaration like
+
+\begin{quoting}
+\begin{alltt}
+datatype t = T
+val rec T = fn x => x
+\end{alltt}
+\end{quoting}
+
+is legal since $C+\mathit{VE}$ overwrites identifier status. However, this comment overlooks an important point: in the corresponding rule 126 of the dynamic semantics recursion is handled differently, so that the identifier status is {\em not} overwritten. Consequently, the second declaration will raise a {\tt Bind} exception. It clearly is an ill-design to infer inconsistent identifier status in the static and dynamic semantics, but fortunately it does not violate soundness in this case. Most implementations do not implement the `correct' dynamic semantics, though.
+
+HaMLet takes the specification litererally.
+
+\item * There is an unmatched left parenthesis in the consequent of rule 28.
+
+\void{
+\item As an artefact of the treatment of type name generativity in the inference rules, the following expression is ill-typed according to the Definition \cite{mistakes}:
+
+\begin{quoting}
+\begin{alltt}
+let
+    val r = ref NONE
+    datatype t = C
+in
+    r := SOME C
+end
+\end{alltt}
+\end{quoting}
+
+This behaviour is very tedious to implement and there is no real argument for forbidding such examples. Consequently, all SML implementation seem to allow it. Fixing this in favour of a more ``natural'' implementation of generativity would require getting rid of $\oplus$ composition and infer type name sets explicitly.
+
+HaMLet deviates from the Definition in the same way.
+}
+\end{itemize}
+
+
+Section 4.11 (Further Restrictions):
+
+\begin{itemize}
+
+\item (*) Under item 1 the Definition states that ``the program context'' must determine the exact type of flexible records, but it does not specify any bounds on the size of this context. Unlimited context is clearly infeasible since it is incompatible with {\tt let} polymorphism: at the point of generalisation the structure of a type must be determined precisely enough to know what we have to quantify over.\footnote{Alternatively, there are extensions to Hindley/Milner typing that allow quantification over the structure of records, but polymorphic records are clearly not supported by the Definition.}
+
+In HaMLet, we thus restrict the context for resolving flexible records to the innermost surrounding value declaration, as most other SML systems seem to do as well. This is in par with our treatment of overloading (see \ref{overloading}).
+
+Note that some SML systems implement a slightly more restrictive variant, in which the following program does not type-check:
+
+\begin{quoting}
+\begin{alltt}
+fun f(r as \{...\}) =
+    [let fun g() = r in r end, r : \{a : int\}]
+\end{alltt}
+\end{quoting}
+
+while a minor variation of it does:
+
+\begin{quoting}
+\begin{alltt}
+fun f(r as \{...\}) =
+    [r : \{a : int\}, let fun g() = r in r end]
+\end{alltt}
+\end{quoting}
+
+The reason is that these implementations simply check for existence of unresolved record types in value environments to be closed, without taking into account that these types might stem from the context (in which case we know that we cannot quantify over the unknown bits anyway). As the above example shows, such an implementation compromises the compositionality of type inference. The Definition should rule it out somehow. A similar clarification is probably in order for overloading resolution (see \ref{bugsappendixe}).
+
+\item Under item 2 the Definition demands that a compiler must give warnings whenever a pattern is redundant or a match is non-exhaustive. However, this requirement is inconsistent for two reasons:
+
+\begin{enumerate}
+
+\item * There is no requirement for  datatype constructors in sharing specifications or type realisations to be consistent. For example,
+
+\begin{quoting}
+\begin{alltt}
+datatype t = A | B
+datatype u = C
+sharing type t = u
+\end{alltt}
+\end{quoting}
+
+is a legal specification. Likewise,
+
+\begin{quoting}
+\begin{alltt}
+sig datatype t = A | B end where type t = bool
+\end{alltt}
+\end{quoting}
+
+is valid. Actually, this may be considered a serious bug on its own, although the Definition argues that inconsistent signatures are ``not very significant in practice'' [Section G.9]. If such an inconsistent signature is used to specify a functor argument, it allows a mix of constructors to appear in matches in the functor's body, rendering the terms of irredundancy and exhaustiveness completely meaningless.
+
+There is no simple fix for this. HaMLet makes no attempt to detect this situation, so generation of warnings is arbitrary in this case.
+
+\item (*) It is difficult in general to check equality of exception constructors -- they may or may not be aliased. Inside a functor, constructor equality might depend on the actual argument structure the functor is applied to. It is possible to check all this by performing a certain amount of partial evaluation (such that redundant matches are detected at functor application), but this is clearly infeasible weighed against the benefits, in particular in conjunction with separate compilation.
+
+In HaMLet we only flag exception constructors as redundant when they are denoted by the same syntactic $\mathit{longvid}$. We do not try to derive additional aliasing information.
+
+\end{enumerate}
+
+\end{itemize}
+
+
+\subsection{Issues in Chapter 5 (Static Semantics for Modules)}
+\label{bugschapter5}
+
+Section 5.7 (Inference Rules):
+
+\begin{itemize}
+\item * As a pedantic note, the rules 64 and 78 use the notation $\{t_1\mapsto\theta_1,\cdots,t_n\mapsto\theta_n\}$ to specify realisations. However, this notation is not defined anywhere in the Definition for infinite maps like realisations -- [4.2] only introduces it for finite maps.
+
+\item * More seriously, both rules lack side conditions to ensure consistent arities for domain and range of the constructed realisation. Because $\varphi$ can hence fail to be well-formed [5.2], the application $\varphi(E)$ is not well-defined. The necessary side conditions are:
+\setcounter{equation}{63}
+\begin{equation}
+t \in \mbox{TyName}^{(k)}
+\end{equation}
+\vspace{-\baselineskip}
+\setcounter{equation}{77}
+\begin{equation}
+t_i \in \mbox{TyName}^{(k)}, i = 1..n
+\end{equation}
+
+HaMLet adds the respective checks.
+
+\item * The presence of functors provides a form of explicit polymorphism which interferes with principal typing in the core language. Consider the following example \cite{principalmodules}:
+
+\begin{quoting}
+\begin{alltt}
+functor F(type t) =
+  struct val id = (fn x => x) (fn x => x) end
+structure A = F(type t = int)
+structure B = F(type t = bool)
+val a = A.id 3
+val b = B.id true
+\end{alltt}
+\end{quoting}
+
+The declaration of {\tt id} cannot be polymorphic, due to the value restriction. On the other hand, assigning it type {\tt t -> t} would make the program valid. However,\void{ as Dreyer at al.\ note \cite{typeclasses},} finding this type would require the type inference algorithm to skolemize all undetermined types in a functor body's result signature over the types appearing in its argument signature, and then perform a form of higher-order unification. Consequently, almost all existing implementations reject the program.\footnote{Interestingly, MLton \cite{mlton} accepts the program, thanks to its defunctorization approach. However, it likewise accepts similar programs that are {\it not} valid Standard ML, e.g.:
+\begin{quoting}
+\begin{alltt}
+functor F() = struct val id = (fn x => x) (fn x => x) end\\
+structure A = F()\\
+structure B = F()\\
+val a = A.id 3\\
+val b = B.id true
+\end{alltt}
+\end{quoting}
+}
+
+%It is not easy to change the semantics such that programs like the above are ruled out. This would require speaking about principality and undetermined types, but as we discuss in the next item, the formal framework of the Definition does not enable this.
+
+HaMLet ignores this problem, rejecting the program due to a failure unifying types {\tt int} and {\tt bool}.
+
+\item * Just like in the core language (see \ref{bugschapter4}), rule 72 concerning datatype replication does not actually require the type to be a datatype.
+
+\item * The side conditions on free type variables in rules 87 and 89 do not have the effect that obviously was intended, see \ref{bugsappendixg} for details.
+
+HaMLet not only tests for free type variables, but also for undetermined types (see \ref{typeinference}). This behaviour is not strictly conforming to the \emph{formal} rules of the Definition (which define a more liberal regime), but meets the actual intention explicitly stated in [G.8]. It also is consistent with HaMLet's goal to always implement the most restrictive reading.
+\end{itemize}
+
+
+\subsection{Issues in Chapter 6 (Dynamic Semantics for the Core)}
+\label{bugschapter6}
+
+Section 6.4 (Basic Values):
+
+\begin{itemize}
+\item The APPLY function has no access to program state. This suggests that library primitives may not be stateful, implying that a lot of interesting primitives could not be added to the language without extending the Definition itself \cite{mistakes}.
+
+On the other hand, any non-trivial library type (e.g.\ arrays or I/O streams) requires extension of the definition of values or state anyway (and equality types -- consider {\tt array}). The Definition should probably contain a comment in this regard.
+
+HaMLet implements stateful library types by either mapping them to references in the target language (e.g.\ arrays) or by maintaining the necessary state outside the semantic objects (see \ref{primtypes}).
+\end{itemize}
+
+
+\subsection{Issues in Chapter 7 (Dynamic Semantics for Modules)}
+\label{bugschapter7}
+
+Section 7.2 (Compound Objects):
+
+\begin{itemize}
+
+\item * In the definition of the operator ${\downarrow}:\mbox{Env}\times\mbox{Int}\to\mbox{Env}$, the triple ``$(\mathit{SI},\mathit{TE},\mathit{VI})$'' should read ``$(\mathit{SI},\mathit{TI},\mathit{VI})$''.
+
+\end{itemize}
+
+
+Section 7.3 (Inference Rules):
+
+\begin{itemize}
+
+\item * Rule 182 contains a typo: both occurrences of $\mathit{IB}$ have to be replaced by $B$. The rule should actually read:
+%
+%       Inter B |- sigexp => I    <B |- funbind => F>
+% ------------------------------------------------------- (182)
+% B |- funid ( strid : sigexp ) = strexp <and funbind> =>
+%                     {funid -> (strid:I,strexp,B)} <+ F>
+\setcounter{equation}{181}
+\begin{equation}
+\frac{
+\mbox{Inter} B \vdash \mathit{sigexp} \Rightarrow I
+\qquad
+\langle B \vdash \mathit{funbind} \Rightarrow F \rangle
+}{
+\begin{array}{@{}r@{}}
+B \vdash \mathit{funid}\;\mbox{\tt(}\;\mathit{strid}\;\mbox{\tt:}\;\mathit{sigexp}\;\mbox{\tt)}
+  \;\mbox{\tt=}\;\mathit{strexp}\; \langle {\tt and}\;\mathit{funbind} \rangle
+  \Rightarrow \\
+\{ \mathit{funid} \mapsto (\mathit{strid}:I, \mathit{strexp}, B) \}
+  \langle + F \rangle
+\end{array}
+}
+\end{equation}
+%
+\item * The rules for toplevel declarations are wrong: in the conclusions, the result right of the arrow must be $B' \langle+ B''\rangle$ instead of $B'\langle'\rangle$ in all three rules:
+%
+% B |- strdec => E    B' = E in Basis    <B + B' |- topdec => B''>
+% ---------------------------------------------------------------- (184)
+%               B |- strdec <topdec> => B' <+ B''>
+\setcounter{equation}{183}
+\begin{equation}
+\frac{
+B \vdash \mathit{strdec} \Rightarrow E
+\qquad
+B' = \mbox{$E$ in Basis}
+\qquad
+\langle B+B' \vdash \mathit{topdec} \Rightarrow B'' \rangle
+}{
+B \vdash \mathit{strdec}\; \langle\mathit{topdec}\rangle
+  \Rightarrow B' \langle+ B''\rangle
+}
+\end{equation}
+%
+% Inter B |- sigdec => G    B' = G in Basis    <B + B' |- topdec => B''>
+% ---------------------------------------------------------------------- (185)
+%                   B |- sigdec <topdec> => B' <+ B''>
+\begin{equation}
+\frac{
+\mbox{Inter} B \vdash \mathit{sigdec} \Rightarrow G
+\qquad
+B' = \mbox{$G$ in Basis}
+\qquad
+\langle B+B' \vdash \mathit{topdec} \Rightarrow B'' \rangle
+}{
+B \vdash \mathit{sigdec}\; \langle\mathit{topdec}\rangle
+  \Rightarrow B' \langle+ B''\rangle
+}
+\end{equation}
+%
+% B |- fundec => F    B' = F in Basis    <B + B' |- topdec => B''>
+% ---------------------------------------------------------------- (186)
+%               B |- fundec <topdec> => B' <+ B''>
+\begin{equation}
+\frac{
+B \vdash \mathit{fundec} \Rightarrow F
+\qquad
+B' = \mbox{$F$ in Basis}
+\qquad
+\langle B+B' \vdash \mathit{topdec} \Rightarrow B'' \rangle
+}{
+B \vdash \mathit{fundec}\; \langle\mathit{topdec}\rangle
+  \Rightarrow B' \langle+ B''\rangle
+}
+\end{equation}
+%
+\end{itemize}
+
+
+\subsection{Issues in Chapter 8 (Programs)}
+\label{bugschapter8}
+
+\begin{itemize}
+\item (*) The comment to rule 187 states that a failing elaboration has no effect. However, it is not clear what infix status is in scope after a failing elaboration of a program that contains top-level infix directives.
+
+HaMLet keeps the updated infix status.
+
+\item * There is another syntactic ambiguity for programs. A note in [3.4, Figure 8] restricts the parsing of $\mathit{topdec}$s:
+
+\begin{quote}
+``No $\mathit{topdec}$ may contain, as an initial segment, a $\mathit{strdec}$ followed by a semicolon.''
+\end{quote}
+
+The intention obviously is to make parsing of toplevel semicolons unambiguous so that they always terminate a program. As a consequence of the parsing ambiguities for declaration sequences (see \ref{bugschapter3}) the rule is not sufficient, however: a sequence $\mathit{dec}_1\mbox{\tt;}\;\mathit{dec}_2\mbox{\tt;}$ of core level declarations with a terminating semicolon can be first reduced to $\mathit{dec}\mbox{\tt;}$, then to $\mathit{strdec}\mbox{\tt;}$, and finally $\mathit{program}$. This derivation does not exhibit an ``initial $\mathit{strdec}$ followed by a semicolon.'' Consequently, this is a valid parse, which results in quite different behaviour with respect to program execution.
+
+Since HaMLet reduces to $\mathit{strdec}$ as early as possible (see \ref{bugschapter3}), it works in the spirit of the Definition's intention.
+
+\item (*) The negative premise in rule 187 has unfortunate implications: interpreted strictly it precludes any conforming implementation from providing any sort of conservative semantic extension to the language. Any extension that allows declarations to elaborate that would be illegal according to the Definition (e.g.\ consider polymorphic records) can be observed through this rule and change the behaviour of consecutive declarations. Consider for example:
+
+\begin{quoting}
+\begin{alltt}
+val s = "no";
+\(\mathit{strdec}\)
+val s = "yes";
+print s;
+\end{alltt}
+\end{quoting}
+
+where the $\mathit{strdec}$ only elaborates if some extension is supported. In that case the program will print {\tt yes}, otherwise {\tt no}.
+
+This probably indicates that formalising an interactive toplevel is not worth the trouble.
+\end{itemize}
+
+
+\subsection{Issues in Appendix A (Derived Forms)}
+\label{bugsappendixa}
+
+Text:
+
+\begin{itemize}
+\item (*) The paragraph explaining rewriting of the $\mathit{fvalbind}$ form rules out mixtures of $\mathit{fvalbind}$s and ordinary $\mathit{valbind}$s. However, the way it is formulated it does not rule out all combinations. It should rather say that all value bindings of the form $\mathit{pat}\;\mbox{\tt=}\;\mathit{exp}\;{\tt and}\;\mathit{fvalbind}$ or ${\tt rec}\;\mathit{fvalbind}$ are disallowed.
+
+HaMLet assumes this meaning.
+\end{itemize}
+
+Figure 15 (Derived forms of Expressions):
+
+\begin{itemize}
+\item The Definition is somewhat inaccurate about several of the derived forms of expressions and patterns. It does not make a proper distinction between atomic and non-atomic phrases. Some of the equivalent forms are not in the same syntactic class \cite{commentary, mistakes}.
+
+We assume the necessary parentheses in the desugared forms.
+\end{itemize}
+
+
+Figure 17 (Derived forms of Function-value Bindings and Declarations):
+
+\begin{itemize}
+\item The syntax of $\mathit{fvalbind}$s as given in the Definition enforces that all type annotations are \emph{syntactically} equal, if given. This is unnecessarily restrictive and almost impossible to implement \cite{mistakes}, and probably not what was intended.
+
+HaMLet implements a more permissive syntax, as given by:
+%
+\begin{displaymath}
+\begin{array}{l@{\;}l@{\;}l@{\;}l@{\;}l@{\;}l@{\;}l@{\;}l}
+& \langle{\tt{op}}\rangle\mathit{vid} & \mathit{atpat}_{11} & \cdots & \mathit{atpat}_{1n} & \langle\mbox{\tt:}\mathit{ty}_1\rangle &\mbox{\tt=}& \mathit{exp}_1 \\
+\mbox{\tt|} & \langle{\tt{op}}\rangle\mathit{vid} & \mathit{atpat}_{21} & \cdots & \mathit{atpat}_{2n} & \langle\mbox{\tt:}\mathit{ty}_2\rangle &\mbox{\tt=}& \mathit{exp}_2 \\
+\mbox{\tt|} & & \cdots & & \cdots \\
+\mbox{\tt|} & \langle{\tt{op}}\rangle\mathit{vid} & \mathit{atpat}_{m1} & \cdots & \mathit{atpat}_{mn} & \langle\mbox{\tt:}\mathit{ty}_m\rangle &\mbox{\tt=}& \mathit{exp}_m \\
+\multicolumn{6}{r}{\langle {\tt and} \; \mathit{fvalbind} \rangle}
+\end{array}
+\end{displaymath}
+
+See also \ref{bugsappendixb} for a definition of the full syntax including infix notation.
+\end{itemize}
+
+
+Figure 19 (Derived forms of Specifications and Signature Expressions):
+
+\begin{itemize}
+\item * The derived form that allows several definitional type specifications to be connected via {\tt and} is defined in a way that makes its scoping rules inconsistent with all other occurrences of {\tt and} in the language. In the example
+
+\begin{quoting}
+\begin{alltt}
+type t = int
+signature S =
+sig
+  type t = bool
+  and  u = t
+end
+\end{alltt}
+\end{quoting}
+
+type {\tt u} will be equal to {\tt bool}, not {\tt int} like in equivalent declarations. It would have been more consistent to rewrite the derived form to
+
+\begin{quoting}
+\begin{alltt}
+include
+  sig type \(\mathit{tyvarseq}\sb{1}\) \(\mathit{tycon}\sb{1}\)
+       and \(\cdots\)
+       \(\cdots\)
+       and \(\mathit{tyvarseq}\sb{n}\) \(\mathit{tycon}\sb{n}\)
+  end where type \(\mathit{tyvarseq}\sb{1}\) \(\mathit{tycon}\sb{1}\) = \(\mathit{ty}\sb{1}\)
+      \(\cdots\)
+      where type \(\mathit{tyvarseq}\sb{n}\) \(\mathit{tycon}\sb{n}\) = \(\mathit{ty}\sb{n}\)
+\end{alltt}
+\end{quoting}
+
+and delete the separate derived form for single definitional specifications.
+
+This is a design error, but HaMLet implements it.
+
+\item * The Definition defines the phrase
+
+\begin{quote}
+$\mathit{spec}$ {\tt sharing} $\mathit{longstrid}_1$ {\tt =} $\cdots$ {\tt =} $\mathit{longstrid}_n$
+\end{quote}
+
+as a derived form. However, this form technically is not a derived form, since it cannot be rewritten in a purely syntactic manner -- its expansion depends on the static environment.
+
+HaMLet thus treats this form as part of the bare grammar. Unfortunately, it is surprisingly difficult to formulate a proper inference rule describing the intended static semantics of structure sharing constraints -- probably one of the reasons why it has been laxly defined as a derived form in the first place. The implementation simply collects all expanded type equations and calculates a suitable realisation incrementally. (At least there is no need for a corresponding rule for the dynamic semantics, since sharing qualifications are omitted at that point.)
+
+\item * The derived form for type realisations connected by {\tt and} is not only redundant and alien to the rest of the language ({\tt and} is nowhere else followed by a second reserved word), it also is extremely tedious to parse, since this part of the grammar is LALR(2) as it stands. It can be turned into LALR(1) only by a bunch of really heavy transformations. Consequently, almost no SML system seems to be implementing it correctly. Even worse, several systems implement it in a way that leads to rejection of programs {\em not} using the derived form. For example,
+
+\begin{quoting}
+\begin{alltt}
+signature A = S where type t = u where type v = w
+\end{alltt}
+\end{quoting}
+
+or
+
+\begin{quoting}
+\begin{alltt}
+signature A = S where type t = u
+and       B = T
+\end{alltt}
+\end{quoting}
+
+HaMLet goes to some length to do it correctly.
+
+\item * For complex type declarations the {\tt withtype} derived form is important. With the introduction of equational type specifications in SML'97 it would have been natural to introduce an equivalent derived form for signatures. This is an oversight that most SML systems `correct'.
+
+HaMLet stays with the language definition as is.
+\end{itemize}
+
+
+\subsection{Issues in Appendix B (Full Grammar)}
+\label{bugsappendixb}
+
+Text:
+
+\begin{itemize}
+\item (*) To be pedantic, the first sentence is not quite true since there is a derived form for programs [Appendix A, Figure 18]. Moreover, it is not obvious why the appendix refrains from also providing a full version of the module and program grammar. It contains quite a lot of derived forms as well, and the section title leads the reader to expect it.
+
+\item The Definition gives precedence rules for disambiguating expressions, stating that ``the use of precedence does not increase the class of admissible phrases''. However, the rules are not sufficient to disambiguate all possible phrases. Moreover, for some phrases they actually rule out {\em any} possible parse, e.g.
+
+\begin{quoting}
+\begin{alltt}
+a andalso if b then c else d orelse e
+\end{alltt}
+\end{quoting}
+
+has no valid parse according to these rules. So the above statement is rather inconsistent \cite{mistakes}.
+
+The HaMLet parser just uses Yacc precedence declarations for expression keywords that correspond to the precedence hierarchy given in the Definition. This seems to be the best way to approximate the intention of the Definition's rules.
+
+\item There is no comment on how to deal with the most annoying problem in the full grammar, the infinite look-ahead required to parse combinations of function clauses and {\tt case} expressions, like in:
+
+\begin{quoting}
+\begin{alltt}
+fun f x = case e1 of z => e2
+  | f y = e3
+\end{alltt}
+\end{quoting}
+
+According to the grammar this ought to be legal. However, parsing this would either require horrendous grammar transformations, backtracking, or some nasty and expensive lexer hack \cite{mistakes}. Consequently, there is no SML implementation being able to parse the above fragment.
+
+HaMLet is no better in this regard.
+\end{itemize}
+
+
+Figure 21 (Grammar: Declarations and Bindings):
+
+\begin{itemize}
+\item The syntax given for $\mathit{fvalbind}$ is incomplete, as is pointed out by the corresponding note. This is not really a bug but sloppy enough to cause some divergence among implementations.
+
+To make the grammar more precise we introduce the additional phrase classes $\mathit{fmatch}$, $\mathit{fmrule}$, and $\mathit{fpat}$ and define them in analogy to $\mathit{match}$, $\mathit{mrule}$, and $\mathit{pat}$:
+%
+\begin{displaymath}
+\begin{array}{lcll}
+\mathit{fvalbind} &::=& \mathit{fmatch} \;
+	\langle{\tt{and}} \; \mathit{fvalbind}\rangle \\
+\mathit{fmatch} &::=& \mathit{fmrule} \;
+	\langle\mbox{\tt|} \; \mathit{fmatch}\rangle \\
+\mathit{fmrule} &::=& \mathit{fpat} \;
+	\langle\mbox{\tt:} \; \mathit{ty}\rangle \; \mbox{\tt=} \; \mathit{exp} \\
+\mathit{fpat} &::=& \langle{\tt{op}}\rangle \mathit{vid} \;
+	\mathit{atpat}_1 \; \cdots \; \mathit{atpat}_n & (n\geq1) \\
+&& \mbox{\tt(}\mathit{atpat}_1 \; \mathit{vid} \; \mathit{atpat}_2\mbox{\tt)} \;
+	\mathit{atpat}_3 \; \cdots \; \mathit{atpat}_n & (n\geq3) \\
+&& \mathit{atpat}_1 \; \mathit{vid} \; \mathit{atpat}_2
+\end{array}
+\end{displaymath}
+%
+This grammar is in accordance with our relaxation of type annotations in the $\mathit{fvalbind}$ derived form (see \ref{bugsappendixa}).
+\end{itemize}
+
+
+Figure 22 (Grammar: Patterns):
+
+\begin{itemize}
+\item While there are additional non-terminals $\mathit{infexp}$ and $\mathit{appexp}$ to disambiguate parsing of infix expressions, there is no such disambiguation for patterns. This implies that a pattern like {\tt x:t ++ y} could be parsed if {\tt ++} was an appropriate infix constructor \cite{addenda}. Of course, this would result in heavy grammar conflicts.
+
+Since this appears to be an oversight, HaMLet does not allow such parsing. Constructor application always has higher precedence than type annotation. The full grammar of patterns thus is
+%
+\begin{displaymath}
+\begin{array}{lcll}
+\mathit{atpat} &::=& \mbox{...like before...} \\
+\mathit{patrow} &::=& \mbox{...like before...} \\
+\mathit{apppat} &::=& \mathit{atpat} \\
+&& \langle{\tt{op}}\rangle \mathit{longvid} \; \mathit{atpat} \\
+\mathit{infpat} &::=& \mathit{apppat} \\
+&& \mathit{infpat}_1 \; \mathit{vid} \; \mathit{infpat}_2 \\
+\mathit{pat} &::=& \mathit{infpat} \\
+&& \mathit{pat} \; \mbox{\tt:} \; \mathit{ty} \\
+&& \langle{\tt{op}}\rangle \mathit{vid} \; \langle\mbox{\tt:} \; \mathit{ty}\rangle
+	\; {\tt as} \; \mathit{pat}
+\end{array}
+\end{displaymath}
+%
+with new phrase classes AppPat and InfPat. Similar to expressions, we get the following inclusion relation:
+%
+\begin{displaymath}
+\mbox{AtPat} \subset \mbox{AppPat} \subset \mbox{InfPat} \subset \mbox{Pat}
+\end{displaymath}
+%
+Note that we actually do not need to distinguish between AppPat and InfPat, since there is no curried application in patterns. We do it nevertheless, for consistency.
+
+\end{itemize}
+
+
+\subsection{Issues in Appendix D (The Initial Dynamic Basis)}
+\label{bugsappendixd}
+
+\begin{itemize}
+
+\item (*) The Definition does specify the minimal initial basis but it does not specify what the initial state has to contain. Of course, it should at least contain the exception names {\tt Match} and {\tt Bind}.
+
+We define
+%
+\begin{displaymath}
+s_0 = (\{\}, \{{\tt Match}, {\tt Bind}\})
+\end{displaymath}
+%
+\item The Definition does nowhere demand that the basis a library provides has to be consistent in any way. Nor does it require consistency between initial basis and initial state.
+
+The HaMLet library is consistent, of course.
+\end{itemize}
+
+
+\subsection{Issues in Appendix E (Overloading)}
+\label{bugsappendixe}
+
+Overloading is the most hand-waving part of the otherwise pleasantly accurate Definition. Due to the lack of formalism and specific rules, overloading resolution does not work consistently among SML systems. For example, type-checking of the following declaration does not succeed on all systems:
+
+\begin{quoting}
+\begin{alltt}
+fun f(x, y) = (x + y)/y
+\end{alltt}
+\end{quoting}
+
+The existence of overloading destroys an important property of the language, namely the independence of static and dynamic semantics, as is assumed in the main body of the Definition. For example, the expressions
+
+\begin{quoting}
+\begin{alltt}
+2 * 100    {\rm and}    2 * 100 : Int8.int
+\end{alltt}
+\end{quoting}
+
+will have very different dynamic behaviour, although they only differ in an added type annotation.
+
+The Definition defines the overloading mechanism by enumerating all overloaded entities the library provides. This is rather unfortunate. It would be desirable if the rules were more generic, avoiding hard-coding overloading classes and the set of overloaded library identifiers on one hand, and allowing libraries to extend it in systematic ways on the other. More generic rules could also serve as a better guidance for implementing overloading (see \ref{overloading} for a suitable approach).
+
+% A suitable approach might be the following. An overloading class can be formalised as a pair of its type name set and the type name being the designated default:
+%
+%\begin{displaymath}
+%(T,t) \in \mbox{OverloadingClass} = \mbox{Fin}(\mbox{TyName}^{(0)}) \times \mbox{TyName}^{(0)}
+%\end{displaymath}
+%
+% The following properties then must hold for all pairs of basic or composite overloading classes $(T,t)$, $(T',t')$ appearing in an initial basis:
+%
+%\begin{enumerate}
+%\item $t \in T$
+%\item $\mbox{Eq}(T) = \emptyset \quad\vee\quad \mbox{$t$ admits equality}$
+%\item $T \cap T' = \emptyset \quad\vee\quad |\{t,t'\} \cap T \cap T'| = 1$
+%\end{enumerate}
+%
+%where $\mbox{Eq}(T) = \{ t \in T \;|\; \mbox{$t$ admits equality} \}$.
+%
+%These restrictions guarantuee that intersection of overloading classes is reflexive, associative and commutative with respect to the default and that there always is a unique default. We assert that these properties are important to make defaulting unambiguous and enable a feasible type inference algorithm (see \ref{overloading} for details). A library can provide arbitrary overloading classes, as long as they adhere to these restrictions. These properties hold for the minimal initial basis given in the Definition.
+
+The canonical way to deal with overloaded constants and value identifiers is to uniformingly assign an extended notion of type scheme that allows quantification to be constrained by an overloading class. Constraints would have to be verified at instantiation. This is more or less what has been implemented in HaMLet (see \ref{overloading}).
+
+There are some more specific issues as well:
+
+\begin{itemize}
+
+\item * The Definition forgets to demand that any extension of a basic overloading class is consistent with respect to equality.
+
+Our formalisation includes such a restriction (see \ref{overloading}).
+
+\item * The Definition specifies an {\em upper} bound on the context a compiler may consider to resolve overloading, which is quite odd -- of course, implementations cannot be prohibited to conservatively extend the language by making more programs elaborate. On the other hand, much more important would have been to specify a {\em lower} bound on what implementations {\em have to} support -- it is clearly not feasible to force the programmer to annotate every individual occurence of an overloaded identifier or special constant.
+
+A natural and sensible lower bound seems to be the smallest enclosing core declaration that an overloaded identifier or constant appears in. We use that in HaMLet as the common denominator, consistent with the treatment of flexible records (see \ref{bugschapter4}).
+
+
+\end{itemize}
+
+Figure 27 (Overloaded Identifiers):
+
+\begin{itemize}
+\item * The types for the comparison operators {\tt<}, {\tt>}, {\tt<=}, and {\tt>=} must correctly be ${\tt numtxt} \times {\tt numtxt} \to {\tt bool}$.
+\end{itemize}
+
+
+
+\subsection{Issues in Appendix G (What's New?)}
+\label{bugsappendixg}
+
+Section G.8 (Principal Environments):
+
+* At the end of the section the authors explain that the intent of the restrictions on free type variables at the toplevel (side-conditions in rules 87 and 89 [5.7]) is to avoid reporting free type variables to the user. However, judging from the rest of the paragraph, this reasoning confuses two notions of type variable: type variables as semantic objects, as appearing in the formal rules of the Definition, and the yet undetermined types during Hindley/Milner type inference, which are also typically represented by type variables. However, both kinds are variables on completely different levels: the former are part of the formal framework of the Definition, while the latter are an `implementation aspect' that lies outside the scope of the Definition's formalism. Let us distinguish both by referring to the former as {\em semantic type variables} and to the latter as {\em undetermined types} (the HaMLet implementation makes the same distinction, in order to avoid exactly this confusion, see \ref{types}).
+
+The primary purpose of the aforementioned restrictions obviously is to avoid reporting {\em undetermined types} to the user. However, they fail to achieve that. In fact, it is impossible to enforce such behaviour within the formal framework of the Definition, since it essentially would require formalising type inference (the current formalism has no notion of undetermined type). Consequently, the comment in Section [G.8] about the possibility of relaxing the restrictions by substituting arbitrary monotypes misses the point as well.
+
+In fact, the formal rules of the Definition actually imply the exact opposite, namely that an implementation may {\em never} reject a program that results in undetermined types at the toplevel, and is thus compelled to report them. The reason is explicitly given in the same section: ``implementations should not reject programs for which successful elaboration is possible''. Consider the following program:
+
+\begin{quoting}
+\begin{alltt}
+val r = ref nil;
+r := [true];
+\end{alltt}
+\end{quoting}
+
+Rule 2 has to non-deterministically choose some type $\tau\;{\tt list}$ for the occurrence of {\tt nil}. The choice of $\tau$ is not determined by the declaration itself: it is not used, nor can it be generalised, due to the value restriction. However, {\tt bool} is a perfectly valid choice for $\tau$, and this choice will allow the entire program to elaborate. So according to the quote above, an implementation has to make exactly that choice. Now, if both declarations are entered separately into an interactive toplevel the implementation obviously has to defer commitment to that choice until it has actually seen the second declaration. Consequently, it can do nothing else but reporting an undetermined type for the first declaration. The only effect the side conditions in rules 87 and 89 have on this is that the types committed to later may not contain free semantic type variables -- but considering the way such variables are introduced during type inference (mainly by generalisation), the only possibility for this is through a toplevel exception declaration containing a type variable (and such a declaration is indeed ruled out by those side conditions).\footnote{(*) Note that this observation gives rise to the question whether the claim about the existence of principal environments in Section 4.12 of the SML'90 Definition \cite{definition90} was valid in the first place. It most likely was not: a declaration like the one for {\tt r} has no principal environment that would be expressible within the formalism of the Definition, despite allowing different choices of free imperative type variables. The reasoning that this relaxation was sufficient to regain principality is based on the same mix-up of semantic type variables and undetermined types as above. The relaxation does not solve the problem with expansive declarations, since semantic type variables are rather unrelated to it -- choosing a semantic type variable for an undetermined type is no more principal than choosing any particular monotype.}
+
+There are two possibilities of dealing with this matter: (1) take the formal rules as they are and ignore the comment in the appendix, or (2) view the comment as an informal ``further restriction'' and fix its actual formulation to match the obvious intent.
+Since version 1.1.1 of HaMLet, we implement the intended meaning and disallow undetermined types on the toplevel, although this technically is a violation of the formal rules.
+%Since the comments in Appendix G are not supposed to be a normative part of the Definition but merely explanatory, and moreover are somewhat inconsistent, we give the formal rules priority and go for option (1).\footnote{Unfortunately, this interpretation is incompatible with implementation strategies relying on type passing, where all types must be determined prior to execution.} To report undetermined types to the user, we use a notation that is slightly different from the one denoting real type variables (see \ref{usingstandalone}).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{History}
+\label{history}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.0 (2001/10/04)}
+
+Public release. No history for prior versions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.0.1 (2001/10/11)}
+
+Basis:
+\begin{itemize}[nolistsep]
+\item Fixed ASCII and Unicode escapes in {\tt Char.scan} and {\tt Char.scanC} (and thus in {\tt Char.fromString}, {\tt Char.fromCString}, {\tt String.fromString}).
+\item Fixed octal escapes in {\tt Char.toCString} (and thus {\tt String.toCString}).
+\item Fixed possible NaN's in {\tt Real.scan} for mantissa 0 and large exponents.
+\end{itemize}
+
+Documentation:
+\begin{itemize}[nolistsep]
+\item Added issue of obligatory formatting characters to Appendix.
+\item Some minor additions/clarifications in Appendix.
+\end{itemize}
+
+Test cases:
+\begin{itemize}[nolistsep]
+\item Added test case {\tt redundant}.
+\item Removed accidental carriage returns from {\tt asterisk}, {\tt semicolon} and {\tt typespec}.
+\item Small additions to {\tt semicolon} and {\tt valrec}.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.1 (2002/07/26)}
+
+Basis:
+\begin{itemize}[nolistsep]
+\item Adapted signatures to latest version of the Basis specification \cite{basis}.
+\item Implemented new library functions and adapted functions with changed semantics.
+\item Implemented all signatures and structures dealing with array and vector slices.
+\item Implemented new {\tt Text} structure, along with missing {\tt CharVector} and {\tt CharArray} structures.
+\item Implemented missing {\tt Byte} structure.
+\item Removed {\tt SML90} structure and signature.
+\item Use opaque signature constraints where the specification uses them (with some necessary exceptions).
+\item Implemented missing {\tt Bool.scan} and {\tt Bool.fromString}.
+\item Implemented missing {\tt Real.posInf} and {\tt Real.negInf}.
+\item Handle exceptions from {\tt Char.chr} correctly.
+\item Fixed generation of $\tt\backslash${\tt\^{}X}-escapes in {\tt Char.toString}.
+\item Fixed treatment of gap escapes in {\tt Char.scan}.
+\end{itemize}
+
+Test cases:
+\begin{itemize}[nolistsep]
+\item Added test case {\tt replication}.
+\item Updated conformance table.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.1.1 (2004/04/17)}
+
+Interpreter:
+\begin{itemize}[nolistsep]
+\item Disallow undetermined types (a.k.a.\ ``free type variables'') on toplevel.
+\item Implement accurate scope checking for type names.
+\item Fixed soundness bug w.r.t.\ undetermined types in type scheme generalisation test.
+\item Reject out-of-range real constants.
+\item Accept multiple line input.
+\item Output file name and line/columns with error messages.
+\item Improved pretty printing.
+\end{itemize}
+
+Basis:
+\begin{itemize}[nolistsep]
+\item Sync'ed with updates to the specification \cite{basis}: overloaded $\tt\sim$ on words, added {\tt Word.fromLarge}, {\tt Word.toLarge}, {\tt Word.toLargeX}; removed {\tt Substring.all}; changed {\tt TextIO.inputLine}; changed {\tt Byte.unpackString} and {\tt Byte.unpackStringVec}.
+\item Fixed {\tt String.isSubstring}, {\tt String.fields}, and {\tt Vector.foldri}.
+\end{itemize}
+
+Test cases:
+\begin{itemize}[nolistsep]
+\item Added test cases {\tt abstype2}, {\tt dec-strdec}, {\tt flexrecord2}, {\tt tyname}, {\tt undetermined2}, {\tt undetermined3}.
+\item Split conformance table into different classes of deviation and updated it.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.1.2 (2005/01/14)}
+
+Interpreter:
+\begin{itemize}[nolistsep]
+\item Fix parsing of sequential and sharing specifications.
+\item Add arity checks missing in rules 64 and 78 of the Definition.
+\item Implement type name equality attribute as {\tt bool}.
+\end{itemize}
+
+Basis:
+\begin{itemize}[nolistsep]
+\item Fixed {\tt StringCvt.padLeft} and {\tt StringCvt.padRight}.
+\end{itemize}
+
+Documentation:
+\begin{itemize}[nolistsep]
+\item Add parsing ambiguity for sharing specifications to issue list.
+\item Add missing side conditions in rules 64 and 78 to issue list.
+\item Added version history to appendix.
+\end{itemize}
+
+Test cases:
+\begin{itemize}[nolistsep]
+\item Added test cases {\tt poly-exception}, {\tt tyvar-shadowing}, and {\tt where2} and extended {\tt id} and {\tt valrec}.
+\item Updated conformance table.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.2 (2005/02/04)}
+
+Interpreter:
+\begin{itemize}[nolistsep]
+\item Refactored code: semantic objects are now collected in one structure for each part of the semantics; type variable scoping and closure computation (expansiveness check) are separated from elaboration module.
+\item Made checking of syntactic restrictions a separate inference pass.
+\item Added missing check for bound variables in signature realisation.
+\item Fixed precedence of environments for {\tt open} declarations.
+\item Fixed implementation of Abs operator for {\tt abstype}.
+\item Print type name set $T$ of inferred basis in elaboration mode.
+\item Fixed parenthesisation in pretty printing type applications.
+\end{itemize}
+
+Basis:
+\begin{itemize}[nolistsep]
+\item More correct path resolution for {\tt use} function.
+\item Added {\tt checkFloat} to {\tt REAL} signature so that bootstrapping actually works again.
+\item Fixed {\tt ArraySlice.copy} for overlapping ranges.
+\item Fixed {\tt ArraySlice.foldr} and {\tt ArraySlice.foldri}.
+\item Fixed {\tt Char.isSpace}.
+\item Fixed octal escapes in {\tt Char.fromCString}.
+\item Updated treatment of trailing gap escapes in {\tt Char.scan}.
+\item Updated scanning of hex prefix in {\tt Word.scan}.
+\item Fixed traversal order in {\tt Vector.map}.
+\end{itemize}
+
+Documentation:
+\begin{itemize}[nolistsep]
+\item Added typo in rule 28 to issue list.
+\end{itemize}
+
+Test files:
+\begin{itemize}[nolistsep]
+\item Added {\tt generalise}.
+\item Extended {\tt poly-exception}.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.2.1 (2005/07/27)}
+
+Interpreter:
+\begin{itemize}[nolistsep]
+\item Fixed bug in implementation of rule 35.
+\item Fixed bug in check for redundant match rules.
+\end{itemize}
+
+Basis:
+\begin{itemize}[nolistsep]
+\item Fixed {\tt Substring.splitr}.
+\item Fixed border cases in {\tt OS.Path.toString}, {\tt OS.Path.joinBaseExt},\\ {\tt OS.Path.mkAbsolute}, and {\tt OS.Path.mkRelative}.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.2.2 (2005/12/09)}
+
+Interpreter:
+\begin{itemize}[nolistsep]
+\item Simplified implementation of pattern checker.
+\end{itemize}
+
+Test files:
+\begin{itemize}[nolistsep]
+\item Added {\tt fun-infix}.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.2.3 (2006/07/18)}
+
+Interpreter:
+\begin{itemize}[nolistsep]
+\item Fixed check for duplicate variables in records and layered patterns.
+\item Added missing check for undetermined types in functor declarations.
+\item Overhaul of line/column computation and management of source file names.
+\end{itemize}
+
+Documentation:
+\begin{itemize}[nolistsep]
+\item Added principal typing problem with functors to issue list.
+\end{itemize}
+
+Test files:
+\begin{itemize}[nolistsep]
+\item Added {\tt fun-partial}, {\tt functor-poly} and {\tt functor-poly2}.
+\item Updated conformance table.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.2.4 (2006/08/14)}
+
+Documentation:
+\begin{itemize}[nolistsep]
+\item Clarified license.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.3.0 (2007/03/22)}
+
+Interpreter:
+\begin{itemize}[nolistsep]
+\item Output abstract syntax tree in parsing mode.
+\item Output type and signature environments in evaluation mode.
+\item Fixed computation of tynames on a static basis.
+\item Reorganised directory structure.
+\item Some clean-ups.
+\end{itemize}
+
+Documentation:
+\begin{itemize}[nolistsep]
+\item Updated a few out-of-sync sections.
+\item Added typo in definition of $\downarrow$ operator (Section 7.2) to issues list.
+\end{itemize}
+
+Test files:
+\begin{itemize}[nolistsep]
+\item Extended {\tt sharing} and {\tt where}.
+\item Updated conformance table.
+\end{itemize}
+
+Platforms:
+\begin{itemize}[nolistsep]
+\item Support for Poly/ML, Alice ML, and the ML Kit.
+\item Support for incremental batch compilation with Moscow ML and Alice ML.
+\item Target to build a generic monolithic source file.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.3.1 (2008/04/28)}
+
+Platforms:
+\begin{itemize}[nolistsep]
+\item Preliminary support for SML\#.
+\item Avoid name clash with library of SML/NJ 110.67.
+\item Avoid shell-specific code in {\tt Makefile}.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 2.0.0 (2013/10/10)}
+
+Interpreter functionality:
+\begin{itemize}[nolistsep]
+\item Print source location for uncaught exceptions.
+\item Abort on errors in batch modes.
+\item New command line option -b to switch standard basis path (or omit it).
+\item Fixed bug in lexing of negative hex constants (thanks to Matthew Fluet).
+\item Fixed missing identifier status check for variable in `as' patterns.
+\item Fixed missing type arity check for structure sharing derived form.
+\item Slightly more faithful checking of syntactic restrictions (ignore duplicate variables in matches).
+\item Slightly more faithful handling of equality maximisation (don't substitute).
+\item Slightly more faithful handling of sharing specifications (don't generate new type names).
+\end{itemize}
+
+Interpreter implementation:
+\begin{itemize}[nolistsep]
+\item Restructured AST to include annotations in the form of typed property list (breaks all code based on HaMLet 1, sorry :( ).
+\item Elaboration stores result of each rule as annotation in respective AST node.
+\item Derived forms make sure to clone nodes where necessary.
+\item Removed ad-hoc type annotation on SCons.
+\item Split Library into StaticLibrary and DynamicLibrary, to support compilers.
+\item Provide separate Elab/EvalProgram modules, to support compilers/interpreter.
+\item Renamed *Grammar* structures to *Syntax*.
+\item Tons of code clean-up and beautification.
+\end{itemize}
+
+JavaScript compiler:
+\begin{itemize}[nolistsep]
+\item New HaMLet mode -j, ``compile to JavaScript''.
+\item Simple type-aware source-to-source translation into JavaScript.
+\item JavaScript implementation of Standard Basis Library primitives.
+\end{itemize}
+
+Basis:
+\begin{itemize}[nolistsep]
+\item Implemented CommandLine.
+\item Skeletal implementation of OS.Process.
+\item Implemented Substring.{position,tokens,fields}.
+\end{itemize}
+
+Platforms:
+\begin{itemize}[nolistsep]
+\item Assume Moscow ML 2.10 by default.
+\item Added workarounds for String.concatWith and CharVector.all for (old versions of) Moscow ML.
+\item Renamed hamlet-monolith.sml to hamlet-bundle.sml.
+\end{itemize}
+
+Documentation:
+\begin{itemize}[nolistsep]
+\item Updated manual and man page.
+\item Added lax datatype replication rules to issue list (suggested by Karl Crary).
+\item Updated links.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vfill
+\pagebreak
+\begin{thebibliography}{MTHM97}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibitem[MTHM97]{definition}
+Robin Milner, Mads Tofte, Robert Harper, David MacQueen \\
+{\it The Definition of Standard ML} (Revised) \\
+The MIT Press, 1997
+
+\bibitem[MTH90]{definition90}
+Robin Milner, Mads Tofte, Robert Harper \\
+{\it The Definition of Standard ML} \\
+The MIT Press, 1990
+
+\bibitem[MT91]{commentary}
+Robin Milner, Mads Tofte \\
+{\it Commentary on Standard ML} \\
+The MIT Press, 1991
+
+\bibitem[K93]{mistakes}
+Stefan Kahrs \\
+{\it Mistakes and Ambiguities in the Definition of Standard ML} \\
+University of Edinburgh, 1993 \\
+{\small\tt{http://www.cs.ukc.ac.uk/pubs/1993/569/}}
+
+\bibitem[K96]{addenda}
+Stefan Kahrs \\
+{\it Mistakes and Ambiguities in the Definition of Standard ML -- Addenda} \\
+University of Edinburgh, 1996 \\
+{\small\tt{ftp://ftp.dcs.ed.ac.uk/pub/smk/SML/errors-new.ps.Z}}
+
+\bibitem[DB07]{principalmodules}
+Derek Dreyer, Matthias Blume \\
+{\it Principal Type Schemes for Modular Programs} \\
+in: Proc. of the 2007 European Symposium on Programming \\
+Springer-Verlag, 2007
+
+\void{
+\bibitem[DHCK06]{typeclasses}
+Derek Dreyer, Robert Harper, Manuel Chakravarty, Gabriele Keller \\
+{\it Modular Type Classes} \\
+Draft, 2006 \\
+{\small\tt{http://www.cs.cmu.edu/~rwh/papers/mtc/apr06.pdf}}
+}
+
+\bibitem[GR96]{basis-old}
+Emden Gansner, John Reppy \\
+{\it The Standard ML Basis Library}
+(preliminary version 1996) \\
+AT\&T and Lucent Technologies, 2004 \\
+{\small\tt{http://cm.bell-labs.com/cm/cs/what/smlnj/doc/basis/}}
+
+\bibitem[GR04]{basis}
+Emden Gansner, John Reppy \\
+{\it The Standard ML Basis Library} \\
+Cambridge University Press, 2004 \\
+{\small\tt{http://www.standardml.org/Basis/}}
+
+\bibitem[DM82]{principal}
+Luis Damas, Robin Milner \\
+{\it Principal type schemes for functional programs} \\
+in: Proc. of 9th Annual Symposium on Principles of Programming Languages \\
+ACM Press, 1982
+
+\bibitem[C87]{typechecking}
+Luca Cardelli \\
+{\it Basic Polymorphic Typechecking} \\
+in: {\it Science of Computer Programming} 8(2) \\
+Elsevier Science Publisher, 1987
+
+\bibitem[S96]{patterns}
+Peter Sestoft \\
+{\it ML pattern match compilation and partial evaluation} \\
+in: Dagstuhl Seminar on Partial Evaluation, LNCS 1110 \\
+Springer-Verlag 1996 \\
+{\small\tt{ftp://ftp.dina.kvl.dk/pub/Staff/Peter.Sestoft/papers/match.ps.gz}}
+
+\bibitem[W98]{pretty}
+Philip Wadler \\
+{\it A prettier printer} \\
+in: The Fun of Programming \\
+Palgrave Macmillan, 2003 \\
+{\small\tt{http://cm.bell-labs.com/cm/cs/who/wadler/}}
+
+\bibitem[BRTT93]{kit}
+Lars Birkedal, Nick Rothwell, Mads Tofte, David Turner \\
+{\it The ML Kit} (Version 1) \\
+{\small\tt{http://www.diku.dk/research-groups/topps/activities/kit2/mlkit1.html}}
+
+\bibitem[K06]{mlkit}
+{\it The ML Kit} \\
+{\small\tt{http://www.it-c.dk/research/mlkit/}}
+
+\bibitem[NJ07]{smlnj}
+{\it Standard ML of New Jersey} \\
+{\small\tt{http://www.smlnj.org/}}
+
+\bibitem[NJ98]{njlib}
+{\it The SML/NJ Library} \\
+{\small\tt{http://www.smlnj.org/doc/smlnj-lib/}}
+
+\bibitem[CFJW05]{mlton}
+Henry Cejtin, Matthew Fluet, Suresh Jagannathan, Stephen Weeks \\
+{\it MLton User Guide} \\
+{\small\tt{http://www.mlton.org/}}
+
+\bibitem[M07]{polyml}
+David Matthews \\
+{\it Poly/ML} \\
+{\small\tt{http://www.polyml.org/}}
+
+\bibitem[RRS00]{mosml}
+Sergei Romanenko, Claudio Russo, Peter Sestoft \\
+{\it Moscow ML Owner's Manual} (Version 2.10) \\
+{\small\tt{http://mosml.org}}
+
+\bibitem[AT06]{alice}
+{\it The Alice Programming System} \\
+{\small\tt{http://www.ps.uni-sb.de/alice/}}
+
+\bibitem[ST07]{smlsharp}
+{\it SML\# Project} \\
+{\small\tt{http://www.pllab.riec.tohoku.ac.jp/smlsharp/}}
+
+\bibitem[TA00]{mlyacc}
+David Tarditi, Andrew Appel \\
+{\it ML-Yacc User Manual} (Version 2.4) \\
+{\small\tt{http://cm.bell-labs.com/cm/cs/what/smlnj/doc/ML-Yacc/manual.html}}
+
+\bibitem[AMT94]{mllex}
+Andrew Appel, James Mattson, David Tarditi \\
+{\it A lexical analyzer generator for Standard ML} (Version 1.6.0) \\
+{\small\tt{http://cm.bell-labs.com/cm/cs/what/smlnj/doc/ML-Lex/manual.html}}
+
+\bibitem[ES12]{ecmascript}
+Ecma International \\
+{\it ECMAScript Language Specification} (Edition 5.1) \\
+{\small\tt{http://www.ecmascript.org}}
+
+\bibitem[E08]{smltojs}
+Martin Elsman \\
+{\it SMLtoJs} \\
+{\small\tt{http://www.smlserver.org/smltojs/}}
+
+\end{thebibliography}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{appendix}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
