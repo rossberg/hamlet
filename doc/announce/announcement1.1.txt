@@ -1,0 +1,20 @@
+I am pleased to announce the release of version 1.1 of HaMLet. The new version mainly featues changes to the library:
+
+  - conformance with the latest incarnation of the SML Basis Library
+    specification (http://SML.sourceforge.net/Basis/),
+  - a bunch of additional library structures,
+  - some bug fixes.
+
+HaMLet is a faithful implementation of the Standard ML programming language (SML'97) that aims to be
+
+  - an accurate reference implementation of the language specification,
+  - a platform for experimentation with the language semantics,
+  - a useful tool for educational purposes.
+
+The HaMLet sources are intended to be as direct a translation of the language formalisation as possible. Even program evaluation is performed by a direct implementation of the rules of the dynamic semantics. The source code is heavily cross-referenced.
+
+HaMLet can perform different phases of execution - like parsing, type checking, and evaluation - selectively. In particular, it is possible to execute programs in an untyped manner, thus exploring the universe where even ML programs "can go wrong".
+
+For download and more information, visit the HaMLet homepage at:
+
+	http://www.ps.uni-sb.de/hamlet/

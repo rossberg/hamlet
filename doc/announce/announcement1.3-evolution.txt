@@ -1,0 +1,154 @@
+Dear sMLers,
+
+I have just put up a version of HaMLet that incorporates a number of the proposals for Successor ML. Consider it a testbed, and sort of (incomplete) personal vision of where sML could go (well, is it going anywhere?).
+
+Among the extensions are:
+
+  - most "immediate" changes listed in the Wiki
+    (extensible records, pattern matching extensions, etc.),
+  - higher-order modules, nested signatures, and first-class modules,
+  - views.
+
+The latter point includes Greg's "poor man's views", as well as "proper" views following the papers by Wadler and Okasaki. Having both real views and the "poor man's" alternative implemented in the same system should allow some useful experimentation.
+
+Poor man's views
+----------------
+
+Let's call them "transformation patterns". They have one of these two forms:
+
+    ?atexp
+    ?atexp atpat
+
+The first form provides boolean "views", e.g.:
+
+    (*) isSpace : char -> bool
+
+    fun skipSpace(?isSpace :: cs) = skipSpace cs
+      | skipSpace cs = cs
+
+The parameterised form allows actual matching. Consider a queue ADT:
+
+    (*) val dequeue : 'a queue -> ('a * 'a queue) option
+
+    fun process (?dequeue(x,q)) = (digest x; process q)
+      | process _ = terminate()
+
+The transformation may be denoted by an arbitrary expression. Consider a simple set ADT:
+
+    (*) val isEmpty : set -> bool
+    (*) val has : int -> set -> bool
+
+    fun f n ?isempty = f1 ()
+      | f n ?(has n) = f2 ()
+      | f n _ = f3 ()
+
+Or another example, with a parameterised transformation:
+
+    (*) val split : char -> string -> (string * string) option
+
+    fun manExp(?(split #"E")(b,e)) => (b,e)
+      | manExp s => (s,"1")
+
+As a minor subtlety, in patterns with multiple subpatterns, patterns to the right may refer to variables bound by patterns to the left. For example,
+
+    (x, ?(equals x))
+    x as ?(notOccurs x)(T(x1,x2))
+
+In particular, this allows the function f from above to be expressed without a separate case (cf. the definition of the fun derived form).
+
+Transformation patterns are actually only sugar for "nested matches": the form "?atexp" expands to "x with true = atexp x", while the parameterised form "?atexp atpat" expands to "x with SOME atpat = atexp x".
+
+
+Proper Views
+------------
+
+The design of views is a mixture of Wadler's paper and of Okasaki's. The syntax of a view definition is:
+
+    viewtype <tyvars> <tycon> = <ty> as <conbind> with <dec> end
+
+Like with Wadler's original proposal, views define both injections and projections. The declaration <dec> must hence define (at least) two functions named "from" and "to" for conversion. Here is a simple example:
+
+    viewtype peano = int as Zero | Succ of int
+    with
+      fun from Zero     = 0            (*) projection
+        | from (Succ n) = n+1
+      fun to 0          = Zero         (*) injection
+        | to n if (n>0) = Succ(n-1)
+        | to n          = raise Domain
+    end
+
+Unlike with previous proposals, views must be used consistently in patterns, that is, a match may not use different views, or a view and concrete constants of the underlying type, *for the same position* in a pattern. For instance, the following is illegal:
+
+    fun fac (0 | 1)  = 1
+      | fac (Succ n) = Succ n * fac n
+
+Thanks to this restriction, the compiler is still able to check exhaustiveness and irredundancy of patterns, even in the presence of views. I consider this crucial, and it's one of the advantages over "poor man's views".
+
+Like with Okasaki's proposal, viewtype specifications in signatures can be matched by datatypes. Here is a respective example adapted from Wadler's paper:
+
+    signature COMPLEX =
+    sig
+      type complex
+      viewtype cart = complex as Cart of real * real
+      viewtype pole = complex as Pole of real * real
+      val add : complex * complex -> complex
+      val mul : complex * complex -> complex
+    end
+
+    structure Complex :> COMPLEX =
+    struct
+      datatype cart = Cart of real * real
+      type complex = cart
+      viewtype pole = complex as Pole of real * real
+      with
+        fun to(Cart(x,y)) = Pole(sqrt(x*x + y*y), atan2(x,y))
+        fun from(Pole(r,t)) = Cart(r*cos(t), r*sin(t))
+      end
+      fun add(Cart(x1,y1), Cart(x2,y2)) = Cart(x1+x2, y1+y2)
+      fun mul(Pole(r1,t1), Pole(r2,t2)) = Pole(r1*r2, t1+t2)
+   end
+
+Instead of opening a structure, a view can also be pulled into scope (and thus enable unqualified use of its constructors) by a viewtype replication declaration, analogous to SML's datatype replication:
+
+    viewtype cart = viewtype Complex.cart
+
+This explains why views are named. Apart from viewtype replication, the name of a view acts as a synonym for the underlying representation type -- except inside the view definition itself, where it used to denote the (otherwise anonymous) datatype representing the view.
+
+Here are a few more examples of using views:
+	http://www.ps.uni-sb.de/hamlet/examples/views.sml
+
+Please see the HaMLet page for more details:
+	http://www.ps.uni-sb.de/hamlet/#successor-ml
+A brief description of all extensions implemented in HaMLet-S:
+	http://www.ps.uni-sb.de/hamlet/README-succ.txt
+
+I took the liberty to put a link on the sML Wiki.
+
+Best regards,
+- Andreas
+
+****
+
+Subject: A little benchmarking of SML implementations
+
+Dear implementors,
+
+for the new release I have ported HaMLet to more SML systems. It now covers most live implementations and I have used this for a little benchmark: I have measured compile times and execution times, the latter by bootstrapping HamLet with the produced executable. You may find the results interesting (and certainly embarrassing for Alice ML :-( ):
+
+System    Version  Execution  Compilation  Compilation  Executable
+                              (separate)   (monolithic)
+MLton     20060213    23+1s      175+4s       153+3s    3318K
+Poly/ML   5.0         27+0s        4+0s        93+1s(!)  867K
+SML/NJ    110.59      69+1s       27+1s        27+1s    1983K
+ML Kit    4.3.0       87+0s      373+12s      186+6s    3170K
+Moscow ML 2.01       253+1s       32+5s        12+0s     244K (bytecode)
+Alice ML  1.4        662+49s     231+12s       76+6s     499K (bytecode)
+
+Times are user+system rounded. Note that most systems are significantly slowed down by "separate" compilation from multiple (175) files when compared to compiling from a single monolithic (26kloc) source file. The only exception is Poly/ML - its degenerate performance on the monolithic input seems to hint at a non-linear algorithm somewhere. Otherwise the new Poly/ML 5 is extremely impressive, as you can see from the other numbers.
+
+I won't comment on Alice ML's performance, except by saying that it does not optimize currying at all, which HaMLet uses heavily. :-)
+
+Another point to note is that half of the systems required several wrappers around Standard Basis modules to work around bugs or deviations from the spec (SML/NJ: 4, Moscow ML: 8, ML Kit: 2).
+
+Cheers,
+- Andreas
