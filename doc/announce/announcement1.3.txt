@@ -1,0 +1,52 @@
+I am pleased to announce the release of version 1.3 of HaMLet, as well as version 1.3/S4 of HaMLet-S.
+
+HaMLet
+------
+
+HaMLet is a faithful implementation of the Standard ML programming language (SML'97) that aims to be
+
+  - an accurate reference implementation of the language specification,
+  - a platform for experimentation with the language semantics,
+  - a useful tool for educational purposes.
+
+The HaMLet sources are intended to be as direct a translation of the language formalisation as possible. Even program evaluation is performed by a direct implementation of the rules of the dynamic semantics. The source code follows the structure of the SML Definition and is heavily cross-referenced.
+
+HaMLet can perform different phases of execution - like parsing, type checking, and evaluation - selectively. In particular, it is possible to execute programs in an untyped manner, thus exploring the universe where even ML programs "can go wrong".
+
+Version 1.3 now comes with build support for most major SML systems:
+
+  - SML of New Jersey (110 or higher)
+  - MLton (20010706 or higher)
+  - Moscow ML (2.0 or higher)
+  - Poly/ML (5.0 or higher)
+  - Alice ML (1.4 or higher)
+  - ML Kit (4.3.0 or higher)
+
+For download and more information, please visit the HaMLet homepage:
+
+    http://www.ps.uni-sb.de/hamlet/
+
+HaMLet-S
+--------
+
+Furthermore, I am pleased to announce a new release of HaMLet-S.
+
+HaMLet-S is a spin-off devoted to Successor ML (www.successor-ml.org). It incorporates a number of preliminary proposals and is a testbed and sort of a personal vision of where SML could go. Version 1.3/S4 features the following:
+
+  - Extensible records.
+  - More expressive patter matching.
+  - Views (a la Wadler and Okasaki).
+  - Higher-order modules and nested signatures.
+  - Local and first-class modules.
+  - Miscellaneous fixes to known issues with SML.
+
+All extensions are formalised by description of respective changes to the SML Definition.
+
+A brief description of all extensions and a few examples can be found here:
+
+    http://www.ps.uni-sb.de/hamlet/README-succ.txt
+    http://www.ps.uni-sb.de/hamlet/examples/
+
+For download and more information, please see the HaMLet homepage at:
+
+    http://www.ps.uni-sb.de/hamlet/#successor-ml

@@ -1,0 +1,17 @@
+After this long time, I am pleased to announce the release of version 2.0 of HaMLet. This is the first public release since 2008.
+
+HaMLet is a faithful and complete implementation of the Standard ML programming language (SML'97) that aims to be
+
+  - an accurate reference implementation of the language specification,
+  - a platform for experimentation with the language semantics,
+  - a useful tool for educational purposes.
+
+The HaMLet sources are intended to be as direct a translation of the language formalisation as possible. Even program evaluation is performed by a direct implementation of the rules of the dynamic semantics. The source code follows the structure of the SML Definition and is heavily cross-referenced.
+
+HaMLet can perform different phases of execution - like parsing, type checking, and evaluation - selectively. In particular, it is possible to execute programs in an untyped manner, thus exploring the universe where even ML programs "can go wrong".
+
+Version 2.0 brings a revamp of the internal AST representation. In particular, elaboration now stores its results in the AST, which should make HaMLet more useful as an experimental compiler front-end. As a proof of concept, the release integrates a simple compiler to JavaScript.
+
+For download, a complete list of changes, and more information, please visit the HaMLet homepage:
+
+    http://mpi-sws.org/~rossberg/hamlet/
