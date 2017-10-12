@@ -5,8 +5,8 @@
 (* HaMLet cannot deal with eq2. *)
 
 abstype t = T with
-  datatype u = U of t
-  val eq = op=
+    datatype u = U of t
+    val eq = op=
 end
 
 fun eq1(t1, t2) = U t1 = U t2;

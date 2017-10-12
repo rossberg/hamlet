@@ -1,11 +1,11 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML implementation stand-alone
  *)
 
 signature MAIN =
 sig
-  val version : string
-  val main    : unit -> 'a
+    val version : string
+    val main :    unit -> 'a
 end;

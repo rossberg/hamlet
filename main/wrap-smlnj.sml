@@ -1,5 +1,3 @@
-SMLofNJ.Internals.GC.messages false;
-
 (* Ugliest hack to support built with old and new CM (SML/NJ >= 110.20) *)
 CM.make(Unsafe.cast "sources.cm");
 
@@ -7,4 +5,5 @@ CM.make(Unsafe.cast "sources.cm");
 (*Sml.parseString ";";*)
 
 (* Export *)
+SMLofNJ.Internals.GC.messages false;
 SMLofNJ.exportFn ("hamlet-image", Main.main o ignore);

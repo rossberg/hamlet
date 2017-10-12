@@ -4,7 +4,7 @@
 
 structure CommandLine : COMMAND_LINE =
 struct
-  val arguments = CommandLine.arguments
+    val arguments = CommandLine.arguments
 
-  fun name() = OS.FileSys.getDir() ^ "/hamlet"
+    fun name() = OS.FileSys.getDir() ^ "/hamlet"
 end

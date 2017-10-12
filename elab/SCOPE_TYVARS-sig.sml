@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML scope of type variables
  *
@@ -8,12 +8,12 @@
 
 signature SCOPE_TYVARS =
 sig
-  (* Import *)
+    (* Import *)
 
-  type ValBind  = SyntaxCore.ValBind
-  type TyVarSet = TyVarSet.set
+    type ValBind  = GrammarCore.ValBind
+    type TyVarSet = TyVarSet.set
 
-  (* Operation *)
+    (* Operation *)
 
-  val unguardedTyVars : ValBind -> TyVarSet
+    val unguardedTyVars : ValBind -> TyVarSet
 end;

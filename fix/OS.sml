@@ -2,13 +2,13 @@
 
 structure OS =
 struct
-  open OS
+    open OS
 
-  structure Path =
-  struct
-    open Path
+    structure Path =
+    struct
+	open Path
 
-    fun mkAbsolute{path, relativeTo} = Path.mkAbsolute(path, relativeTo)
-    fun mkRelative{path, relativeTo} = Path.mkRelative(path, relativeTo)
-  end
+	fun mkAbsolute{path, relativeTo} = Path.mkAbsolute(path, relativeTo)
+	fun mkRelative{path, relativeTo} = Path.mkRelative(path, relativeTo)
+    end
 end

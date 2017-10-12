@@ -1,495 +1,740 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML syntactic restrictions for the core
  *
  * Definition, Section 2.9
+ * + RFC: Syntax fixes
+ * + RFC: Semantic fixes
+ * + RFC: Record extension
+ * + RFC: Conjunctive patterns
+ * + RFC: Disjunctive patterns
+ * + RFC: Nested matches
+ * + RFC: Transformation patterns
+ * + RFC: Views
+ * + RFC: Simplified recursive value bindings
+ * + RFC: Abstype as derived
+ * + RFC: Higher-order functors
+ * + RFC: Local modules
+ * + RFC: First-class modules
  *
- * Notes: see SYNTACTIC_RESTRICTIONS_CORE-sig.sml
+ * Notes:
+ *   - The "syntactic restrictions" defined in the Definition are not purely
+ *     syntactic. E.g. the restriction that valbinds may not bind the same vid
+ *     twice [2nd bullet] cannot be checked without proper binding analysis,
+ *     to compute identifier status.
+ *   - Also, checking of type variable shadowing [last bullet] is a global
+ *     check dependent on context. Moreover, it requires the transformation from
+ *     Section 4.6 to be done first.
  *)
 
 structure SyntacticRestrictionsCore : SYNTACTIC_RESTRICTIONS_CORE =
 struct
-  (* Import *)
-
-  open SyntaxCore
-  open AnnotationCore
-  open BindingObjectsCore
-  open Error
-
-
-  (* Helpers *)
-
-  open BindingContext
-  val plus = BindingEnv.plus
-
-  infix plus plusU plusVE plusTE plusVEandTE plusE
-
-  fun ?check(C, NONE)        default = default
-    | ?check(C, SOME phrase) default = check(C, phrase)
-
-
-  (* Checking restriction for vids in binding [Section 2.9, 5th bullet] *)
-
-  fun isValidBindVId vid =
-        vid <> VId.fromString "true" andalso
-        vid <> VId.fromString "false" andalso
-        vid <> VId.fromString "nil" andalso
-        vid <> VId.fromString "::"  andalso
-        vid <> VId.fromString "ref"
-
-  fun isValidConBindVId vid =
-        isValidBindVId vid andalso vid <> VId.fromString "it"
-
-
-  (* Type variable sequences *)
-
-  fun checkTyVarseq(Seq(tyvars)@@A) =
-      (* [Section 2.9, 3rd bullet; Section 3.5, 3rd bullet] *)
-      let
-        fun check([], U) = U
-          | check((tyvar@@A')::tyvars, U) =
-              if TyVarSet.member(U, tyvar) then
-                errorTyVar(loc A', "duplicate type variable ", tyvar)
-              else
-                check(tyvars, TyVarSet.add(U, tyvar))
-      in
-        check(tyvars, TyVarSet.empty)
-      end
-
-
-  (* Atomic Expressions *)
-
-  fun checkAtExp(C, SCONAtExp(scon)@@A) =
-        ()
-    | checkAtExp(C, IDAtExp(_, longvid)@@A) =
-        ()
-    | checkAtExp(C, RECORDAtExp(exprow_opt)@@A) =
-        ignore(?checkExpRow(C, exprow_opt) LabSet.empty)
-    | checkAtExp(C, LETAtExp(dec, exp)@@A) =
-      let
-        val E = checkDec(C, dec)
-      in
-        checkExp(C plusE E, exp)
-      end
-    | checkAtExp(C, PARAtExp(exp)@@A) =
-        checkExp(C, exp)
-
-
-  (* Expression Rows *)
-
-  and checkExpRow(C, ExpRow(lab@@A', exp, exprow_opt)@@A) =
-      let
-        val ()   = checkExp(C, exp)
-        val labs = ?checkExpRow(C, exprow_opt) LabSet.empty
-      in
-        (* [Section 2.9, 1st bullet] *)
-        if LabSet.member(labs, lab) then
-          errorLab(loc A', "duplicate label ", lab)
-        else
-          LabSet.add(labs, lab)
-      end
-
-
-  (* Expressions *)
-
-  and checkExp(C, ATExp(atexp)@@A) =
-        checkAtExp(C, atexp)
-    | checkExp(C, APPExp(exp, atexp)@@A) =
-      ( checkExp(C, exp);
-        checkAtExp(C, atexp)
-      )
-    | checkExp(C, COLONExp(exp, ty)@@A) =
-      ( checkExp(C, exp);
-        ignore(checkTy(C, ty))
-      )
-    | checkExp(C, HANDLEExp(exp, match)@@A) =
-      ( checkExp(C, exp);
-        checkMatch(C, match)
-      )
-    | checkExp(C, RAISEExp(exp)@@A) =
-        checkExp(C, exp)
-    | checkExp(C, FNExp(match)@@A) =
-        checkMatch(C, match)
-
-
-  (* Matches *)
-
-  and checkMatch(C, Match(mrule, match_opt)@@A) =
-      ( checkMrule(C, mrule);
-        ?checkMatch(C, match_opt) ()
-      )
-
-
-  (* Match rules *)
-
-  and checkMrule(C, Mrule(pat, exp)@@A) =
-      let
-        val VE = checkPat false (C, pat)
-      in
-        checkExp(C plusVE VE, exp)
-      end
-
-
-  (* Declarations *)
-
-  and checkDec(C, VALDec(tyvarseq, valbind)@@A) =
-      let
-        val U' = checkTyVarseq(tyvarseq)
-        (* Collect implicitly bound tyvars [Section 4.6] *)
-        val U =
-            TyVarSet.union(
-              U',
-              TyVarSet.difference(ScopeTyVars.unguardedTyVars valbind, Uof C))
-      in
-        if not(TyVarSet.isEmpty(TyVarSet.intersection(Uof C, U))) then
-          (* [Section 2.9, last bullet] *)
-          error(loc A, "some type variables shadow previous ones")
-        else
-          BindingEnv.fromVE(checkValBind(C plusU U, valbind))
-      end
-    | checkDec(C, TYPEDec(typbind)@@A) =
-        BindingEnv.fromTE(checkTypBind(C, typbind))
-    | checkDec(C, DATATYPEDec(datbind)@@A) =
-        BindingEnv.fromVEandTE(checkDatBind(C, datbind))
-    | checkDec(C, DATATYPE2Dec(tycon@@_, longtycon@@_)@@A) =
-      let
-         val VE = 
-             case findLongTyCon(C, longtycon) of
-               SOME VE => VE
-             | NONE    => VIdMap.empty  (* is an error later *)
-         val TE = TyConMap.singleton(tycon, VE)
-      in
-        BindingEnv.fromVEandTE(VE,TE)
-      end
-    | checkDec(C, ABSTYPEDec(datbind, dec)@@A) =
-      let
-        val (VE, TE) = checkDatBind(C, datbind)
-      in
-        checkDec(C plusVEandTE (VE, TE), dec)
-      end
-    | checkDec(C, EXCEPTIONDec(exbind)@@A) =
-        BindingEnv.fromVE(checkExBind(C, exbind))
-    | checkDec(C, LOCALDec(dec1, dec2)@@A) =
-      let
-        val E1 = checkDec(C, dec1)
-      in
-        checkDec(C plusE E1, dec2)
-      end
-    | checkDec(C, OPENDec(longstrids)@@A) =
-      let
-        val Es =
-            List.map(fn longstrid@@_ =>
-              case findLongStrId(C, longstrid) of
-                SOME E => E
-              | NONE   => BindingEnv.empty  (* is an error later *)
-            ) longstrids
-      in
-        List.foldl (op plus) BindingEnv.empty Es
-      end
-    | checkDec(C, EMPTYDec@@A) =
-        BindingEnv.empty
-    | checkDec(C, SEQDec(dec1, dec2)@@A) =
-      let
-        val E1 = checkDec(C, dec1)
-        val E2 = checkDec(C plusE E1, dec2)
-      in
-        E1 plus E2
-      end
-
-
-  (* Value Bindings *)
-
-  and checkValBind(C, PLAINValBind(pat, exp, valbind_opt)@@A) =
-      let
-        val VE  = checkPat true (C, pat)
-        val ()  = checkExp(C, exp)
-        val VE' = ?checkValBind(C, valbind_opt) VIdMap.empty
-      in
-        VIdMap.appi(fn(vid, _) =>
-          if isValidBindVId vid then () else
-            (* [Section 2.9, 5th bullet] *)
-            errorVId(loc A, "illegal rebinding of identifier ", vid)
-        ) VE;
-        VIdMap.unionWithi(fn(vid, _, _) =>
-          (* [Section 2.9, 2nd bullet] *)
-          errorVId(loc A, "duplicate variable ", vid)
-        ) (VE, VE')
-      end
-    | checkValBind(C, RECValBind(valbind)@@A) =
-      let
-        val VE1 = recValBind(C, valbind)
-      in
-        checkValBind(C plusVE VE1, valbind)
-      end
-
-
-  (* Type Bindings *)
-
-  and checkTypBind(C, TypBind(tyvarseq, tycon@@A', ty, typbind_opt)@@A) =
-      let
-        val U1 = checkTyVarseq(tyvarseq)
-        val U2 = checkTy(C, ty)
-        val TE = ?checkTypBind(C, typbind_opt) TyConMap.empty
-      in
-        if not(TyVarSet.isSubset(U2, U1)) then
-          (* Restriction missing in the Definition! *)
-          error(loc(annotation ty), "free type variables in type binding")
-        else if TyConMap.inDomain(TE, tycon) then
-          (* Syntactic restriction [Section 2.9, 2nd bullet] *)
-          errorTyCon(loc A', "duplicate type constructor ", tycon)
-        else
-          TyConMap.insert(TE, tycon, VIdMap.empty)
-      end
-
-
-  (* Datatype Bindings *)
-
-  and checkDatBind(C, DatBind(tyvarseq, tycon@@A', conbind, datbind_opt)@@A) =
-      let
-        val U1 = checkTyVarseq(tyvarseq)
-        val (U2, VE) = checkConBind(C, conbind)
-        val (VE', TE') =
-            ?checkDatBind(C, datbind_opt) (VIdMap.empty, TyConMap.empty)
-      in
-        if not(TyVarSet.isSubset(U2, U1)) then
-          (* Restriction missing in Definition! *)
-          error(loc(annotation conbind),
-            "free type variables in datatype binding")
-        else if TyConMap.inDomain(TE', tycon) then
-          (* [Section 2.9, 2nd bullet] *)
-          errorTyCon(loc A', "duplicate type constructor ", tycon)
-        else
-          ( VIdMap.unionWithi(fn(vid, _, _) =>
-              (* [Section 2.9, 2nd bullet] *)
-              errorVId(loc A, "duplicate data constructor ", vid)
-            ) (VE, VE'),
-            TyConMap.insert(TE', tycon, VE)
-          )
-      end
-
-
-  (* Constructor Bindings *)
-
-  and checkConBind(C, ConBind(_, vid@@A', ty_opt, conbind_opt)@@A) =
-      let
-        val U = ?checkTy(C, ty_opt) TyVarSet.empty
-        val (U', VE) =
-            ?checkConBind(C, conbind_opt) (TyVarSet.empty, VIdMap.empty)
-      in
-        if VIdMap.inDomain(VE, vid) then
-          (* [Section 2.9, 2nd bullet] *)
-          errorVId(loc A', "duplicate data constructor ", vid)
-        else if not(isValidConBindVId vid) then
-          (* [Section 2.9, 5th bullet] *)
-          errorVId(loc A', "illegal rebinding of constructor ", vid)
-        else
-          (TyVarSet.union(U, U'), VIdMap.insert(VE, vid, IdStatus.c))
-      end
-
-
-  (* Exception Bindings *)
-
-  and checkExBind(C, NEWExBind(_, vid@@A', ty_opt, exbind_opt)@@A) =
-      let
-        val U  = ?checkTy(C, ty_opt) TyVarSet.empty
-        val VE = ?checkExBind(C, exbind_opt) VIdMap.empty
-      in
-        if VIdMap.inDomain(VE, vid) then
-          (* [Section 2.9, 2nd bullet] *)
-          errorVId(loc A', "duplicate exception constructor ", vid)
-        else if not(isValidConBindVId vid) then
-          (* [Section 2.9, 5th bullet] *)
-          errorVId(loc A', "illegal rebinding of constructor ", vid)
-        else
-          VIdMap.insert(VE, vid, IdStatus.e)
-      end
-    | checkExBind(C, EQUALExBind(_, vid@@A', _, longvid, exbind_opt)@@A) =
-      let
-        val VE = ?checkExBind(C, exbind_opt) VIdMap.empty
-      in
-        if VIdMap.inDomain(VE, vid) then
-          (* [Section 2.9, 2nd bullet] *)
-          errorVId(loc A', "duplicate exception constructor ", vid)
-        else
-          VIdMap.insert(VE, vid, IdStatus.e)
-      end
-
-
-  (* Atomic Patterns *)
-
-  and checkAtPat inValBind (C, WILDCARDAtPat@@A) =
-        VIdMap.empty
-    | checkAtPat inValBind (C, SCONAtPat(scon@@_)@@A) =
-        (case scon of
-          SCon.REAL _ =>
-            (* [Section 2.9, 6th bullet] *)
-            error(loc A, "real constant in pattern")
-        | _ =>
-            VIdMap.empty
-        )
-    | checkAtPat inValBind (C, IDAtPat(_, longvid@@_)@@A) =
-      let
-        val (strids, vid) = LongVId.explode longvid
-      in
-        if
-          List.null strids andalso
-          (case findLongVId(C, longvid) of
-            NONE    => true
-          | SOME is => is = IdStatus.v
-          )
-        then
-          VIdMap.singleton(vid, IdStatus.v)
-        else
-          VIdMap.empty
-      end
-    | checkAtPat inValBind (C, RECORDAtPat(patrow_opt)@@A) =
-        #1(?(checkPatRow inValBind)(C, patrow_opt) (VIdMap.empty, LabSet.empty))
-    | checkAtPat inValBind (C, PARAtPat(pat)@@A) =
-        checkPat inValBind (C, pat)
-
-
-  (* Pattern Rows *)
-
-  and checkPatRow inValBind (C, DOTSPatRow@@A) =
-        (VIdMap.empty, LabSet.empty)
-    | checkPatRow inValBind (C, FIELDPatRow(lab@@A', pat, patrow_opt)@@A) =
-      let
-        val VE = checkPat inValBind (C, pat)
-        val (VE', labs) =
-            ?(checkPatRow inValBind)(C, patrow_opt) (VIdMap.empty, LabSet.empty)
-      in
-        if LabSet.member(labs, lab) then
-          (* [Section 2.9, 1st bullet] *)
-          errorLab(loc A', "duplicate label ", lab)
-        else
-          ( VIdMap.unionWithi(fn(vid, _, _) =>
-              (* [Section 2.9, 2nd bullet] *)
-              if inValBind then
-                errorVId(loc A, "duplicate variable ", vid)
-              else
-                IdStatus.v
-            ) (VE, VE'),
-            LabSet.add(labs, lab)
-          )
-        end
-
-
-  (* Patterns *)
-
-  and checkPat inValBind (C, ATPat(atpat)@@A) =
-        checkAtPat inValBind (C, atpat)
-    | checkPat inValBind (C, CONPat(_, longvid, atpat)@@A) =
-        checkAtPat inValBind (C, atpat)
-    | checkPat inValBind (C, COLONPat(pat, ty)@@A) =
-      ( ignore(checkTy(C, ty));
-        checkPat inValBind (C, pat)
-      )
-    | checkPat inValBind (C, ASPat(_, vid@@A', ty_opt, pat)@@A) =
-      let
-        val U  = ?checkTy(C, ty_opt) TyVarSet.empty
-        val VE = checkPat inValBind (C, pat)
-      in
-        if inValBind andalso VIdMap.inDomain(VE, vid) then
-          (* [Section 2.9, 2nd bullet] *)
-          errorVId(loc A', "duplicate variable ", vid)
-        else
-          VIdMap.insert(VE, vid, IdStatus.v)
-      end
-
-
-  (* Type Expressions *)
-
-  and checkTy(C, VARTy(tyvar@@_)@@A) =
-        TyVarSet.singleton tyvar
-    | checkTy(C, RECORDTy(tyrow_opt)@@A) =
-        #1(?checkTyRow(C, tyrow_opt) (TyVarSet.empty, LabSet.empty))
-    | checkTy(C, CONTy(tyseq, longtycon@@_)@@A) =
-      let
-        val Seq(tys)@@_ = tyseq
-        val Us = List.map (fn ty => checkTy(C, ty)) tys
-      in
-        List.foldl TyVarSet.union TyVarSet.empty Us
-      end
-    | checkTy(C, ARROWTy(ty, ty')@@A) =
-      let
-        val U  = checkTy(C, ty)
-        val U' = checkTy(C, ty')
-      in
-        TyVarSet.union(U, U')
-      end
-    | checkTy(C, PARTy(ty)@@A) =
-        checkTy(C, ty)
-
-
-  (* Type-expression Rows *)
-
-  and checkTyRow(C, TyRow(lab@@A', ty, tyrow_opt)@@A) =
-      let
-        val U = checkTy(C, ty)
-        val (U', labs) =
-            ?checkTyRow(C, tyrow_opt) (TyVarSet.empty, LabSet.empty)
-      in
-        if LabSet.member(labs, lab) then
-          (* [Section 2.9, 1st bullet] *)
-          errorLab(loc A', "duplicate label ", lab)
-        else
-          (TyVarSet.union(U, U'), LabSet.add(labs, lab))
-      end
-
-
-  (* Build tentative VE from LHSs of recursive valbind *)
-
-  and recValBind(C, PLAINValBind(pat, exp, valbind_opt)@@A) =
-      let
-        val VE  = recPat(C, pat)
-        val VE' = ?recValBind(C, valbind_opt) VIdMap.empty
-      in
-        case exp of
-          FNExp(_)@@_ =>
-            VIdMap.unionWith #2 (VE, VE')
-        | _ =>
-            (* [Section 2.9, 4th bullet] *)
-            error(loc(annotation exp),
-              "illegal expression within recursive value binding")
-      end
-    | recValBind(C, RECValBind(valbind)@@A) =
-        recValBind(C, valbind)
-
-  and recPat(C, ATPat(atpat)@@A) =
-        recAtPat(C,  atpat)
-    | recPat(C, CONPat(_, longvid, atpat)@@A) =
-        recAtPat(C, atpat)
-    | recPat(C, COLONPat(pat, ty)@@A) =
-        recPat(C, pat)
-    | recPat(C, ASPat(_, vid@@_, ty_opt, pat)@@A) =
-      let
-        val VE = recPat(C, pat)
-      in
-        VIdMap.insert(VE, vid, IdStatus.v)
-      end
-
-  and recAtPat(C, WILDCARDAtPat@@A) =
-        VIdMap.empty
-    | recAtPat(C, SCONAtPat(scon)@@A) =
-        VIdMap.empty
-    | recAtPat(C, IDAtPat(_, longvid@@_)@@A) =
-        (case LongVId.explode longvid of
-          ([], vid) => VIdMap.singleton(vid, IdStatus.v)
-        | _         => VIdMap.empty
-        )
-    | recAtPat(C, RECORDAtPat(patrow_opt)@@A) =
-        ?recPatRow(C, patrow_opt) VIdMap.empty
-    | recAtPat(C, PARAtPat(pat)@@A) =
-        recPat(C, pat)
-
-  and recPatRow(C, DOTSPatRow@@A) =
-        VIdMap.empty
-    | recPatRow(C, FIELDPatRow(lab, pat, patrow_opt)@@A) =
-      let
-        val VE  = recPat(C, pat)
-        val VE' = ?recPatRow(C, patrow_opt) VIdMap.empty
-      in
-        VIdMap.unionWith #2 (VE, VE')
-      end
+    (* Import *)
+
+    open GrammarCore
+    open BindingObjectsCore
+    open Error
+
+
+    (* Recursive import *)
+
+    structure SyntacticRestrictionsModule =
+    struct
+	val checkStrDec : (Context * StrDec' -> Env) ref =
+	    ref (fn _ => raise Fail "SyntacticRestrictionsCore.SyntacticRestrictionsModule.checkStrDec")
+    end
+
+
+    (* Helpers for context modification *)
+
+    open BindingContext
+    val plus = BindingEnv.plus
+
+    infix plus plusU plusE plusVE plusTE plusVEandTE plusSE
+    
+
+    (* Checking restriction for vids in binding [Section 2.9, 5th bullet;
+     *                                           RFC: Transformation patterns] *)
+
+    fun validBindVId vid =
+	    vid <> VId.fromString "true" andalso
+	    vid <> VId.fromString "false" andalso
+	    vid <> VId.fromString "SOME" andalso
+	    vid <> VId.fromString "NONE" andalso
+	    vid <> VId.fromString "nil" andalso
+	    vid <> VId.fromString "::"  andalso
+	    vid <> VId.fromString "ref"
+
+    fun validConBindVId vid =
+	    validBindVId vid andalso
+	    vid <> VId.fromString "it"
+
+
+    (* Type variable sequences *)
+
+    fun checkTyVarseq(TyVarseq(I, tyvars)) =
+	(* [Section 2.9, 3rd bullet; Section 3.5, 3rd bullet] *)
+	let
+	    fun check(U, []) = U
+	      | check(U, tyvar::tyvars) =
+		    if TyVarSet.member(U, tyvar) then
+			errorTyVar(I, "duplicate type variable ", tyvar)
+		    else
+			check(TyVarSet.add(U, tyvar), tyvars)
+	in
+	    check(TyVarSet.empty, tyvars)
+	end
+
+
+    (* Atomic Expressions *)
+
+    fun checkAtExp(C, SCONAtExp(I, scon)) =
+	    ()
+
+      | checkAtExp(C, IDAtExp(I, _, longvid)) =
+	    ()
+
+      | checkAtExp(C, RECORDAtExp(I, exprow_opt)) =
+	let
+	    (* [RFC: Record extension] *)
+	    val () = case exprow_opt
+		       of NONE        => ()
+		        | SOME exprow => checkExpRow(C, exprow)
+	in
+	    ()
+	end
+
+      | checkAtExp(C, LETAtExp(I, dec, exp)) =
+	let
+	    val E = checkDec(C, dec)
+	in
+	    checkExp(C plusE E, exp)
+	end
+
+      | checkAtExp(C, PARAtExp(I, exp)) =
+	let
+	    val () = checkExp(C, exp)
+	in
+	    ()
+	end
+
+
+    (* Expression Rows *)
+
+    and checkExpRow(C, FIELDExpRow(I, lab, exp, exprow_opt)) =
+	let
+	    val () = checkExp(C, exp)
+	    val () = case exprow_opt
+		       of NONE        => ()
+		        | SOME exprow => checkExpRow(C, exprow)
+	in
+	    (* [RFC: Record extension] *)
+	    ()
+	end
+
+      (* [RFC: Record extension] *)
+      | checkExpRow(C, DOTSExpRow(I, exp)) =
+	let
+	    val () = checkExp(C, exp)
+	in
+	    ()
+	end
+
+
+    (* Expressions *)
+
+    and checkExp(C, ATExp(I, atexp)) =
+	let
+	    val () = checkAtExp(C, atexp)
+	in
+	    ()
+	end
+
+      | checkExp(C, APPExp(I, exp, atexp)) =
+	let
+	    val () = checkExp(C, exp)
+	    val () = checkAtExp(C, atexp)
+	in
+	    ()
+	end
+
+      | checkExp(C, COLONExp(I, exp, ty)) =
+	let
+	    val () = checkExp(C, exp)
+	    val U  = checkTy ty
+	in
+	    ()
+	end
+
+      | checkExp(C, PACKExp(I, longstrid, longsigid)) =
+	(* [RFC: First-class modules] *)
+	    ()
+
+      | checkExp(C, HANDLEExp(I, exp, match)) =
+	let
+	    val () = checkExp(C, exp)
+	    val () = checkMatch(C, match)
+	in
+	    ()
+	end
+
+      | checkExp(C, RAISEExp(I, exp)) =
+	let
+	    val () = checkExp(C, exp)
+	in
+	    ()
+	end
+
+      | checkExp(C, FNExp(I, match)) =
+	let
+	    val () = checkMatch(C, match)
+	in
+	    ()
+	end
+
+
+    (* Matches *)
+
+    and checkMatch(C, Match(I, mrule, match_opt)) =
+	let
+	    val () = checkMrule(C, mrule)
+	    val () = case match_opt
+		       of NONE       => ()
+			| SOME match => checkMatch(C, match)
+	in
+	    ()
+	end
+
+
+    (* Match rules *)
+
+    and checkMrule(C, Mrule(I, pat, exp)) =
+	let
+	    val VE = checkPat(C, pat)
+	    val () = checkExp(C plusVE VE, exp)
+	in
+	    ()
+	end
+
+
+    (* Declarations *)
+
+    and checkDec(C, VALDec(I, rec_opt, tyvarseq, valbind)) =
+	(* [RFC: Simplified recursive value bindings] *)
+	let
+	    val U' = checkTyVarseq tyvarseq
+	    (* Collect implicitly bound tyvars [Section 4.6] *)
+	    val U  = TyVarSet.union(U',
+			TyVarSet.difference(ScopeTyVars.unguardedTyVars valbind,
+					    Uof C))
+	    val VE1 = if rec_opt = WITHRec then lhsRecValBind(C, valbind)
+		      else VIdMap.empty
+	    val VE  = checkValBind(C plusU U plusVE VE1, valbind)
+	in
+	    if not(TyVarSet.isEmpty(TyVarSet.intersection(Uof C, U))) then
+		(* [Section 2.9, last bullet] *)
+		error(I, "some type variables shadow previous ones")
+	    else
+		BindingEnv.fromVE VE
+	end
+
+      | checkDec(C, TYPEDec(I, typbind)) =
+	let
+	    val TE = checkTypBind typbind
+	in
+	    BindingEnv.fromTE TE
+	end
+
+      | checkDec(C, DATATYPEDec(I, datbind)) =
+	let
+	    val (VE,TE) = checkDatBind datbind
+	in
+	    BindingEnv.fromVEandTE(VE,TE)
+	end
+
+      | checkDec(C, VIEWTYPEDec(I, tyvarseq, tycon, ty, conbind, dec)) =
+	(* [RFC: Views] *)
+	let
+	    val  U1     = checkTyVarseq tyvarseq
+	    val  U2     = checkTy ty
+	    val (U3,VE) = checkConBind conbind
+	    val  TE     = TyConMap.singleton(tycon, VE)
+	    val  E      = checkDec(C plusVEandTE (VE,TE), dec)
+	in
+	    if not(TyVarSet.isSubset(TyVarSet.union(U2,U3), U1)) then
+		error(I, "free type variables in viewtype binding")
+	    else
+		BindingEnv.fromVEandTE (VE,TE)
+	end
+
+      | checkDec(C, DATATYPE2Dec(I, tycon, longtycon)) =
+	let
+	    val VE = case findLongTyCon(C, longtycon)
+		       of SOME VE => VE
+			| NONE    => VIdMap.empty (* actually an error *)
+	    val TE = TyConMap.singleton(tycon, VE)
+	in
+	    BindingEnv.fromVEandTE(VE,TE)
+	end
+
+      (* Removed ABSTYPEDec [RFC: Abstype as derived] *)
+
+      | checkDec(C, EXCEPTIONDec(I, exbind)) =
+	let
+	    val VE = checkExBind exbind
+	in
+	    BindingEnv.fromVE VE
+	end
+
+      | checkDec(C, STRDECDec(I, strdec)) =
+	(* [RFC: Local modules] *)
+	let
+	    val E = !SyntacticRestrictionsModule.checkStrDec(C, strdec)
+	in
+	    E
+	end
+
+      | checkDec(C, LOCALDec(I, dec1, dec2)) =
+	let
+	    val E1 = checkDec(C, dec1)
+	    val E2 = checkDec(C plusE E1, dec2)
+	in
+	    E2
+	end
+
+      | checkDec(C, OPENDec(I, longstrids)) =
+	let
+	    val Es =
+		List.map
+		    (fn longstrid =>
+			case findLongStrId(C, longstrid)
+			  (* [RFC: Higher-order functors] *)
+			  of SOME(Struct E) => E
+			   | _ => BindingEnv.empty) (* actually an error *)
+		    longstrids
+	in
+	    List.foldl (op plus) BindingEnv.empty Es
+	end
+
+      | checkDec(C, EMPTYDec(I)) =
+	    BindingEnv.empty
+
+      | checkDec(C, SEQDec(I, dec1, dec2)) =
+	let
+	    val E1 = checkDec(C, dec1)
+	    val E2 = checkDec(C plusE E1, dec2)
+	in
+	    E1 plus E2
+	end
+
+
+    (* Value Bindings *)
+
+    and checkValBind(C, ValBind(I, pat, exp, valbind_opt)) =
+	let
+	    val VE  = checkPat(C, pat)
+	    val ()  = checkExp(C, exp)
+	    val VE' = case valbind_opt
+			of NONE         => VIdMap.empty
+			 | SOME valbind => checkValBind(C, valbind)
+	in
+	    VIdMap.appi (fn(vid,_) =>
+		if validBindVId vid then () else
+		(* [Section 2.9, 5th bullet] *)
+		errorVId(I, "illegal rebinding of identifier ", vid)
+	    ) VE;
+	    VIdMap.unionWithi
+		(fn(vid,_,_) =>
+		    (* [Section 2.9, 2nd bullet] *)
+		    errorVId(I, "duplicate variable ", vid))
+		(VE,VE')
+	end
+
+	(* Removed RECValBind [RFC: Simplified recursive value bindings] *)
+
+
+    (* Type Bindings *)
+
+    and checkTypBind(TypBind(I, tyvarseq, tycon, ty, typbind_opt)) =
+	let
+	    val U1 = checkTyVarseq tyvarseq
+	    val U2 = checkTy ty
+	    val TE = case typbind_opt
+		       of NONE         => TyConMap.empty
+			| SOME typbind => checkTypBind typbind
+	in
+	    if not(TyVarSet.isSubset(U2, U1)) then
+		(* [RFC: Syntax fixes; RFC: Semantic fixes] *)
+		error(I, "free type variables in type binding")
+	    else if TyConMap.inDomain(TE, tycon) then
+		(* Syntactic restriction [Section 2.9, 2nd bullet] *)
+		errorTyCon(I, "duplicate type constructor ", tycon)
+	    else
+		TyConMap.insert(TE, tycon, VIdMap.empty)
+	end
+
+
+    (* Datatype Bindings *)
+
+    and checkDatBind(DatBind(I, tyvarseq, tycon, conbind, datbind_opt)) =
+	let
+	    val  U1     = checkTyVarseq tyvarseq
+	    val (U2,VE) = checkConBind conbind
+	    val(VE',TE') = case datbind_opt
+			     of NONE         => ( VIdMap.empty, TyConMap.empty )
+			      | SOME datbind => checkDatBind datbind
+	in
+	    if not(TyVarSet.isSubset(U2, U1)) then
+		(* [RFC: Syntax fixes; RFC: Semantic fixes] *)
+		error(I, "free type variables in datatype binding")
+	    else if TyConMap.inDomain(TE', tycon) then
+		(* [Section 2.9, 2nd bullet] *)
+		errorTyCon(I, "duplicate type constructor ", tycon)
+	    else
+	    ( VIdMap.unionWithi (fn(vid,_,_) =>
+		(* [Section 2.9, 2nd bullet] *)
+		errorVId(I, "duplicate data constructor ", vid)) (VE,VE')
+	    , TyConMap.insert(TE', tycon, VE)
+	    )
+	end
+
+
+    (* Constructor Bindings *)
+
+    and checkConBind(ConBind(I, _, vid, ty_opt, conbind_opt)) =
+	let
+	    val  U      = case ty_opt
+			    of NONE    => TyVarSet.empty
+			     | SOME ty => checkTy ty
+	    val (U',VE) = case conbind_opt
+			    of NONE         => ( TyVarSet.empty, VIdMap.empty )
+			     | SOME conbind => checkConBind conbind
+	in
+	    if VIdMap.inDomain(VE, vid) then
+		(* [Section 2.9, 2nd bullet] *)
+		errorVId(I, "duplicate data constructor ", vid)
+	    else if not(validConBindVId vid) then
+		(* [Section 2.9, 5th bullet] *)
+		errorVId(I, "illegal rebinding of identifier ", vid)
+	    else
+		( TyVarSet.union(U, U'), VIdMap.insert(VE, vid, IdStatus.c) )
+	end
+
+
+    (* Exception Bindings *)
+
+    and checkExBind(NEWExBind(I, _, vid, ty_opt, exbind_opt)) =
+	let
+	    val U  = case ty_opt
+			 of NONE    => TyVarSet.empty
+			  | SOME ty => checkTy ty
+	    val VE = case exbind_opt
+		       of NONE        => VIdMap.empty
+		        | SOME exbind => checkExBind exbind
+	in
+	    if VIdMap.inDomain(VE, vid) then
+		(* [Section 2.9, 2nd bullet] *)
+		errorVId(I, "duplicate exception constructor ", vid)
+	    else if not(validConBindVId vid) then
+		(* [Section 2.9, 5th bullet] *)
+		errorVId(I, "illegal rebinding of identifier ", vid)
+	    else
+		VIdMap.insert(VE, vid, IdStatus.e)
+	end
+
+      | checkExBind(EQUALExBind(I, _, vid, _, longvid, exbind_opt)) =
+	let
+	    val VE = case exbind_opt
+		       of NONE        => VIdMap.empty
+		        | SOME exbind => checkExBind exbind
+	in
+	    if VIdMap.inDomain(VE, vid) then
+		(* [Section 2.9, 2nd bullet] *)
+		errorVId(I, "duplicate exception constructor ", vid)
+	    else
+		VIdMap.insert(VE, vid, IdStatus.e)
+	end
+
+
+    (* Atomic Patterns *)
+
+    and checkAtPat(C, WILDCARDAtPat(I)) =
+	    VIdMap.empty
+
+      | checkAtPat(C, SCONAtPat(I, scon)) =
+	(case scon
+	   of SCon.REAL _ =>
+	      (* [Section 2.9, 6th bullet] *)
+	      error(I, "real constant in pattern")
+	    | _ =>
+	      VIdMap.empty
+	)
+
+      | checkAtPat(C, IDAtPat(I, _, longvid)) =
+	let
+	    val (strids,vid) = LongVId.explode longvid
+	in
+	    if List.null strids andalso
+	       ( case findLongVId(C, longvid)
+		   of NONE    => true
+		    | SOME is => is = IdStatus.v )
+	    then
+		VIdMap.singleton(vid, IdStatus.v)
+	    else
+		VIdMap.empty
+	end
+
+      | checkAtPat(C, RECORDAtPat(I, patrow_opt)) =
+	let
+	    (* [RFC: Record extension] *)
+	    val VE = case patrow_opt
+		       of NONE        => VIdMap.empty
+			| SOME patrow => checkPatRow(C, patrow)
+	in
+	    VE
+	end
+
+      | checkAtPat(C, PARAtPat(I, pat)) =
+	let
+	    val VE = checkPat(C, pat)
+	in
+	    VE
+	end
+
+
+    (* Pattern Rows *)
+
+    (* [RFC: Record extension] *)
+    and checkPatRow(C, DOTSPatRow(I, pat)) =
+	let
+	    val VE = checkPat(C, pat)
+	in
+	    VE
+	end
+
+      | checkPatRow(C, FIELDPatRow(I, lab, pat, patrow_opt)) =
+	let
+	    val VE  = checkPat(C, pat)
+	    val VE' = case patrow_opt
+			of NONE        => VIdMap.empty
+			 | SOME patrow => checkPatRow(C plusVE VE, patrow)
+	in
+	    (* [RFC: Record extension] *)
+	    VIdMap.unionWithi #2 (VE,VE')
+	end
+
+
+    (* Patterns *)
+
+    and checkPat(C, ATPat(I, atpat)) =
+	let
+	    val VE = checkAtPat(C, atpat)
+	in
+	    VE
+	end
+
+      | checkPat(C, CONPat(I, _, longvid, atpat)) =
+	let
+	    val VE = checkAtPat(C, atpat)
+	in
+	    VE
+	end
+
+      | checkPat(C, COLONPat(I, pat, ty)) =
+	let
+	    val VE = checkPat(C, pat)
+	    val U  = checkTy ty
+	in
+	    VE
+	end
+
+      (* [RFC: Conjunctive patterns; RFC: Nested matches] *)
+      | checkPat(C, ASPat(I, pat1, pat2)) =
+	let
+	    val VE1 = checkPat(C, pat1)
+	    val VE2 = checkPat(C plusVE VE1, pat2)
+	in
+	    VIdMap.unionWithi (fn(vid,_,_) =>
+		(* [Section 2.9, 2nd bullet] *)
+		errorVId(I, "duplicate variable ", vid)) (VE1,VE2)
+	end
+
+      (* [RFC: Disjunctive patterns] *)
+      | checkPat(C, BARPat(I, pat1, pat2)) =
+	let
+	    val VE1 = checkPat(C, pat1)
+	    val VE2 = checkPat(C, pat2)
+	in
+	    VIdMap.unionWith #2 (VE1,VE2)
+	end
+
+      (* [RFC: Nested matches] *)
+      | checkPat(C, WITHPat(I, pat1, pat2, exp)) =
+	let
+	    val VE1 = checkPat(C, pat1)
+	    val VE2 = checkPat(C plusVE VE1, pat2)
+	    val ()  = checkExp(C plusVE VE1, exp)
+	in
+	    VIdMap.unionWithi (fn(vid,_,_) =>
+		(* [Section 2.9, 2nd bullet] *)
+		errorVId(I, "duplicate variable ", vid)) (VE1,VE2)
+	end
+
+
+    (* Type Expressions *)
+
+    and checkTy(VARTy(I, tyvar)) =
+	    TyVarSet.singleton tyvar
+
+      | checkTy(RECORDTy(I, tyrow_opt)) =
+	let
+	    (* [RFC: Record extension] *)
+	    val U = case tyrow_opt
+		      of NONE       => TyVarSet.empty
+		       | SOME tyrow => checkTyRow tyrow
+	in
+	    U
+	end
+
+      | checkTy(CONTy(I, tyseq, longtycon)) =
+	let
+	    val Tyseq(_,tys) = tyseq
+	    val Us = List.map checkTy tys
+	in
+	    List.foldl TyVarSet.union TyVarSet.empty Us
+	end
+
+      | checkTy(ARROWTy(I, ty, ty')) =
+	let
+	    val U  = checkTy ty
+	    val U' = checkTy ty'
+	in
+	    TyVarSet.union(U, U')
+	end
+
+      | checkTy(PACKTy(I, longsigid)) =
+	(* [RFC: First-class modules] *)
+	    TyVarSet.empty
+
+      | checkTy(PARTy(I, ty)) =
+	let
+	    val U = checkTy ty
+	in
+	    U
+	end
+
+
+    (* Type-expression Rows *)
+
+    (* [RFC: Record extension] *)
+    and checkTyRow(DOTSTyRow(I, ty)) =
+	let
+	    val U = checkTy ty
+	in
+	    U
+	end
+
+      | checkTyRow(FIELDTyRow(I, lab, ty, tyrow_opt)) =
+	let
+	    val U  = checkTy ty
+	    val U' = case tyrow_opt
+		       of NONE       => TyVarSet.empty
+			| SOME tyrow => checkTyRow tyrow
+	in
+	    (* [RFC: Record extension] *)
+	    TyVarSet.union(U, U')
+	end
+
+
+
+    (* Build tentative VE from LHSs of recursive valbind *)
+
+    and lhsRecValBind(C, ValBind(I, pat, exp, valbind_opt)) =
+	let
+	    val VE  = lhsRecValBindPat(C, pat)
+	    val VE' = case valbind_opt
+			of NONE         => VIdMap.empty
+			 | SOME valbind => lhsRecValBind(C, valbind)
+	in
+	    case exp
+	      of FNExp _ => VIdMap.unionWith #2 (VE,VE')
+	       | _ =>
+		(* [Section 2.9, 4th bullet] *)
+		error(I, "illegal expression within recursive value binding")
+	end
+
+	(* Removed RECValBind [RFC: Simplified recursive value bindings] *)
+
+    and lhsRecValBindPat(C, ATPat(I, atpat)) =
+	    lhsRecValBindAtPat(C, atpat)
+
+      | lhsRecValBindPat(C, CONPat(I, _, longvid, atpat)) =
+	    lhsRecValBindAtPat(C, atpat)
+
+      | lhsRecValBindPat(C, COLONPat(I, pat, ty)) =
+	    lhsRecValBindPat(C, pat)
+
+      (* [RFC: Conjunctive patterns] *)
+      | lhsRecValBindPat(C, ASPat(I, pat1, pat2)) =
+	    VIdMap.unionWith #2 (lhsRecValBindPat(C, pat1),
+			         lhsRecValBindPat(C, pat2))
+
+      (* [RFC: Disjunctive patterns] *)
+      | lhsRecValBindPat(C, BARPat(I, pat1, pat2)) =
+	    VIdMap.unionWith #2 (lhsRecValBindPat(C, pat1),
+			         lhsRecValBindPat(C, pat2))
+
+      (* [RFC: Nested matches] *)
+      | lhsRecValBindPat(C, WITHPat(I, pat1, pat2, exp)) =
+	    VIdMap.unionWith #2 (lhsRecValBindPat(C, pat1),
+			         lhsRecValBindPat(C, pat2))
+
+    and lhsRecValBindAtPat(C, WILDCARDAtPat(I)) =
+	    VIdMap.empty
+
+      | lhsRecValBindAtPat(C, SCONAtPat(I, scon)) =
+	    VIdMap.empty
+
+      | lhsRecValBindAtPat(C, IDAtPat(I, _, longvid)) =
+	(* [RFC: Simplified recursive value bindings] *)
+	let
+	    val (strids, vid) = LongVId.explode longvid
+	in
+	    if List.null strids andalso
+	       ( case findLongVId(C, longvid)
+		   of NONE    => true
+		    | SOME is => is = IdStatus.v )
+	    then
+		VIdMap.singleton(vid, IdStatus.v)
+	    else
+		VIdMap.empty
+	end
+
+      | lhsRecValBindAtPat(C, RECORDAtPat(I, patrow_opt)) =
+	   (case patrow_opt
+	      of NONE        => VIdMap.empty
+	       | SOME patrow => lhsRecValBindPatRow(C, patrow)
+	   )
+
+      | lhsRecValBindAtPat(C, PARAtPat(I, pat)) =
+	    lhsRecValBindPat(C, pat)
+
+    (* [RFC: Record extension] *)
+    and lhsRecValBindPatRow(C, DOTSPatRow(I, pat)) =
+	let
+	    val VE = lhsRecValBindPat(C, pat)
+	in
+	    VE
+	end
+
+      | lhsRecValBindPatRow(C, FIELDPatRow(I, lab, pat, patrow_opt)) =
+	let
+	    val VE = lhsRecValBindPat(C, pat)
+	in
+	    case patrow_opt
+	      of NONE        => VE
+	       | SOME patrow =>
+		 VIdMap.unionWith #2 (VE, lhsRecValBindPatRow(C, patrow))
+	end
 end;

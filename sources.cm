@@ -4,7 +4,6 @@ Group is
 
 #if defined(SMLNJ_VERSION) && defined(NEW_CM)
     $/basis.cm
-    $smlnj-tdp/back-trace.cm
 #endif
 
 #if defined(SMLNJ_VERSION)
@@ -30,14 +29,11 @@ Group is
     infrastructure/STAMP-sig.sml
     infrastructure/Stamp.sml
 
-    infrastructure/PROP-sig.sml
-    infrastructure/Prop.sml
-
     syntax/SOURCE-sig.sml
     syntax/Source.sml
 
     (* Basic objects of the core
-       (plus TyName and OverloadingClass, needed by TyVar) *)
+       (plus TyName and OverloadingClass, needed by TyVar and SCon) *)
 
     elab/TYNAME-sig.sml
     elab/TyName.sml
@@ -59,13 +55,27 @@ Group is
     syntax/IdsCore.sml
     syntax/IdsModule.sml
 
-    infrastructure/GENERIC_ENV-sig.sml
-    infrastructure/GenericEnvFn.sml
-
     (* Error handling *)
 
     infrastructure/ERROR-sig.sml
     infrastructure/Error.sml
+
+    (* Syntax *)
+
+    syntax/GRAMMAR_CORE-sig.sml
+    syntax/GrammarCoreFn.sml
+    syntax/GRAMMAR_MODULE-sig.sml
+    syntax/GrammarModuleFn.sml
+    syntax/GRAMMAR_PROGRAM-sig.sml
+    syntax/GrammarProgramFn.sml
+    syntax/Grammars.sml
+
+    parse/DERIVED_FORMS_CORE-sig.sml
+    parse/DerivedFormsCore.sml
+    parse/DERIVED_FORMS_MODULE-sig.sml
+    parse/DerivedFormsModule.sml
+    parse/DERIVED_FORMS_PROGRAM-sig.sml
+    parse/DerivedFormsProgram.sml
 
     (* Binding core objects *)
 
@@ -74,6 +84,8 @@ Group is
 
     parse/BindingObjectsCore.sml
 
+    infrastructure/GENERIC_ENV-sig.sml
+    infrastructure/GenericEnvFn.sml
     parse/BINDING_ENV-sig.sml
     parse/BindingEnv.sml
     parse/BINDING_CONTEXT-sig.sml
@@ -89,6 +101,7 @@ Group is
     (* Static core objects *)
 
     elab/StaticObjectsCore.sml
+    elab/StaticObjectsModule.sml
 
     elab/TYPE-sig.sml
     elab/Type.sml
@@ -103,31 +116,12 @@ Group is
 
     (* Static module objects *)
 
-    elab/StaticObjectsModule.sml
-
     elab/SIG-sig.sml
     elab/Sig.sml
     elab/FUNSIG-sig.sml
     elab/FunSig.sml
     elab/STATIC_BASIS-sig.sml
     elab/StaticBasis.sml
-
-    (* Syntax  *)
-
-    syntax/ANNOTATION-sig.sml
-    syntax/Annotation.sml
-
-    syntax/SyntaxCoreFn.sml
-    syntax/SyntaxModuleFn.sml
-    syntax/SyntaxProgramFn.sml
-    syntax/Syntax.sml
-
-    parse/DERIVED_FORMS_CORE-sig.sml
-    parse/DerivedFormsCore.sml
-    parse/DERIVED_FORMS_MODULE-sig.sml
-    parse/DerivedFormsModule.sml
-    parse/DERIVED_FORMS_PROGRAM-sig.sml
-    parse/DerivedFormsProgram.sml
 
     (* Dynamic core objects *)
 
@@ -157,8 +151,6 @@ Group is
     eval/Inter.sml
     eval/DYNAMIC_BASIS-sig.sml
     eval/DynamicBasis.sml
-    eval/INTBASIS-sig.sml
-    eval/IntBasis.sml
 
     (* Program objects *)
 
@@ -181,7 +173,7 @@ Group is
     parse/Parser.grm
 #endif
 
-    parse/LocLexer.sml
+    parse/LineAwareLexer.sml
     parse/PARSE-sig.sml
     parse/Parse.sml
 
@@ -211,21 +203,18 @@ Group is
 
     lib/USE-sig.sml
     lib/Use.sml
-    lib/IdsLibrary.sml
-    lib/STATIC_LIBRARY-sig.sml
-    lib/StaticLibrary.sml
-    lib/DYNAMIC_LIBRARY-sig.sml
-    lib/DynamicLibrary.sml
+    lib/LIBRARY-sig.sml
+    lib/Library.sml
 
     eval/BASVAL-sig.sml
     eval/BasVal.sml
 
     (* Elaboration *)
 
-    elab/CLOS-sig.sml
-    elab/Clos.sml
     elab/CHECK_PATTERN-sig.sml
     elab/CheckPattern.sml
+    elab/CLOS-sig.sml
+    elab/Clos.sml
     elab/ELAB_CORE-sig.sml
     elab/ElabCore.sml
 
@@ -267,10 +256,10 @@ Group is
     exec/PP_BASIS-sig.sml
     exec/PPBasis.sml
 
-    (* Pretty printing syntax *)
+    (* Pretty printing grammar *)
 
-    syntax/PP_SYNTAX-sig.sml
-    syntax/PPSyntax.sml
+    syntax/PP_GRAMMAR-sig.sml
+    syntax/PPGrammar.sml
 
     syntax/PP_CORE-sig.sml
     syntax/PPCore.sml
@@ -283,36 +272,6 @@ Group is
 
     exec/PROGRAM-sig.sml
     exec/Program.sml
-
-    elab/ELAB_PROGRAM-sig.sml
-    elab/ElabProgram.sml
-
-    eval/EVAL_PROGRAM-sig.sml
-    eval/EvalProgram.sml
-
-    (* Compilation to JavaScript *)
-
-    compile-js/ID_SET_CORE-sig.sml
-    compile-js/ID_SET_MODULE-sig.sml
-    compile-js/IdSetCore.sml
-    compile-js/IdSetModule.sml
-    compile-js/JSSyntax.sml
-    compile-js/PP_JS-sig.sml
-    compile-js/PPJS.sml
-
-    compile-js/JS_TRANSLATE_SCON-sig.sml
-    compile-js/JS_TRANSLATE_ID-sig.sml
-    compile-js/JS_TRANSLATE_CORE-sig.sml
-    compile-js/JS_TRANSLATE_MODULE-sig.sml
-    compile-js/JS_TRANSLATE_PROGRAM-sig.sml
-    compile-js/JSTranslateSCon.sml
-    compile-js/JSTranslateId.sml
-    compile-js/JSTranslateCore.sml
-    compile-js/JSTranslateModule.sml
-    compile-js/JSTranslateProgram.sml
-
-    compile-js/COMPILE_JS-sig.sml
-    compile-js/CompileJS.sml
 
     (* Main *)
 

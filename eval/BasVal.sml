@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML basic values
  *
@@ -8,31 +8,27 @@
 
 structure BasVal :> BASVAL =
 struct
-  (* Import *)
+    (* Import *)
 
-  open DynamicObjectsCore
-
-
-  (* Conversions *)
-
-  fun toString b = b
+    open DynamicObjectsCore
 
 
-  (* Application of basic values *)
+    (* Conversions *)
 
-  exception TypeError = DynamicLibrary.TypeError
+    fun toString b = b
 
-  fun fromBool b = VId(VId.fromString(if b then "true" else "false"))
 
-  fun APPLY("=", v) =
-        (case Val.toPair v of
-          SOME vv =>
-            ( fromBool(Val.equal vv) handle Domain =>
-                raise TypeError "equality type expected"
-            )
-        | NONE =>
-            raise TypeError "pair expected"
-        )
-    | APPLY(b, v) =
-        DynamicLibrary.APPLY(b, v)
+    (* Application of basic values *)
+
+    exception TypeError = Library.TypeError
+
+    fun fromBool b = VId(VId.fromString(if b then "true" else "false"))
+
+    fun APPLY("=", v) =
+	(case Val.toPair v
+	   of SOME vv => (fromBool(Val.equal vv) handle Domain =>
+			  raise TypeError "equality type expected")
+	    | NONE    => raise TypeError "pair expected"
+	)
+      | APPLY(b, v) = Library.APPLY(b, v)
 end;

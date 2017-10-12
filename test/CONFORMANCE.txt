@@ -1,52 +1,53 @@
-		HaMLet	SML/NJ	MosML	MLton	MLKit	Poly/ML	MLWorks	Alice
-		1.3.0	110.59	2.01	051202	4.3.0	5.0	2.0	1.4
+		HaMLet	HaMLet	SML/NJ	MosML	MLton	MLKit	Poly/ML	MLWorks	Alice
+		1.3.0	1.3.0S4	110.59	2.01	051202	4.3.0	5.0	2.0	1.4
 
 The following should be accepted and execute without raising an exception:
 
-abstype(4)	-	-	-	+	-	-	-	+
-asterisk	+	-	-	+	+	+	+	+
-exhaustive	+	-	+	+	+	-	+	+
-flexrecord	+	+	+	+	+	+	-	+
-fun-case(5)	-	-	-	-	-	-	-	-
-fun-infix	+	+	+	+	+	+	?	+
-fun-partial	+	+	+	+	-	+	?	+
-functor-poly	-	-	-	+	-	-	?	-
-generalise	+	+	+	+	+	-	?	+
-id		+	-	-	+	+	+	+	+
-open		+	-	+	+	+	+	-	-
-overloading	+	-	+	+	+	+	-	+
-poly-exception	+	-	-	-	-	-	?	-
-replication	+	-	+	+	+	-	?	+
-scon		+	-	+	+	-	+	-	+
-semicolon	+	+	+	+	+	-	+	+
-sharing		+	-	+	+	+	+	?	-
-typespec	+	+	-	+	+	-	+	+
-undetermined	+	-	+	+	-	+	+	+
-valrec		+	-	-(3)	-	-(2)	-(2)	-(3)	-
-where		+	-	-	+	+	-	-	-
-where-and	+	-	-	+	-	-	-	+
-withtype	+	-	+	+	+	+	+	+
+abstype(4)	-	+	-	-	+	-	-	-	+
+asterisk	+	+	-	-	+	+	+	+	+
+exhaustive	+	+	-	+	+	+	-	+	+
+flexrecord	+	+	+	+	+	+	+	-	+
+fun-case(5)	-	-(0)	-	-	-	-	-	-	-
+fun-infix	+	+	+	+	+	+	+	?	+
+fun-partial	+	+	+	+	+	-	+	?	+
+functor-poly	-	-	-	-	+	-	-	?	-
+generalise	+	+	+	+	+	+	-	?	+
+id		+	-(0)	-	-	+	+	+	+	+
+open		+	+	-	+	+	+	+	-	-
+overloading	+	+	-	+	+	+	+	-	+
+poly-exception	+	+	-	-	-	-	-	?	-
+replication	+	+	-	+	+	+	-	?	+
+scon		+	+	-	+	+	-	+	-	+
+semicolon	+	+	+	+	+	+	-	+	+
+sharing		+	+	-	+	+	+	+	?	-
+typespec	+	-(0)	+	-	+	+	-	+	+
+undetermined	+	+	-	+	+	-	+	+	+
+valrec		+	-(0)	-	-(3)	-	-(2)	-(2)	-(3)	-
+where		+	+	-	-	+	+	-	-	-
+where-and	+	-(0)	-	-	+	-	-	-	+
+withtype	+	+	-	+	+	+	+	+	+
 
 The following should be rejected or produce a warning:
 
-abstype2(4)	+	+	+	-	+	+	?	-
-dec-strdec(6)	+	+	-	+	+	-	?	+
-functor-poly2	+	+	+	-(8)	+	+	+	+
-nonexhaustive	+	+	+	+	+	+	+	+
-redundant(7)	-	-	-	+	-	-	+	-
-tyname(6)	+	-	+	+	+	-	?	-
-tyvar-shadowing	+	-	+	+	+	-	-	+
-undetermined3	+	+	-	+	+	+	?	+
-where2		+	-	+	+	+	+	-	+
+abstype2(4)	+	-(0)	+	+	-	+	+	?	-
+dec-strdec(6)	+	+	+	-	+	+	-	?	+
+functor-poly2	+	+	+	+	-(8)	+	+	+	+
+nonexhaustive	+	+	+	+	+	+	+	+	+
+redundant(7)	-	-(0)	-	-	+	-	-	+	-
+tyname(6)	+	+	-	+	+	+	-	?	-
+tyvar-shadowing	+	+	-	+	+	+	-	-	+
+undetermined3	+	+	+	-	+	+	+	?	+
+where2		+	+	-	+	+	+	+	-	+
 
 It is a matter of interpretation whether the following have to be accepted:
 
-flexrecord2	-	-	-	+	-	+	-	-
-undetermined2	-	-	+	+	+	-	?	+
+flexrecord2	-	-(0)	-	-	+	-	+	-	-
+undetermined2	-	-	-	+	+	+	-	?	+
 
 
 Notes:
 
+(0) Deviation due to intentional language change.
 (1) Internal compiler error.
 (2) Internal runtime exception.
 (3) Deviating dynamic behaviour, which can be seen as fixing a bug in the

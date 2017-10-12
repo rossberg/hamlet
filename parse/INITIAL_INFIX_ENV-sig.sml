@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML initial infix environment
  *
@@ -8,11 +8,11 @@
 
 signature INITIAL_INFIX_ENV =
 sig
-  (* Import type *)
+    (* Import type *)
 
-  type InfEnv = Infix.InfEnv
+    type InfEnv = Infix.InfEnv
 
-  (* Export *)
+    (* Export *)
 
-  val J0 : InfEnv
+    val J0 : InfEnv
 end;

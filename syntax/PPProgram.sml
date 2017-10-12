@@ -1,20 +1,21 @@
 (*
- * (c) Andreas Rossberg 2007-2013
+ * (c) Andreas Rossberg 2007
  *
- * Printer for abstract program syntax
+ * Printer for abstract program grammar
  *)
+
 
 structure PPProgram : PP_PROGRAM =
 struct
-  (* Import *)
+    (* Import *)
 
-  open SyntaxProgram
-  open Annotation
-  open PPSyntax
+    open GrammarProgram
+    open PPGrammar
 
-  (* Programs *)
 
-  fun ppProgram(out, i, Program(topdec, program_opt)@@A) =
-        ppElem(out, i, "Program", A,
-          [sub PPModule.ppTopDec topdec, subo ppProgram program_opt])
+    (* Programs *)
+
+    fun ppProgram(out, i, Program(I, topdec, program_opt)) =
+	    ppElem(out, i, "Program", I,
+		   [sub PPModule.ppTopDec topdec, subo ppProgram program_opt])
 end;

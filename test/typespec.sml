@@ -6,12 +6,12 @@ type t = int
 
 signature S =
 sig
-  type t = bool
-  and  u = t
+    type t = bool
+    and  u = t
 end
 
 structure X : S =
 struct
-  type t = bool
-  and  u = bool
+    type t = bool
+    and  u = bool
 end;

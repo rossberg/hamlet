@@ -1,48 +1,68 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML environments of the static semantics of the core
  *
  * Definition, Sections 4.2, 4.3, 4.8, 4.9, and 5.5
+ * + RFC: Abstype as derived
+ * + RFC: Higher-order functors
+ * + RFC: Nested signatures
  *
- * Notes: see StaticObjectsCore.sml
+ * Note:
+ *     We call the domain type of value environments ValStr.
  *)
 
 signature STATIC_ENV =
 sig
-  (* Inheritance *)
+    (* Inheritance *)
 
-  include GENERIC_ENV
-    where type Env    = StaticObjectsCore.Env
-      and type ValStr = StaticObjectsCore.ValStr
-      and type TyStr  = StaticObjectsCore.TyStr
-
-
-  (* Import *)
-
-  type TyNameSet   = StaticObjectsCore.TyNameSet
-  type TyVarSet    = StaticObjectsCore.TyVarSet
-  type Realisation = Type.Realisation
+    include GENERIC_ENV
+    where type Env		= StaticObjectsCore.Env
+(**)where type ValStr		= StaticObjectsCore.ValStr
+(**)where type TyStr		= StaticObjectsCore.TyStr
+(**)where type ModStr		= StaticObjectsCore.Mod
+(**)where type SigStr		= StaticObjectsCore.Sig'
 
 
-  (* Operations *)
+    (* Import *)
 
-  val tyvars       : Env -> TyVarSet
-  val tyvarsVE     : ValEnv -> TyVarSet
-  val tynames      : Env -> TyNameSet
-  val tynamesVE    : ValEnv -> TyNameSet
-  val tynamesTE    : TyEnv  -> TyNameSet
-  val tynamesSE    : StrEnv -> TyNameSet
-  val undetermined : Env -> bool StampMap.map
+    type Mod			= StaticObjectsCore.Mod
+    type TyNameSet		= StaticObjectsCore.TyNameSet
+    type TyVarSet		= StaticObjectsCore.TyVarSet
+    type Realisation		= Type.Realisation
 
-  val isWellFormed : Env -> bool
+    type Sig			= StaticObjectsModule.Sig
+    type FunSig			= StaticObjectsModule.FunSig
 
-  val Clos         : ValEnv -> ValEnv
-  val Abs          : TyEnv * Env -> Env
-  val realise      : Realisation -> Env -> Env
 
-  val enriches     : Env * Env -> bool
-  val equalsVE     : ValEnv * ValEnv -> bool
+    (* Recursive import *)
 
-  val maximiseEquality : TyEnv -> unit
+    structure Sig :		sig val matches : (Sig * Sig -> bool) ref end
+    structure FunSig :		sig val matches : (FunSig * FunSig -> bool) ref end
+
+
+    (* Operations *)
+
+    val tyvarsVE :		ValEnv -> TyVarSet
+    val tyvarsM :		Mod    -> TyVarSet
+    val tyvars :		Env    -> TyVarSet
+    val tynamesVE :		ValEnv -> TyNameSet
+    val tynamesTE :		TyEnv  -> TyNameSet
+    val tynamesSE :		StrEnv -> TyNameSet
+    val tynamesG :		SigEnv -> TyNameSet
+    val tynamesM :		Mod    -> TyNameSet
+    val tynames :		Env    -> TyNameSet
+    val undetermined :		Env    -> bool StampMap.map
+    val undeterminedM :		Mod    -> bool StampMap.map
+
+    val isWellFormed :		Env -> bool
+
+    val Clos :			ValEnv -> ValEnv
+    val maximiseEquality :	TyEnv * ValEnv -> TyEnv * ValEnv
+    val realise :		Realisation -> Env -> Env
+    val realiseM :		Realisation -> Mod -> Mod
+
+    val enriches :		Env * Env -> bool
+    val enrichesM :		Mod * Mod -> bool
+    val equalsVE :		ValEnv * ValEnv -> bool
 end;

@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML identifiers
  *
@@ -7,22 +7,21 @@
  *
  * Note:
  *   This is a generic signature to represent all kinds of identifiers (except
- *   labels and tyvars).
+ *   for labels and tyvars).
  *)
 
 signature ID =
 sig
-  (* Type [Section 2.4] *)
+    (* Type [Section 2.4] *)
 
-  eqtype Id                                     (* [id] *)
+    eqtype Id					(* [id] *)
 
+    (* Operations *)
 
-  (* Operations *)
+    val invent :	unit -> Id
 
-  val invent     : unit -> Id
-  val isInvented : Id -> bool
-  val fromString : string -> Id
-  val toString   : Id -> string
+    val fromString :	string -> Id
+    val toString :	Id -> string
 
-  val compare    : Id * Id -> order
+    val compare :	Id * Id -> order
 end;

@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML infix resolution
  *
@@ -8,31 +8,34 @@
 
 signature INFIX =
 sig
-  (* Import *)
+    (* Import *)
 
-  type Op      = SyntaxCore.Op
-  type VId     = SyntaxCore.VId
-  type longVId = SyntaxCore.longVId
-  type Exp     = SyntaxCore.Exp
-  type Pat     = SyntaxCore.Pat
-  type AtExp   = SyntaxCore.AtExp
-  type AtPat   = SyntaxCore.AtPat
+    type Info		= GrammarCore.Info
+
+    type Op		= GrammarCore.Op
+    type VId		= GrammarCore.VId
+    type longVId	= GrammarCore.longVId
+    type Exp		= GrammarCore.Exp
+    type Pat		= GrammarCore.Pat
+    type AtExp		= GrammarCore.AtExp
+    type AtPat		= GrammarCore.AtPat
 
 
-  (* Modifying fixity status *)
+    (* Modifying fixity status *)
 
-  datatype Assoc = LEFT | RIGHT
+    datatype Assoc	= LEFT | RIGHT
 
-  type InfStatus = Assoc * int
-  type InfEnv    = InfStatus VIdMap.map         (* [J] *)
+    type InfStatus	= Assoc * int
+    type InfEnv		= InfStatus VIdMap.map		(* [J] *)
 
-  val empty  : InfEnv
-  val assign : InfEnv * VId.Id list * InfStatus -> InfEnv
-  val cancel : InfEnv * VId.Id list -> InfEnv
+    val empty :		InfEnv
+    val assign :	InfEnv * VId list * InfStatus -> InfEnv
+    val cancel :	InfEnv * VId list -> InfEnv
 
-  (* Resolving phrases containing infixed identifiers *)
 
-  val parseExp    : InfEnv * AtExp list -> Exp
-  val parsePat    : InfEnv * AtPat list -> Pat
-  val parseFmrule : InfEnv * AtPat list -> Op option * VId * AtPat list
+    (* Resolving phrases containing infixed identifiers *)
+
+    val parseExp :	InfEnv * AtExp list -> Exp
+    val parsePat :	InfEnv * AtPat list -> Pat
+    val parseFmrule :	InfEnv * AtPat list -> Op * VId * AtPat list
 end;

@@ -1,19 +1,18 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML syntactic analysis
  *)
 
 signature PARSE =
 sig
-  (* Import *)
+    (* Import *)
 
-  type source  = Source.source
-  type InfEnv  = Infix.InfEnv
-  type Program = SyntaxProgram.Program
+    type source  = Source.source
+    type InfEnv  = Infix.InfEnv
+    type Program = GrammarProgram.Program
 
+    (* Export *)
 
-  (* Export *)
-
-  val parse : InfEnv * source * string option -> InfEnv * Program
+    val parse : InfEnv * source * string option -> InfEnv * Program
 end;

@@ -1,33 +1,31 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
- * Standard ML identifiers for modules, and sets and maps thereof
+ * Standard ML identifiers for modules and maps thereof
  *
  * Definition, Section 3.2
+ * + RFC: Higher-order functors
+ * + RFC: Nested signatures
  *)
 
-structure SigId = IdFn()
-structure FunId = IdFn()
+structure SigId		= IdFn()
+(* Removed FunId [RFC: Higher-order functors] *)
 
-structure SigIdSet =
-  FinSetFn(type ord_key = SigId.Id; val compare = SigId.compare)
-structure FunIdSet =
-  FinSetFn(type ord_key = FunId.Id; val compare = FunId.compare)
+(* [RFC: Nested signatures] *)
+structure LongSigId	= LongIdFn(structure Id    = SigId
+				   structure StrId = StrId)
 
-structure SigIdMap =
-  FinMapFn(type ord_key = SigId.Id; val compare = SigId.compare)
-structure FunIdMap =
-  FinMapFn(type ord_key = FunId.Id; val compare = FunId.compare)
-
+structure SigIdMap	= FinMapFn(type ord_key = SigId.Id
+				   val  compare = SigId.compare)
 
 structure IdsModule =
 struct
-  type SigId       = SigId.Id
-  type FunId       = FunId.Id
+    type SigId		= SigId.Id
+    (* Removed FunId [RFC: Higher-order functors] *)
 
-  type SigIdSet    = SigIdSet.set
-  type FunIdSet    = FunIdSet.set
+    (* [RFC: Nested signatures] *)
+    type longSigId	= LongSigId.longId
 
-  type 'a SigIdMap = 'a SigIdMap.map
-  type 'a FunIdMap = 'a FunIdMap.map
+    type 'a SigIdMap	= 'a SigIdMap.map
+    (* Removed FunIdMap [RFC: Higher-order functors] *)
 end;

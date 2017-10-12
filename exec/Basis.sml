@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML combined basis
  *
@@ -8,27 +8,29 @@
 
 structure Basis :> BASIS =
 struct
-  (* Import *)
+    (* Import *)
 
-  type StaticBasis  = StaticObjectsModule.Basis                 (* [B_STAT] *)
-  type DynamicBasis = DynamicObjectsModule.Basis                (* [B_DYN] *)
-
-
-  (* Type [Section 8] *)
-
-  type Basis = StaticBasis * DynamicBasis                       (* [B] *)
+    type StaticBasis  = StaticObjectsModule.Basis		(* [B_STAT] *)
+    type DynamicBasis = DynamicObjectsModule.Basis		(* [B_DYN] *)
 
 
-  (* Projections *)
+    (* Type [Section 8] *)
 
-  fun B_STATof(B_STAT, B_DYN) = B_STAT
-  fun B_DYNof(B_STAT, B_DYN)  = B_DYN
+    type Basis = StaticBasis * DynamicBasis			(* [B] *)
 
 
-  (* Modification [Section 4.3] *)
+    (* Projections *)
 
-  infix oplus
+    fun B_STATof (B_STAT,B_DYN) = B_STAT
+    fun B_DYNof  (B_STAT,B_DYN) = B_DYN
 
-  fun (B_STAT, B_DYN) oplus (B_STAT', B_DYN') =
-      (StaticBasis.plus(B_STAT, B_STAT'), DynamicBasis.plus(B_DYN, B_DYN'))
+
+    (* Modification [Section 4.3] *)
+
+    infix oplus
+
+    fun (B_STAT,B_DYN) oplus (B_STAT',B_DYN') =
+	    ( StaticBasis.plus(B_STAT, B_STAT')
+	    , DynamicBasis.plus(B_DYN, B_DYN')
+	    )
 end;

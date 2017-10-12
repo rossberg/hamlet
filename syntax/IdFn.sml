@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML identifiers
  *
@@ -13,20 +13,20 @@
 
 functor IdFn() :> ID =
 struct
-  (* Type [Section 2.4] *)
+    (* Type [Section 2.4] *)
 
-  type Id = string                              (* [id] *)
-
-
-  (* Creation *)
-
-  fun invent() = "_id" ^ Stamp.toString(Stamp.stamp())
-  fun isInvented id = String.sub(id, 0) = #"_"
-  fun fromString s = s
-  fun toString s = s
+    type Id = string				(* [id] *)
 
 
-  (* Ordering *)
+    (* Creation *)
 
-  val compare = String.compare
+    fun invent()     = "_id" ^ Stamp.toString(Stamp.stamp())
+
+    fun fromString s = s
+    fun toString s   = s
+
+
+    (* Ordering *)
+
+    val compare = String.compare
 end;

@@ -23,9 +23,9 @@ fun f() = (raise E) handle E => () | X3.E => ()
 
 functor F(exception E exception F) =
 struct
-  fun f() = (raise E) handle E => () | F => ()
+    fun f() = (raise E) handle E => () | F => ()
 end
 
-structure X = F(exception E exception F = E)  (* should warn *)
-structure X = F(exception E exception F = E)  (* should warn *)
-structure X = F(exception E exception F);     (* should not warn *)
+structure X = F(exception E exception F = E)	(* should warn *)
+structure X = F(exception E exception F = E)	(* should warn *)
+structure X = F(exception E exception F);	(* should not warn *)

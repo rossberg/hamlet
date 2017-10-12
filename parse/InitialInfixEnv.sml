@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML initial infix environment
  *
@@ -8,22 +8,19 @@
 
 structure InitialInfixEnv : INITIAL_INFIX_ENV =
 struct
-  (* Import type *)
+    (* Import type *)
 
-  type InfEnv = Infix.InfEnv
+    type InfEnv = Infix.InfEnv
 
-  (* Value identifiers *)
+    (* Value identifiers *)
 
-  val vidCons   = VId.fromString "::"
-  val vidEqual  = VId.fromString "="
-  val vidAssign = VId.fromString ":="
+    val vidCons   = VId.fromString "::"
+    val vidEqual  = VId.fromString "="
+    val vidAssign = VId.fromString ":="
 
-  (* Export *)
+    (* Export *)
 
-  val J0 =
-      VIdMap.fromList[
-        (vidCons,   (Infix.RIGHT, 5)),
-        (vidEqual,  (Infix.LEFT,  4)),
-        (vidAssign, (Infix.LEFT,  3))
-      ]
+    val J0 = VIdMap.fromList[(vidCons,   (Infix.RIGHT, 5)),
+			     (vidEqual,  (Infix.LEFT,  4)),
+			     (vidAssign, (Infix.LEFT,  3))]
 end;

@@ -1,89 +1,123 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML core derived forms
  *
  * Definition, Section 2.7 and Appendix A
- *
- * Notes:
- * - Two phrases named Fmatch and Fmrule have been added to factorize FvalBind.
- * - In Fvalbinds we do not enforce that all optional type annotations are
- *   syntactically identical (as the Definition enforces, although this seems
- *   to be a mistake).
+ * + RFC: Syntax fixes
+ * + RFC: Record punning
+ * + RFC: Record extension
+ * + RFC: Record update
+ * + RFC: Pattern guards
+ * + RFC: Transformation patterns
+ * + RFC: Views
+ * + RFC: Optional else branch
+ * + RFC: Do declarations
+ * + RFC: Withtype in signatures
+ * + RFC: Local modules
+ * + RFC: First-class modules
  *)
 
 signature DERIVED_FORMS_CORE =
 sig
-  (* Import *)
+    (* Import *)
 
-  type Lab     = SyntaxCore.Lab
-  type VId     = SyntaxCore.VId
-  type TyVar   = SyntaxCore.TyVar
+    type Info      = GrammarCore.Info
 
-  type Op      = SyntaxCore.Op
-  type AtExp   = SyntaxCore.AtExp
-  type AppExp  = SyntaxCore.AtExp list
-  type InfExp  = SyntaxCore.Exp
-  type Exp     = SyntaxCore.Exp
-  type Match   = SyntaxCore.Match
-  type Mrule   = SyntaxCore.Mrule
-  type Dec     = SyntaxCore.Dec
-  type ValBind = SyntaxCore.ValBind
-  type TypBind = SyntaxCore.TypBind
-  type DatBind = SyntaxCore.DatBind
-  type AtPat   = SyntaxCore.AtPat
-  type PatRow  = SyntaxCore.PatRow
-  type Pat     = SyntaxCore.Pat
-  type Ty      = SyntaxCore.Ty
-  type 'a seq  = 'a SyntaxCore.seq
+    type Lab       = GrammarCore.Lab
+    type VId       = GrammarCore.VId
+    type TyCon     = GrammarCore.TyCon
+    type longTyCon = GrammarCore.longTyCon
+
+    type Op        = GrammarCore.Op
+    type AtExp     = GrammarCore.AtExp
+    type ExpRow    = GrammarCore.ExpRow
+    type AppExp    = GrammarCore.AtExp list
+    type InfExp    = GrammarCore.Exp
+    type Exp       = GrammarCore.Exp
+    type Match     = GrammarCore.Match
+    type Mrule     = GrammarCore.Mrule
+    type Dec       = GrammarCore.Dec
+    type ValBind   = GrammarCore.ValBind
+    type FvalBind  = GrammarCore.ValBind
+    type Fmatch    = GrammarCore.Match * VId * int
+    type Fmrule    = GrammarCore.Mrule * VId * int
+    type TypBind   = GrammarCore.TypBind
+    type DatBind   = GrammarCore.DatBind
+    type AtPat     = GrammarCore.AtPat
+    type PatRow    = GrammarCore.PatRow
+    type AppPat    = GrammarCore.AtPat list
+    type InfPat    = GrammarCore.Pat
+    type Pat       = GrammarCore.Pat
+    type Ty        = GrammarCore.Ty
+    type TyRow     = GrammarCore.TyRow
+    type TyVarseq  = GrammarCore.TyVarseq
+
+    type StrExp    = GrammarModule.StrExp
+    type AtStrExp  = GrammarModule.StrExp
+    type AtSigExp  = GrammarModule.SigExp
 
 
-  (* Types *)
+    (* Expressions [Figure 15; RFC: Optional else branch;
+     *                         RFC: Record punning; RFC: Record extension;
+     *                         RFC: Record update; RFC: First-class modules] *)
 
-  type FvalBind' = SyntaxCore.ValBind'
-  type Fmatch'
-  type Fmrule'
-  type FvalBind  = ValBind
-  type Fmatch    = (Fmatch', unit) Annotation.phrase
-  type Fmrule    = (Fmrule', unit) Annotation.phrase
+    val UNITAtExp :	Info					-> AtExp
+    val TUPLEAtExp :	Info * Exp list				-> AtExp
+    val UPDATEAtExp :	Info * AtExp * ExpRow			-> AtExp
+    val HASHAtExp :	Info * Lab				-> AtExp
+    val PACKExp :	Info * AtStrExp * AtSigExp		-> Exp
+    val CASEExp :	Info * Exp * Match			-> Exp
+    val IFExp :		Info * Exp * Exp * Exp option		-> Exp
+    val ANDALSOExp :	Info * Exp * Exp			-> Exp
+    val ORELSEExp :	Info * Exp * Exp			-> Exp
+    val SEQAtExp :	Info * Exp list				-> AtExp
+    val LETAtExp :	Info * Dec * Exp list			-> AtExp
+    val WHILEExp :	Info * Exp * Exp			-> Exp
+    val LISTAtExp :	Info * Exp list				-> AtExp
 
+    val IDExpRow :	Info * VId * Ty option * ExpRow option	-> ExpRow
+    val DOTSExpRow :	Info * Exp * ExpRow option		-> ExpRow
 
-  (* Expressions [Figure 15] *)
+    (* Patterns [Figure 16; RFC: Record extension; RFC: Pattern guards;
+     *                      RFC: Transformation patterns] *)
 
-  val UNITAtExp   : SyntaxCore.AtExp'
-  val TUPLEAtExp  : Exp list -> SyntaxCore.AtExp'
-  val HASHAtExp   : Lab -> SyntaxCore.AtExp'
-  val CASEExp     : Exp * Match -> SyntaxCore.Exp'
-  val IFExp       : Exp * Exp * Exp -> SyntaxCore.Exp'
-  val ANDALSOExp  : Exp * Exp -> SyntaxCore.Exp'
-  val ORELSEExp   : Exp * Exp -> SyntaxCore.Exp'
-  val SEQAtExp    : Exp list -> SyntaxCore.AtExp'
-  val LETSEQAtExp : Dec * Exp list -> SyntaxCore.AtExp'
-  val WHILEExp    : Exp * Exp -> SyntaxCore.Exp'
-  val LISTAtExp   : Exp list -> SyntaxCore.AtExp'
+    val UNITAtPat :	Info					-> AtPat
+    val TUPLEAtPat :	Info * Pat list				-> AtPat
+    val LISTAtPat :	Info * Pat list				-> AtPat
+    val QUESTAtPat :	Info * AtExp				-> AtPat
 
-  (* Patterns [Figure 16] *)
+    val DOTSPatRow:	Info * Pat option * PatRow option	-> PatRow
+    val IDPatRow :	Info * VId * Ty option * Pat option * PatRow option
+								-> PatRow
 
-  val UNITAtPat  : SyntaxCore.AtPat'
-  val TUPLEAtPat : Pat list -> SyntaxCore.AtPat'
-  val LISTAtPat  : Pat list -> SyntaxCore.AtPat'
+    val QUESTCONPat :	Info * AtExp * AtPat			-> Pat
+    val IFPat :		Info * Pat * Exp			-> Pat
 
-  val IDPatRow :
-      VId * Ty option * Pat option * PatRow option -> SyntaxCore.PatRow'
+    (* Types [Figure 16; RFC: Record extension] *)
 
-  (* Types [Figure 16] *)
+    val TUPLETy :	Info * Ty list				-> Ty
 
-  val TUPLETy : Ty list -> SyntaxCore.Ty'
+    val DOTSTyRow :	Info * Ty * TyRow option		-> TyRow
 
-  (* Function-value bindings [Figure 17] *)
+    (* Function-value bindings [Figure 17; RFC: Syntax fixes;
+     *                                     RFC: Pattern guards] *)
 
-  val FvalBind : Fmatch * FvalBind option -> FvalBind'
-  val Fmatch   : Fmrule * Fmatch option -> Fmatch'
-  val Fmrule   : Op option * VId * AtPat list * Ty option * Exp -> Fmrule'
+    val FvalBind :	Info * Fmatch * FvalBind option		-> FvalBind
+    val Fmatch :	Info * Fmrule * Fmatch option		-> Fmatch
+    val Fmrule :	Info * Op * VId * AtPat list * Ty option
+			     * AtExp option * Exp		-> Fmrule
 
-  (* Declarations [Figure 17] *)
+    (* Declarations [Figure 17; RFC: Do declarations; RFC: Views;
+			        RFC: Local modules] *)
 
-  val FUNDec              : TyVar seq * FvalBind -> SyntaxCore.Dec'
-  val DATATYPEWITHTYPEDec : DatBind * TypBind option -> SyntaxCore.Dec'
-  val ABSTYPEWITHTYPEDec  : DatBind * TypBind option * Dec -> SyntaxCore.Dec'
+    val DODec :		Info * Exp				-> Dec
+    val FUNDec :	Info * TyVarseq * FvalBind		-> Dec
+    val DATATYPEDec :	Info * DatBind * TypBind option		-> Dec
+    val VIEWTYPE2Dec :	Info * TyCon * longTyCon		-> Dec
+    val ABSTYPEDec :	Info * DatBind * TypBind option * Dec	-> Dec
+    val OPENDec :	Info * StrExp				-> Dec
+
+    val findTyCon :	TyCon * TypBind -> (TyVarseq * Ty) option 
+    val rewriteTy :	TypBind -> Ty -> Ty
 end;

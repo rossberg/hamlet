@@ -15,9 +15,9 @@ val 'a rec f = fn x => x;
 
 val x =
 let
-  val rec LESS = fn x => x      (* will raise Bind *)
-  and NONE as SOME = fn x => x
-  val SOME = 1
+    val rec LESS = fn x => x	(* will raise Bind *)
+    and NONE as SOME = fn x => x
+    val SOME = 1
 in
-  raise Fail "should not get here!"
+    raise Fail "should not get here!"
 end handle Bind => ();

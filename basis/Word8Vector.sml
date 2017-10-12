@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 2001-2013
+ * (c) Andreas Rossberg 2001-2007
  *
  * Standard ML Basis Library
  *
@@ -7,10 +7,10 @@
  *)
 
 structure Word8Vector : MONO_VECTOR
-  where type elem = Word8.word =
+    where type elem = Word8.word =
 struct
-  open Vector
+    open Vector
 
-  type elem   = Word8.word
-  type vector = elem vector
+    type elem	= Word8.word
+    type vector	= elem vector
 end;

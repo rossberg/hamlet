@@ -1,12 +1,12 @@
 (*
- * (c) Andreas Rossberg 2007-2013
+ * (c) Andreas Rossberg 2007
  *
- * Printer for abstract program syntax
+ * Printer for abstract program grammar
  *)
 
 signature PP_PROGRAM =
 sig
-    type Program = SyntaxProgram.Program
+    type Program = GrammarProgram.Program
 
     val ppProgram : TextIO.outstream * int * Program -> unit
 end;

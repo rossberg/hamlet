@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML type variables
  *
@@ -8,26 +8,24 @@
 
 signature TYVAR =
 sig
-  (* Import types *)
+    (* Import types *)
 
-  type OverloadingClass = OverloadingClass.OverloadingClass
+    type OverloadingClass = OverloadingClass.OverloadingClass
 
+    (* Type [Sections 2.4 and 4.1]*)
 
-  (* Type [Sections 2.4 and 4.1]*)
+    eqtype TyVar			(* [alpha] or [tyvar] *)
 
-  eqtype TyVar                                  (* [alpha] or [tyvar] *)
+    (* Operations *)
 
+    val invent :		bool -> TyVar
+    val fromInt :		bool -> int -> TyVar
+    val fromString :		string -> TyVar
+    val fromOverloadingClass :	string * OverloadingClass -> TyVar
+    val toString :		TyVar -> string
 
-  (* Operations *)
+    val admitsEquality :	TyVar -> bool
+    val overloadingClass :	TyVar -> OverloadingClass option
 
-  val invent               : bool -> TyVar
-  val fromInt              : bool -> int -> TyVar
-  val fromString           : string -> TyVar
-  val fromOverloadingClass : string * OverloadingClass -> TyVar
-  val toString             : TyVar -> string
-
-  val admitsEquality       : TyVar -> bool
-  val overloadingClass     : TyVar -> OverloadingClass option
-
-  val compare              : TyVar * TyVar -> order
+    val compare :		TyVar * TyVar -> order
 end;

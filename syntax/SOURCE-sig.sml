@@ -1,21 +1,20 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Helpers for handling source strings
  *)
 
 signature SOURCE =
 sig
-  type source = string
-  type pos    = int * int
-  type region = pos * pos
-  type loc    = {file : string option, region : region}
+    type source = string
+    type pos    = int * int
+    type region = pos * pos
+    type info   = {file : string option, region : region}
 
-  val nowhere : loc
-  val at      : loc -> loc
-  val left    : loc -> loc
-  val right   : loc -> loc
-  val over    : loc * loc -> loc
+    exception Error of (int * int) * string
 
-  val compare : loc * loc -> order
+    val nowhere :  info
+    val over :     info * info -> info
+    val between :  info * info -> info
+    val compare :  info * info -> order
 end;

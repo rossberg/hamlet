@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML type names
  *
@@ -16,26 +16,24 @@
 
 signature TYNAME =
 sig
-  (* Type [Section 4.1] *)
+    (* Type [Section 4.1] *)
 
-  eqtype TyName                                         (* [t] *)
+    eqtype TyName					(* [t] *)
 
 
-  (* Operations *)
+    (* Operations *)
 
-  val tyname         : string * int * bool * int -> TyName
-  val invent         : int * bool -> TyName
-  val rename         : TyName -> TyName
-  val Abs            : TyName -> TyName
+    val tyname :		string * int * bool * int -> TyName
+    val invent :		int * bool -> TyName
+    val rename :		TyName -> TyName
+    val removeEquality :	TyName -> TyName
+    val Abs :			TyName -> TyName
 
-  val arity          : TyName -> int
-  val admitsEquality : TyName -> bool
-  val span           : TyName -> int
-  val toString       : TyName -> string
-  val time           : TyName -> Stamp.stamp
+    val arity :			TyName -> int
+    val admitsEquality :	TyName -> bool
+    val span :			TyName -> int
+    val toString :		TyName -> string
+    val time :			TyName -> Stamp.stamp
 
-  val compare        : TyName * TyName -> order
-
-  val removeEquality : TyName -> unit
-  val adjustSpan     : TyName * int -> unit
+    val compare :		TyName * TyName -> order
 end;

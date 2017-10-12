@@ -1,59 +1,54 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML dynamic basis and environments of modules
  *
  * Definition, Section 7.2
+ * + RFC: Higher-order functors
+ * + RFC: Nested signatures
  *)
 
 structure DynamicBasis :> DYNAMIC_BASIS =
 struct
-  (* Import *)
+    (* Import *)
 
-  open IdsCore
-  open IdsModule
-  open DynamicObjectsCore
-  open DynamicObjectsModule
-
-
-  (* Injections [Sections 4.3 and 7.2] *)
-
-  val empty = (FunIdMap.empty, SigIdMap.empty, DynamicEnv.empty)
-
-  fun fromE E = (FunIdMap.empty, SigIdMap.empty, E)
-  fun fromF F = (F, SigIdMap.empty, DynamicEnv.empty)
-  fun fromG G = (FunIdMap.empty, G, DynamicEnv.empty)
+    open IdsCore
+    open IdsModule
+    open DynamicObjectsCore
+    open DynamicObjectsModule
 
 
-  (* Projections [Sections 4.3 and 7.2] *)
+    (* Injections [Sections 4.3 and 7.2] *)
 
-  fun Eof(F, G, E) = E
-
-
-  (* Modifications [Sections 4.3 and 7.2] *)
-
-  infix plus plusG plusF plusE plusSE IBplusI
-
-  fun (F, G, E) plus (F', G', E') =
-        ( FunIdMap.unionWith #2 (F, F'),
-          SigIdMap.unionWith #2 (G, G'),
-          DynamicEnv.plus(E, E')
-        )
-
-  fun (F, G, E) plusG G'  = (F, SigIdMap.unionWith #2 (G, G'), E)
-  fun (F, G, E) plusF F'  = (FunIdMap.unionWith #2 (F, F'), G, E)
-  fun (F, G, E) plusE E'  = (F, G, DynamicEnv.plus(E, E'))
-  fun (F, G, E) plusSE SE = (F, G, DynamicEnv.plusSE(E, SE))
+    val empty   = DynamicEnv.empty
+    fun fromE E = E
 
 
-  (* Application (lookup) [Sections 7.2 and 4.3] *)
+    (* Projections [Sections 4.3 and 7.2] *)
 
-  fun findStrId((F, G, E), strid) = DynamicEnv.findStrId(E, strid)
-  fun findSigId((F, G, E), sigid) = SigIdMap.find(G, sigid)
-  fun findFunId((F, G, E), funid) = FunIdMap.find(F, funid)
+    fun Eof E = E
 
-  fun findLongStrId((F, G, E), longstrid) =
-      DynamicEnv.findLongStrId(E, longstrid)
-  fun findLongTyCon((F, G, E), longtycon) =
-      DynamicEnv.findLongTyCon(E, longtycon)
+
+    (* Modifications [Sections 4.3 and 7.2] *)
+
+    val plus   = DynamicEnv.plus
+    val plusE  = DynamicEnv.plus
+    val plusSE = DynamicEnv.plusSE
+    val plusG  = DynamicEnv.plusG
+
+
+    (* Application (lookup) [Sections 7.2 and 4.3] *)
+
+    fun findStrId(E, strid) = DynamicEnv.findStrId(E, strid)
+    fun findSigId(E, sigid) = case DynamicEnv.findSigId(E, sigid)
+				of SOME(Sig I) => SOME I
+				 | _           => NONE
+    fun findLongTyCon(E, longtycon) =
+	DynamicEnv.findLongTyCon(E, longtycon)
+    fun findLongStrId(E, longstrid) =
+	DynamicEnv.findLongStrId(E, longstrid)
+    fun findLongSigId(E, longsigid) =
+	case DynamicEnv.findLongSigId(E, longsigid)
+	  of SOME(Sig I) => SOME I
+	   | _           => NONE
 end;

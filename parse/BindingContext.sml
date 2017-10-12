@@ -1,39 +1,37 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML context for binding analysis
  *)
 
 structure BindingContext : BINDING_CONTEXT =
 struct
-  (* Import *)
+    (* Import *)
 
-  open IdsCore
-  open BindingObjectsCore
+    open IdsCore
+    open BindingObjectsCore
 
+    (* Projections [Section 4.3] *)
 
-  (* Projections [Section 4.3] *)
+    fun Uof (U,E) = U
+    fun Eof (U,E) = E
 
-  fun Uof(U, E) = U
-  fun Eof(U, E) = E
+    (* Modification [Section 4.3] *)
 
+    infix plus plusU plusVE plusTE plusSE plusVEandTE plusE
 
-  (* Modification [Section 4.3] *)
+    val op plus = BindingEnv.plus
 
-  infix plus plusU plusVE plusTE plusVEandTE plusE
+    fun (U,E) plusU U'  = (TyVarSet.union(U, U'), E)
+    fun (U,E) plusE E'	= (U, E plus E')
+    fun (U,E) plusVE VE	= (U, E plus BindingEnv.fromVE VE)
+    fun (U,E) plusTE TE	= (U, E plus BindingEnv.fromTE TE)
+    fun (U,E) plusSE SE	= (U, E plus BindingEnv.fromSE SE)
+    fun (U,E) plusVEandTE (VE,TE) = (U, E plus BindingEnv.fromVEandTE (VE,TE))
 
-  val op plus = BindingEnv.plus
+    (* Application (lookup) [Section 4.3] *)
 
-  fun (U, E) plusU U'  = (TyVarSet.union(U, U'), E)
-  fun (U, E) plusE E'  = (U, E plus E')
-  fun (U, E) plusVE VE = (U, E plus BindingEnv.fromVE VE)
-  fun (U, E) plusTE TE = (U, E plus BindingEnv.fromTE TE)
-  fun (U, E) plusVEandTE (VE, TE) = (U, E plus BindingEnv.fromVEandTE (VE, TE))
-
-
-  (* Application (lookup) [Section 4.3] *)
-
-  fun findLongVId((U, E), longvid) = BindingEnv.findLongVId(E, longvid)
-  fun findLongTyCon((U, E), longtycon) = BindingEnv.findLongTyCon(E, longtycon)
-  fun findLongStrId((U, E), longstrid) = BindingEnv.findLongStrId(E, longstrid)
+    fun findLongVId  ((U,E), longvid)   = BindingEnv.findLongVId(E, longvid)
+    fun findLongTyCon((U,E), longtycon) = BindingEnv.findLongTyCon(E, longtycon)
+    fun findLongStrId((U,E), longstrid) = BindingEnv.findLongStrId(E, longstrid)
 end;

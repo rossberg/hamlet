@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML long identifiers
  *
@@ -11,32 +11,32 @@
 
 signature LONGID =
 sig
-  (* Import *)
+    (* Import *)
 
-  structure Id    : ID
-  structure StrId : ID
+    structure Id :    ID
+    structure StrId : ID
 
-  type Id         = Id.Id
-  type StrId      = StrId.Id
-
-
-  (* Type [Section 2.4] *)
-
-  eqtype longId                                 (* [longid] *)
+    type Id    = Id.Id
+    type StrId = StrId.Id
 
 
-  (* Operations *)
+    (* Type [Section 2.4] *)
 
-  val invent     : unit -> longId
-  val fromId     : Id -> longId
-  val toId       : longId -> Id
-  val toString   : longId -> string
+    eqtype longId				(* [longid] *)
 
-  val strengthen : StrId * longId -> longId
-  val implode    : StrId list * Id -> longId
-  val explode    : longId -> StrId list * Id
 
-  val isShort    : longId -> bool
+    (* Operations *)
 
-  val compare    : longId * longId -> order
+    val invent :	unit   -> longId
+    val fromId :	Id     -> longId
+    val toId :		longId -> Id
+    val toString :	longId -> string
+
+    val strengthen :	StrId * longId -> longId
+    val implode :	StrId list * Id -> longId
+    val explode :	longId -> StrId list * Id
+
+    val isUnqualified :	longId -> bool
+
+    val compare :	longId * longId -> order
 end;

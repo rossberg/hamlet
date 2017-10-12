@@ -9,6 +9,6 @@
 signature S = sig val f : 'a -> 'a option end
 structure X : S =
 struct
-  fun g() = let val r = ref NONE in fn x => !r before r := SOME x end
-  val f = g()
+    fun g() = let val r = ref NONE in fn x => !r before r := SOME x end
+    val f = g()
 end;

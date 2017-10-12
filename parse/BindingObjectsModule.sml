@@ -1,30 +1,35 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML objects for binding analysis of modules
  *
  * Definition, Sections 2.9 and 3.5
+ * + RFC: Higher-order functors
+ * + RFC: Nested signatures
  *
  * Notes:
- * - The "syntactic restrictions" defined in the Definition are not purely
- *   syntactic. E.g. the restriction that valbinds may not bind the same vid
- *   twice [2nd bullet] cannot be checked without proper binding analysis
- *   that computes identifier status.
+ *   - The "syntactic restrictions" defined in the Definition are not purely
+ *     syntactic. E.g. the restriction that valbinds may not bind the same vid
+ *     twice [2nd bullet] cannot be checked without proper binding analysis,
+ *     to compute identifier status.
  *)
 
 structure BindingObjectsModule =
 struct
-  (* Import *)
+    (* Import *)
 
-  type 'a SigIdMap = 'a IdsModule.SigIdMap
-  type 'a FunIdMap = 'a IdsModule.FunIdMap
+    type 'a SigIdMap	= 'a IdsModule.SigIdMap
 
-  type Env = BindingObjectsCore.Env
+    type Env		= BindingObjectsCore.Env
+    datatype Mod	= datatype BindingObjectsCore.Mod
 
+    (* Types *)
 
-  (* Types *)
+    type SigEnv		= exn SigIdMap
+    type Basis		= Env
 
-  type SigEnv = Env SigIdMap
-  type FunEnv = Env FunIdMap
-  type Basis  = FunEnv * SigEnv * Env
+    (* Recursive export *)
+
+    exception Fct	of Mod
+    exception Sig	of Mod
 end;

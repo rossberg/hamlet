@@ -1,164 +1,185 @@
 (*
- * (c) Andreas Rossberg 2007-2013
+ * (c) Andreas Rossberg 2007
  *
- * Printer for abstract module syntax
+ * Printer for abstract module grammar
  *)
 
 structure PPModule : PP_MODULE =
 struct
-  (* Import *)
+    (* Import *)
 
-  open SyntaxModule
-  open Annotation
-  open PPSyntax
-
-
-  (* Identifiers *)
-
-  fun ppSigId(out, i, sigid@@_) = ppAtom(out, i, "SigId", SigId.toString sigid)
-  fun ppFunId(out, i, funid@@_) = ppAtom(out, i, "FunId", FunId.toString funid)
+    open GrammarModule
+    open PPGrammar
 
 
-  (* Structures *)
+    (* Identifiers *)
 
-  fun ppStrExp(out, i, STRUCTStrExp(strdec)@@A) =
-        ppElem(out, i, "STRUCTStrExp", A, [sub ppStrDec strdec])
-    | ppStrExp(out, i, IDStrExp(longstrid)@@A) =
-        ppElem(out, i, "IDStrExp", A, [sub PPCore.ppLongStrId longstrid])
-    | ppStrExp(out, i, COLONStrExp(strexp, sigexp)@@A) =
-        ppElem(out, i, "COLONStrExp", A,
-          [sub ppStrExp strexp, sub ppSigExp sigexp])
-    | ppStrExp(out, i, SEALStrExp(strexp, sigexp)@@A) =
-        ppElem(out, i, "SEALStrExp", A,
-          [sub ppStrExp strexp, sub ppSigExp sigexp])
-    | ppStrExp(out, i, APPStrExp(funid, strexp)@@A) =
-        ppElem(out, i, "APPStrExp", A, [sub ppFunId funid, sub ppStrExp strexp])
-    | ppStrExp(out, i, LETStrExp(strdec, strexp)@@A) =
-        ppElem(out, i, "LETStrExp", A,
-          [sub ppStrDec strdec, sub ppStrExp strexp])
+    fun ppSigId(out, i, sigid) = ppAtom(out, i, "SigId", SigId.toString sigid)
 
-  and ppStrDec(out, i, DECStrDec(dec)@@A) =
-        ppElem(out, i, "DECStrDec", A, [sub PPCore.ppDec dec])
-    | ppStrDec(out, i, STRUCTUREStrDec(strbind)@@A) =
-        ppElem(out, i, "STRUCTUREStrDec", A, [sub ppStrBind strbind])
-    | ppStrDec(out, i, LOCALStrDec(strdec1, strdec2)@@A) =
-        ppElem(out, i, "LOCALStrDec", A,
-          [sub ppStrDec strdec1, sub ppStrDec strdec2])
-    | ppStrDec(out, i, EMPTYStrDec@@A) =
-        ppElem(out, i, "EMPTYStrDec", A, [])
-    | ppStrDec(out, i, SEQStrDec(strdec1, strdec2)@@A) =
-        ppElem(out, i, "SEQStrDec", A,
-          [sub ppStrDec strdec1, sub ppStrDec strdec2])
-
-  and ppStrBind(out, i, StrBind(strid, strexp, strbind_opt)@@A) =
-        ppElem(out, i, "StrBind", A,
-          [sub PPCore.ppStrId strid, sub ppStrExp strexp,
-            subo ppStrBind strbind_opt])
+    fun ppLongSigId(out, i, longsigid) =
+	    ppAtom(out, i, "LongSigId", LongSigId.toString longsigid)
 
 
-  (* Signatures *)
+    (* Structures *)
 
-  and ppSigExp(out, i, SIGSigExp(spec)@@A) =
-        ppElem(out, i, "SIGSigExp", A, [sub ppSpec spec])
-    | ppSigExp(out, i, IDSigExp(sigid)@@A) =
-        ppElem(out, i, "IDSigExp", A, [sub ppSigId sigid])
-    | ppSigExp(out, i, WHERETYPESigExp(sigexp, tyvarseq, longtycon, ty)@@A) =
-        ppElem(out, i, "WHERETYPESigExp", A,
-          [sub ppSigExp sigexp, sub PPCore.ppTyVarseq tyvarseq,
-            sub PPCore.ppLongTyCon longtycon, sub PPCore.ppTy ty])
+    fun ppStrExp(out, i, STRUCTStrExp(I, dec)) =
+	    ppElem(out, i, "STRUCTStrExp", I,
+		   [sub PPCore.ppDec dec])
+      | ppStrExp(out, i, IDStrExp(I, longstrid)) =
+	    ppElem(out, i, "IDStrExp", I,
+		   [sub PPCore.ppLongStrId longstrid])
+      | ppStrExp(out, i, COLONStrExp(I, strexp, sigexp)) =
+	    ppElem(out, i, "COLONStrExp", I,
+		   [sub ppStrExp strexp, sub ppSigExp sigexp])
+      | ppStrExp(out, i, SEALStrExp(I, strexp, sigexp)) =
+	    ppElem(out, i, "SEALStrExp", I,
+		   [sub ppStrExp strexp, sub ppSigExp sigexp])
+      | ppStrExp(out, i, UNPACKStrExp(I, atexp, sigexp)) =
+	    ppElem(out, i, "UNPACKStrExp", I,
+		   [sub PPCore.ppAtExp atexp, sub ppSigExp sigexp])
+      | ppStrExp(out, i, APPStrExp(I, strexp1, strexp2)) =
+	    ppElem(out, i, "APPStrExp", I,
+		   [sub ppStrExp strexp1, sub ppStrExp strexp2])
+      | ppStrExp(out, i, LETStrExp(I, dec, strexp)) =
+	    ppElem(out, i, "LETStrExp", I,
+		   [sub PPCore.ppDec dec, sub ppStrExp strexp])
+      | ppStrExp(out, i, FCTStrExp(I, strid, sigexp, strexp)) =
+	    ppElem(out, i, "FCTStrExp", I,
+		   [sub PPCore.ppStrId strid, sub ppSigExp sigexp,
+		    sub ppStrExp strexp])
+      | ppStrExp(out, i, PARStrExp(I, strexp)) =
+	    ppElem(out, i, "PARStrExp", I,
+		   [sub ppStrExp strexp])
 
-  and ppSigDec(out, i, SigDec(sigbind)@@A) =
-        ppElem(out, i, "SigDec", A, [sub ppSigBind sigbind])
+    and ppStrDec(out, i, STRUCTUREStrDec(I, strbind)) =
+	    ppElem(out, i, "STRUCTUREStrDec", I,
+		   [sub ppStrBind strbind])
+      | ppStrDec(out, i, SIGNATUREStrDec(I, sigbind)) =
+	    ppElem(out, i, "SIGNATUREStrDec", I,
+		   [sub ppSigBind sigbind])
 
-  and ppSigBind(out, i, SigBind(sigid, sigexp, sigbind_opt)@@A) =
-        ppElem(out, i, "SigBind", A,
-          [sub ppSigId sigid, sub ppSigExp sigexp, subo ppSigBind sigbind_opt])
-
-
-  (* Specifications *)
-
-  and ppSpec(out, i, VALSpec(valdesc)@@A) =
-        ppElem(out, i, "VALSpec", A, [sub ppValDesc valdesc])
-    | ppSpec(out, i, TYPESpec(typdesc)@@A) =
-        ppElem(out, i, "TYPESpec", A, [sub ppTypDesc typdesc])
-    | ppSpec(out, i, EQTYPESpec(typdesc)@@A) =
-        ppElem(out, i, "EQTYPESpec", A, [sub ppTypDesc typdesc])
-    | ppSpec(out, i, DATATYPESpec(datdesc)@@A) =
-        ppElem(out, i, "DATATYPESpec", A, [sub ppDatDesc datdesc])
-    | ppSpec(out, i, DATATYPE2Spec(tycon, longtycon)@@A) =
-        ppElem(out, i, "DATATYPE2Spec", A,
-          [sub PPCore.ppTyCon tycon, sub PPCore.ppLongTyCon longtycon])
-    | ppSpec(out, i, EXCEPTIONSpec(exdesc)@@A) =
-        ppElem(out, i, "EXCEPTIONSpec", A, [sub ppExDesc exdesc])
-    | ppSpec(out, i, STRUCTURESpec(strdesc)@@A) =
-        ppElem(out, i, "STRUCTURESpec", A, [sub ppStrDesc strdesc])
-    | ppSpec(out, i, INCLUDESpec(sigexp)@@A) =
-        ppElem(out, i, "INCLUDESpec", A, [sub ppSigExp sigexp])
-    | ppSpec(out, i, EMPTYSpec@@A) =
-        ppElem(out, i, "EMPTYSpec", A, [])
-    | ppSpec(out, i, SEQSpec(spec1, spec2)@@A) =
-        ppElem(out, i, "SEQSpec", A, [sub ppSpec spec1, sub ppSpec spec2])
-    | ppSpec(out, i, SHARINGTYPESpec(spec, longtycons)@@A) =
-        ppElem(out, i, "SHARINGTYPESpec", A,
-          [sub ppSpec spec, subs PPCore.ppLongTyCon longtycons])
-    | ppSpec(out, i, SHARINGSpec(spec, longstrids)@@A) =
-        ppElem(out, i, "SHARINGSpec", A,
-          [sub ppSpec spec, subs PPCore.ppLongStrId longstrids])
-
-  and ppValDesc(out, i, ValDesc(vid, ty, valdesc_opt)@@A) =
-        ppElem(out, i, "ValDesc", A,
-          [sub PPCore.ppVId vid, sub PPCore.ppTy ty,
-            subo ppValDesc valdesc_opt])
-
-  and ppTypDesc(out, i, TypDesc(tyvarseq, tycon, typdesc_opt)@@A) =
-        ppElem(out, i, "TypDec", A,
-          [sub PPCore.ppTyVarseq tyvarseq, sub PPCore.ppTyCon tycon,
-            subo ppTypDesc typdesc_opt])
-
-  and ppDatDesc(out, i, DatDesc(tyvarseq, tycon, condesc, datdesc_opt)@@A) =
-        ppElem(out, i, "DatDesc", A,
-          [sub PPCore.ppTyVarseq tyvarseq, sub PPCore.ppTyCon tycon,
-            sub ppConDesc condesc, subo ppDatDesc datdesc_opt])
-
-  and ppConDesc(out, i, ConDesc(vid, ty_opt, condesc_opt)@@A) =
-        ppElem(out, i, "ConDesc", A,
-          [sub PPCore.ppVId vid, subo PPCore.ppTy ty_opt,
-            subo ppConDesc condesc_opt])
-
-  and ppExDesc(out, i, ExDesc(vid, ty_opt, exdesc_opt)@@A) =
-        ppElem(out, i, "ExDesc", A,
-          [sub PPCore.ppVId vid, subo PPCore.ppTy ty_opt,
-            subo ppExDesc exdesc_opt])
-
-  and ppStrDesc(out, i, StrDesc(strid, sigexp, strdesc_opt)@@A) =
-        ppElem(out, i, "StrDesc", A,
-          [sub PPCore.ppStrId strid, sub ppSigExp sigexp,
-            subo ppStrDesc strdesc_opt])
+    and ppStrBind(out, i, StrBind(I, strid, strexp, strbind_opt)) =
+	    ppElem(out, i, "StrBind", I,
+		   [sub PPCore.ppStrId strid, sub ppStrExp strexp,
+		    subo ppStrBind strbind_opt])
 
 
-  (* Functors *)
+    (* Signatures *)
 
-  and ppFunDec(out, i, FunDec(funbind)@@A) =
-        ppElem(out, i, "FunDec", A, [sub ppFunBind funbind])
+    and ppSigExp(out, i, SIGSigExp(I, spec)) =
+	    ppElem(out, i, "SIGSigExp", I,
+		   [sub ppSpec spec])
+      | ppSigExp(out, i, IDSigExp(I, longsigid)) =
+	    ppElem(out, i, "IDSigExp", I,
+		   [sub ppLongSigId longsigid])
+      | ppSigExp(out, i, WHERETYPESigExp(I, sigexp, tyvarseq, longtycon, ty)) =
+	    ppElem(out, i, "WHERETYPESigExp", I,
+		   [sub ppSigExp sigexp, sub PPCore.ppTyVarseq tyvarseq,
+		    sub PPCore.ppLongTyCon longtycon, sub PPCore.ppTy ty])
+      | ppSigExp(out, i, FCTSigExp(I, strid, sigexp1, sigexp2)) =
+	    ppElem(out, i, "FCTSigExp", I,
+		   [sub PPCore.ppStrId strid, sub ppSigExp sigexp1,
+		    sub ppSigExp sigexp2])
+      | ppSigExp(out, i, FCTSPECSigExp(I, spec, sigexp)) =
+	    ppElem(out, i, "FCTSPECSigExp", I,
+		   [sub ppSpec spec, sub ppSigExp sigexp])
+      | ppSigExp(out, i, PARSigExp(I, sigexp)) =
+	    ppElem(out, i, "PARSigExp", I,
+		   [sub ppSigExp sigexp])
 
-  and ppFunBind(out, i,
-        FunBind(funid, strid, sigexp, strexp, funbind_opt)@@A
-      ) =
-        ppElem(out, i, "FunBind", A,
-          [sub ppFunId funid, sub PPCore.ppStrId strid,
-            sub ppSigExp sigexp, sub ppStrExp strexp,
-              subo ppFunBind funbind_opt])
+    and ppSigBind(out, i, SigBind(I, sigid, sigexp, sigbind_opt)) =
+	    ppElem(out, i, "SigBind", I,
+		   [sub ppSigId sigid, sub ppSigExp sigexp,
+		    subo ppSigBind sigbind_opt])
 
 
-  (* Top-level declarations *)
+    (* Specifications *)
 
-  and ppTopDec(out, i, STRDECTopDec(strdec, topdec_opt)@@A) =
-        ppElem(out, i, "STRDECTopDec", A,
-          [sub ppStrDec strdec, subo ppTopDec topdec_opt])
-    | ppTopDec(out, i, SIGDECTopDec(sigdec, topdec_opt)@@A) =
-        ppElem(out, i, "SIGDECTopDec", A,
-          [sub ppSigDec sigdec, subo ppTopDec topdec_opt])
-    | ppTopDec(out, i, FUNDECTopDec(fundec, topdec_opt)@@A) =
-        ppElem(out, i, "FUNDECTopDec", A,
-          [sub ppFunDec fundec, subo ppTopDec topdec_opt])
+    and ppSpec(out, i, VALSpec(I, valdesc)) =
+	    ppElem(out, i, "VALSpec", I,
+		   [sub ppValDesc valdesc])
+      | ppSpec(out, i, TYPESpec(I, typdesc)) =
+	    ppElem(out, i, "TYPESpec", I,
+		   [sub ppTypDesc typdesc])
+      | ppSpec(out, i, EQTYPESpec(I, typdesc)) =
+	    ppElem(out, i, "EQTYPESpec", I,
+		   [sub ppTypDesc typdesc])
+      | ppSpec(out, i, DATATYPESpec(I, datdesc)) =
+	    ppElem(out, i, "DATATYPESpec", I,
+		   [sub ppDatDesc datdesc])
+      | ppSpec(out, i, VIEWTYPESpec(I, tyvarseq, tycon, ty, condesc)) =
+	    ppElem(out, i, "VIEWTYPESpec", I,
+		   [sub PPCore.ppTyVarseq tyvarseq, sub PPCore.ppTyCon tycon,
+		    sub PPCore.ppTy ty, sub ppConDesc condesc])
+      | ppSpec(out, i, DATATYPE2Spec(I, tycon, longtycon)) =
+	    ppElem(out, i, "DATATYPE2Spec", I,
+		   [sub PPCore.ppTyCon tycon, sub PPCore.ppLongTyCon longtycon])
+      | ppSpec(out, i, EXCEPTIONSpec(I, exdesc)) =
+	    ppElem(out, i, "EXCEPTIONSpec", I,
+		   [sub ppExDesc exdesc])
+      | ppSpec(out, i, STRUCTURESpec(I, strdesc)) =
+	    ppElem(out, i, "STRUCTURESpec", I,
+		   [sub ppStrDesc strdesc])
+      | ppSpec(out, i, SIGNATURESpec(I, sigdesc)) =
+	    ppElem(out, i, "SIGNATURESpec", I,
+		   [sub ppSigDesc sigdesc])
+      | ppSpec(out, i, INCLUDESpec(I, sigexp)) =
+	    ppElem(out, i, "INCLUDESpec", I,
+		   [sub ppSigExp sigexp])
+      | ppSpec(out, i, EMPTYSpec(I)) =
+	    ppElem(out, i, "EMPTYSpec", I, [])
+      | ppSpec(out, i, SEQSpec(I, spec1, spec2)) =
+	    ppElem(out, i, "SEQSpec", I,
+		   [sub ppSpec spec1, sub ppSpec spec2])
+      | ppSpec(out, i, SHARINGTYPESpec(I, spec, longtycons)) =
+	    ppElem(out, i, "SHARINGTYPESpec", I,
+		   [sub ppSpec spec, subs PPCore.ppLongTyCon longtycons])
+      | ppSpec(out, i, SHARINGSpec(I, spec, longstrids)) =
+	    ppElem(out, i, "SHARINGSpec", I,
+		   [sub ppSpec spec, subs PPCore.ppLongStrId longstrids])
+
+    and ppValDesc(out, i, ValDesc(I, vid, ty, valdesc_opt)) =
+	    ppElem(out, i, "ValDesc", I,
+		   [sub PPCore.ppVId vid, sub PPCore.ppTy ty,
+		    subo ppValDesc valdesc_opt])
+    and ppTypDesc(out, i, TypDesc(I, tyvarseq, tycon, typdesc_opt)) =
+	    ppElem(out, i, "TypDec", I,
+		   [sub PPCore.ppTyVarseq tyvarseq, sub PPCore.ppTyCon tycon,
+		    subo ppTypDesc typdesc_opt])
+    and ppDatDesc(out, i, DatDesc(I, tyvarseq, tycon, condesc, datdesc_opt)) =
+	    ppElem(out, i, "DatDesc", I,
+		   [sub PPCore.ppTyVarseq tyvarseq, sub PPCore.ppTyCon tycon,
+		    sub ppConDesc condesc, subo ppDatDesc datdesc_opt])
+    and ppConDesc(out, i, ConDesc(I, vid, ty_opt, condesc_opt)) =
+	    ppElem(out, i, "ConDesc", I,
+		   [sub PPCore.ppVId vid, subo PPCore.ppTy ty_opt,
+		    subo ppConDesc condesc_opt])
+    and ppExDesc(out, i, ExDesc(I, vid, ty_opt, exdesc_opt)) =
+	    ppElem(out, i, "ExDesc", I,
+		   [sub PPCore.ppVId vid, subo PPCore.ppTy ty_opt,
+		    subo ppExDesc exdesc_opt])
+    and ppStrDesc(out, i, StrDesc(I, strid, sigexp, strdesc_opt)) =
+	    ppElem(out, i, "StrDesc", I,
+		   [sub PPCore.ppStrId strid, sub ppSigExp sigexp,
+		    subo ppStrDesc strdesc_opt])
+    and ppSigDesc(out, i, SigDesc(I, sigid, sigexp, sigdesc_opt)) =
+	    ppElem(out, i, "SigDesc", I,
+		   [sub ppSigId sigid, sub ppSigExp sigexp,
+		    subo ppSigDesc sigdesc_opt])
+
+
+    (* Top-level declarations *)
+
+    and ppTopDec(out, i, TopDec(I, dec)) =
+	    ppElem(out, i, "TopDec", I,
+		   [sub PPCore.ppDec dec])
+
+
+    (* Tie recursive imports *)
+
+    val _ = PPCore.PPModule.ppLongSigId := ppLongSigId
+    val _ = PPCore.PPModule.ppStrExp := ppStrExp
+    val _ = PPCore.PPModule.ppStrDec :=
+            (fn(out, i, StrDec strdec) => ppStrDec(out, i, strdec)
+              | _ => raise Fail "PPModule.ppStrDec: invalid declaration")
 end;

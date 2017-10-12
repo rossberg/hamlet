@@ -1,26 +1,32 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML special constants
  *
  * Definition, Section 2.2
+ * + RFC: Extended literal syntax
  *)
 
 signature SCON =
 sig
-  (* Types [Section 2.2] *)
+    (* Import *)
 
-  datatype base = DEC | HEX
+    type TyName = TyName.TyName
 
-  datatype SCon =                               (* [scon] *)
-      INT    of base * string
-    | WORD   of base * string
-    | STRING of string
-    | CHAR   of string
-    | REAL   of string
+    (* Type [Section 2.2] *)
 
+    (* [RFC: Extended literal syntax] *)
+    datatype base = DEC | HEX | BIN
 
-  (* Operations *)
+    datatype SCon =				(* [scon] *)
+	  INT    of base * string * TyName option ref
+	| WORD   of base * string * TyName option ref
+	| STRING of string * TyName option ref
+	| CHAR   of string * TyName option ref
+	| REAL   of string * TyName option ref
 
-  val toString : SCon -> string
+    (* Operations *)
+
+    val toString :	SCon -> string
+    val tyname :	SCon -> TyName option
 end;

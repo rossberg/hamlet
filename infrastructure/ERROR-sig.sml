@@ -1,31 +1,30 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Error handling.
  *)
 
 signature ERROR =
 sig
-  (* Import *)
+    (* Import *)
 
-  type loc = Source.loc
+    type position		= Source.info
 
 
-  (* Export *)
+    (* Export *)
 
-  exception Error
+    exception Error
 
-  val print          : loc * string -> unit
-  val warning        : loc * string -> unit
-  val error          : loc * string -> 'a
-  val errorLab       : loc * string * IdsCore.Lab -> 'a
-  val errorVId       : loc * string * IdsCore.VId -> 'a
-  val errorTyCon     : loc * string * IdsCore.TyCon -> 'a
-  val errorTyVar     : loc * string * IdsCore.TyVar -> 'a
-  val errorStrId     : loc * string * IdsCore.StrId -> 'a
-  val errorSigId     : loc * string * IdsModule.SigId -> 'a
-  val errorFunId     : loc * string * IdsModule.FunId -> 'a
-  val errorLongVId   : loc * string * IdsCore.longVId -> 'a
-  val errorLongTyCon : loc * string * IdsCore.longTyCon -> 'a
-  val errorLongStrId : loc * string * IdsCore.longStrId -> 'a
+    val warning :		position * string -> unit
+    val error :			position * string -> 'a
+    val errorLab :		position * string * IdsCore.Lab -> 'a
+    val errorVId :		position * string * IdsCore.VId -> 'a
+    val errorTyCon :		position * string * IdsCore.TyCon -> 'a
+    val errorTyVar :		position * string * IdsCore.TyVar -> 'a
+    val errorStrId :		position * string * IdsCore.StrId -> 'a
+    val errorSigId :		position * string * IdsModule.SigId -> 'a
+    val errorLongVId :		position * string * IdsCore.longVId -> 'a
+    val errorLongTyCon :	position * string * IdsCore.longTyCon -> 'a
+    val errorLongStrId :	position * string * IdsCore.longStrId -> 'a
+    val errorLongSigId :	position * string * IdsModule.longSigId -> 'a
 end;

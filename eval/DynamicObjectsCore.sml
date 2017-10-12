@@ -1,74 +1,92 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML objects of the dynamic semantics of the core
  *
- * Definition, Sections 6.2 and 6.3
+ * Definition, Sections 6.2, 6.3 and 7.2
+ * + RFC: Views
+ * + RFC: Higher-order functors
+ * + RFC: Nested signatures
+ * + RFC: First-class modules
  *
  * Notes:
- * - Basic values are just named by strings.
- * - Env is modelled a a datatype to deal with type recursion.
- * - We call the domain type of value environments ValStr.
+ *   - Basic values are just named by strings.
+ *   - Env is modelled by a datatype to deal with type recursion.
+ *   - We call the domain type of value environments ValStr.
+ *   - FunctorClosure is defined as exn, to recolve the mutual dependency.
  *)
 
 structure DynamicObjectsCore =
 struct
-  (* Import *)
+    (* Import *)
 
-  type VId         = IdsCore.VId
-  type 'a LabMap   = 'a IdsCore.LabMap
-  type 'a VIdMap   = 'a IdsCore.VIdMap
-  type 'a TyConMap = 'a IdsCore.TyConMap
-  type 'a StrIdMap = 'a IdsCore.StrIdMap
+    type VId		= IdsCore.VId
+    type 'a LabMap	= 'a IdsCore.LabMap
+    type 'a VIdMap	= 'a IdsCore.VIdMap
+    type 'a TyConMap	= 'a IdsCore.TyConMap
+    type 'a StrIdMap	= 'a IdsCore.StrIdMap
+    type 'a SigIdMap	= 'a IdsModule.SigIdMap
 
-  type 'a AddrMap  = 'a AddrMap.map
+    type 'a AddrMap	= 'a AddrMap.map
 
-  type IdStatus    = IdStatus.IdStatus
+    type IdStatus	= IdStatus.IdStatus
 
-  type Match       = SyntaxCore.Match
+    type Match		= GrammarCore.Match
 
+    (* Recursive import *)
 
-  (* Simple objects [Section 6.2] *)
+    type Int'		= exn
+    type FunctorClosure' = exn
 
-  type Addr   = Addr.Addr                                       (* [a] *)
-  type ExName = ExName.ExName                                   (* [en] *)
-  type BasVal = string                                          (* [b] *)
-  type SVal   = SVal.SVal                                       (* [sv] *)
+    (* Simple objects [Section 6.2] *)
 
-  exception FAIL
+    type Addr		= Addr.Addr				(* [a] *)
+    type ExName		= ExName.ExName				(* [en] *)
+    type BasVal		= string				(* [b] *)
+    type SVal		= SVal.SVal				(* [sv] *)
 
-  (* Compound objects [Section 6.3] *)
+    exception FAIL
 
-  datatype Val =                                                (* [v] *)
-      Assign
-    | SVal       of SVal
-    | BasVal     of BasVal
-    | VId        of VId
-    | VIdVal     of VId * Val
-    | ExVal      of ExVal
-    | Record     of Record
-    | Addr       of Addr
-    | FcnClosure of FcnClosure
+    (* Compound objects [Section 6.3] *)
 
-  and ExVal =                                                   (* [e] *)
-      ExName     of ExName
-    | ExNameVal  of ExName * Val
+    datatype Val	=					(* [v] *)
+	  Assign
+	| SVal		of SVal
+	| BasVal	of BasVal
+	| VId		of VId
+	| VIdVal	of VId * Val
+	| ExVal		of ExVal
+	| Record	of Record
+	| Addr		of Addr
+	| FcnClosure	of FcnClosure
+	| Mod		of Mod
 
-  and Env =
-      Env of StrEnv * TyEnv * ValEnv                            (* [E] *)
+    and ExVal		=					(* [e] *)
+	  ExName	of ExName
+	| ExNameVal	of ExName * Val
 
-  withtype
-      Record     = Val LabMap                                   (* [r] *)
-  and FcnClosure = Match * Env * (Val * IdStatus) VIdMap
-  and StrEnv     = Env StrIdMap                                 (* [SE] *)
-  and TyEnv      = ((Val * IdStatus) VIdMap) TyConMap           (* [TE] *)
-  and ValEnv     = (Val * IdStatus) VIdMap                      (* [VE] *)
-  and ValStr     = Val * IdStatus
+    and Env		= Env of SigEnv * StrEnv * TyEnv * ValEnv (* [E] *)
 
-  type Pack      = ExVal * Source.loc                           (* [p] *)
-  type Mem       = Val AddrMap                                  (* [mem] *)
-  type ExNameSet = ExNameSet.set                                (* [ens] *)
-  type State     = Mem * ExNameSet                              (* [s] *)
+    and Mod		=					(* [M] *)
+	  Struct	of Env
+	| Functor	of FunctorClosure'
 
-  exception Pack of Pack                                        (* [p] *)
+    and ValStatus	=					(* [vs] *)
+	  IdStatus	of IdStatus
+	| Vals		of Val * VId
+
+    withtype Record	= Val LabMap				(* [r] *)
+    and      FcnClosure	= Match * Env * (Val * ValStatus) VIdMap
+    and      SigEnv	= Int' SigIdMap				(* [G] *)
+    and      StrEnv	= Mod StrIdMap				(* [SE] *)
+    and      TyEnv	= ((Val * ValStatus) VIdMap) TyConMap	(* [TE] *)
+    and      ValEnv	= (Val * ValStatus) VIdMap		(* [VE] *)
+    and      ValStr	= Val * ValStatus
+
+    type     Pack	= ExVal					(* [p] *)
+    type     Mem	= Val AddrMap				(* [mem] *)
+    type     ExNameSet	= ExNameSet.set				(* [ens] *)
+    type     State	= Mem * ExNameSet			(* [s] *)
+
+    exception Pack	of Pack					(* [p] *)
 end;

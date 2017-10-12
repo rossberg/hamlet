@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML closure of value environments
  *
@@ -8,15 +8,14 @@
 
 signature CLOS =
 sig
-  (* Import *)
+    (* Import *)
 
-  type ValBind = SyntaxCore.ValBind
-  type ValEnv  = StaticObjectsCore.ValEnv
+    type ValBind = GrammarCore.ValBind
+    type ValEnv  = StaticObjectsCore.ValEnv
+    type Context = StaticObjectsCore.Context
 
-  type Context = StaticObjectsCore.Context
 
+    (* Operation *)
 
-  (* Operation *)
-
-  val Clos : Context * ValBind -> ValEnv -> ValEnv
+    val Clos :  Context * ValBind -> ValEnv -> ValEnv
 end;

@@ -1,30 +1,45 @@
 (*
- * (c) Andreas Rossberg 2007-2013
+ * (c) Andreas Rossberg 2007
  *
- * Printer for abstract core syntax
+ * Printer for abstract core grammar
  *)
 
 signature PP_CORE =
 sig
-  type VId        = SyntaxCore.VId
-  type TyCon      = SyntaxCore.TyCon
-  type StrId      = SyntaxCore.StrId
-  type longVId    = SyntaxCore.longVId
-  type longTyCon  = SyntaxCore.longTyCon
-  type longStrId  = SyntaxCore.longStrId
-  type TyVar      = SyntaxCore.TyVar
-  type Ty         = SyntaxCore.Ty
-  type Dec        = SyntaxCore.Dec
-  type 'a seq     = 'a SyntaxCore.seq
+    (* Import *)
 
-  val ppVId       : TextIO.outstream * int * VId -> unit
-  val ppTyCon     : TextIO.outstream * int * TyCon -> unit
-  val ppStrId     : TextIO.outstream * int * StrId -> unit
-  val ppLongVId   : TextIO.outstream * int * longVId -> unit
-  val ppLongTyCon : TextIO.outstream * int * longTyCon -> unit
-  val ppLongStrId : TextIO.outstream * int * longStrId -> unit
-  val ppTyVarseq  : TextIO.outstream * int * TyVar seq -> unit
+    type VId        = IdsCore.VId
+    type TyCon      = IdsCore.TyCon
+    type StrId      = IdsCore.StrId
+    type longVId    = IdsCore.longVId
+    type longTyCon  = IdsCore.longTyCon
+    type longStrId  = IdsCore.longStrId
+    type TyVarseq   = GrammarCore.TyVarseq
+    type AtExp      = GrammarCore.AtExp
+    type Ty         = GrammarCore.Ty
+    type Dec        = GrammarCore.Dec
 
-  val ppTy        : TextIO.outstream * int * Ty -> unit
-  val ppDec       : TextIO.outstream * int * Dec -> unit
+    (* Recursive import *)
+
+    structure PPModule :
+    sig
+        val ppLongSigId :
+	    (TextIO.outstream * int * IdsModule.longSigId -> unit) ref
+        val ppStrExp :
+	    (TextIO.outstream * int * GrammarModule.StrExp -> unit) ref
+        val ppStrDec :
+	    (TextIO.outstream * int * GrammarCore.StrDec' -> unit) ref
+    end
+
+    val ppVId :       TextIO.outstream * int * VId -> unit
+    val ppTyCon :     TextIO.outstream * int * TyCon -> unit
+    val ppStrId :     TextIO.outstream * int * StrId -> unit
+    val ppLongVId :   TextIO.outstream * int * longVId -> unit
+    val ppLongTyCon : TextIO.outstream * int * longTyCon -> unit
+    val ppLongStrId : TextIO.outstream * int * longStrId -> unit
+    val ppTyVarseq :  TextIO.outstream * int * TyVarseq -> unit
+
+    val ppAtExp :     TextIO.outstream * int * AtExp -> unit
+    val ppTy :        TextIO.outstream * int * Ty -> unit
+    val ppDec :       TextIO.outstream * int * Dec -> unit
 end;

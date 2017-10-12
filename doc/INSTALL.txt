@@ -7,11 +7,9 @@ invoke one of the following commands:
 	make with-mosml		(for Moscow ML 2.0+)
 	make with-poly		(for Poly/ML 5.0+)
 	make with-smlnj		(for SML/NJ 110+)
-	make with-smlsharp	(for SML# 0.20+)
 
 depending on what SML system you want to compile with.
 This will produce an executable named "hamlet".
-(For Moscow ML versions prior to 2.10 you will need to patch the definition of FIXES_mosml as indicated in the Makefile.)
 
 Alternatively, you can invoke
 
@@ -21,9 +19,15 @@ from an interactive SML prompt, which employs SML's `use' function.
 As yet another possibility, a single file containing all modules can be
 generated with
 
-	make hamlet-bundle.sml
+	make hamlet-monolith.sml
 
 for easy compilation with systems not supporting any of the above options.
+
+[Due to a bug in Moscow ML, you have to invoke
+
+	make mosmlize
+
+first if you want to use this system.]
 
 To compile under DOS-based systems you can either use the simple-minded
 "make.bat" batch file that fakes the commands above, or you install some

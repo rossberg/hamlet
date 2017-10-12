@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML exception names
  *
@@ -8,20 +8,20 @@
 
 signature EXNAME =
 sig
-  (* Import *)
+    (* Import *)
 
-  type VId = VId.Id
-
-
-  (* Type [Section 6.2] *)
-
-  eqtype ExName                                         (* [en] *)
+    type VId = VId.Id
 
 
-  (* Operations *)
+    (* Type [Section 6.2] *)
 
-  val exname   : VId -> ExName
-  val toString : ExName -> string
+    eqtype ExName					(* [en] *)
 
-  val compare  : ExName * ExName -> order
+
+    (* Operations *)
+
+    val exname :   VId -> ExName
+    val toString : ExName -> string
+
+    val compare :  ExName * ExName -> order
 end;

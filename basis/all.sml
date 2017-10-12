@@ -1,11 +1,11 @@
 (*
- * (c) Andreas Rossberg 2001-2013
+ * (c) Andreas Rossberg 2001-2006
  *
  * Standard ML Basis Library
+ * + RFC: Generic functionals
  *
- * Notes:
- * - We only implement required structures (and their signatures).
- * - Modules commented out are not yet implemented.
+ * Note: We only implement required structures (and their signatures).
+ * - Commented modules are not yet implemented.
  *)
 
 local val use : string -> unit = use in val _ = let in
@@ -94,16 +94,16 @@ use "TextIO.sml";
 
 use "OS_FILE_SYS-sig.sml";
 use "OS_PATH-sig.sml";
-use "OS_PROCESS-sig.sml";
+(*use "OS_PROCESS-sig.sml";*)
 (*use "OS_IO-sig.sml";*)
 use "OS-sig.sml";
 use "OS_Path.sml";
 use "OS_FileSys.sml";
-use "OS_Process.sml";
+(*use "OS_Process.sml";*)
 (*use "OS_IO.sml";*)
 use "OS.sml";
-use "COMMAND_LINE-sig.sml";
-use "CommandLine.sml";
+(*use "COMMAND_LINE-sig.sml";*)
+(*use "CommandLine.sml";*)
 (*use "DATE-sig.sml";*)
 (*use "Date.sml";*)
 (*use "TIME-sig.sml";*)

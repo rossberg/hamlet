@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML addresses and maps thereof
  *
@@ -8,15 +8,15 @@
 
 structure Addr :> ADDR =
 struct
-  (* Type [Section 6.2] *)
+    (* Type [Section 6.2] *)
 
-  type Addr = Stamp.stamp                                       (* [a] *)
+    type Addr =	Stamp.stamp				(* [a] *)
 
-  (* Operations *)
+    (* Operations *)
 
-  val addr    = Stamp.stamp
-  val compare = Stamp.compare
+    val addr    = Stamp.stamp
+    val compare = Stamp.compare
 end
 
-structure AddrMap =
-    FinMapFn(type ord_key = Addr.Addr; val compare = Addr.compare);
+structure AddrMap = FinMapFn(type ord_key = Addr.Addr
+			     val  compare = Addr.compare);

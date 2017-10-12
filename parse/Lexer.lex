@@ -1,111 +1,127 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML lexical analysis
  *
  * Definition, Sections 2.1-2.5, 3.1
+ * + RFC: Syntax fixes
+ * + RFC: Line comments
+ * + RFC: Extended literal syntax
+ * + RFC: Views 
+ * + RFC: Higher-order functors
+ * + RFC: First-class modules
  *
  * Notes:
  *   Since all lexical classes must be disjoint:
  *   - There is no single class ID, use ALPHA|SYMBOL|STAR|EQUALS.
  *   - There is no class LAB, use ALPHA|SYMBOL|NUMERIC|DIGIT|STAR.
- *   - ID does not contain `=' and `*', use ID|EQUALS|STAR.
+ *   - ID does not contain `=' and `*', those are EQUALS and STAR.
  *   - LONGID does not contain unqualified ids (but allows for `=' and `*').
  *   - INT does not contain positive decimal integers without leading 0,
- *     and single DIGIT integers, use INT|NUMERIC|DIGIT|ZERO.
- *   - NUMERIC does not contain single digit numbers, use NUMERIC|DIGIT.
- *   - DIGIT does not contain 0, use DIGIT|ZERO.
+ *     and single DIGIT integers, those are in NUMERIC, DIGIT, and ZERO.
+ *   - NUMERIC does not contain single digit numbers, those are in DIGIT.
+ *   - DIGIT does not contain 0, that is ZERO.
  *
  *   The lexer uses a global variable to recognise nested comments, so it is
  *   not reentrant.
  *)
 
-  (* Types to match structure LEXER.UserDeclaration *)
 
-  type ('a,'b) token = ('a,'b) Tokens.token
-  type pos           = int
-  type svalue        = Tokens.svalue
-  type lexresult     = (svalue, pos) token
+    open Tokens
 
 
-  (* Handling nested comments *)
+    (* Types to match structure LEXER.UserDeclaration *)
 
-  val nesting = ref 0
-
-  fun eof() =
-      if !nesting = 0 then
-    	Tokens.EOF(~1, ~1)
-      else
-	raise RawError((0, 0), "unclosed comment")
+    type ('a,'b) token = ('a,'b) Tokens.token
+    type pos           = int
+    type svalue        = Tokens.svalue
+    type lexresult     = (svalue, pos) token
 
 
-  (* Some helpers to create tokens *)
 
-  open Tokens
+    (* Handling nested comments *)
 
-  fun toLRPos(yypos, yytext) =
-      let
-	val yypos = yypos - 2	(* bug in ML-Lex... *)
-      in
-	(yypos, yypos + String.size yytext)
-      end
-
-  fun token(yypos, yytext, TOKEN) = TOKEN(toLRPos(yypos, yytext))
-
-  fun tokenOf(yypos, yytext, TOKEN, toVal) =
-      let
-	val (l, r) = toLRPos(yypos, yytext)
-      in
-	TOKEN(toVal yytext, l, r)
-      end
-
-  fun error(yypos, yytext, s) = raise RawError(toLRPos(yypos, yytext), s)
-
-  fun invalid(yypos, yytext) =
-      let
-	val s = "invalid character `" ^ String.toString yytext ^ "'"
-      in
-	error(yypos, yytext, s)
-      end
+    val nesting = ref 0		(* non-reentrant side-effect way :-P *)
 
 
-  (* Convert identifiers *)
-
-  fun toId s = s
-
-  fun toLongId s =
-      let
-	fun split[] = raise Fail "Lexer.toLongId: empty longid"
-	  | split[x] = ([], x)
-	  | split(x::xs) = let val (ys, y) = split xs in (x::ys, y) end
-      in
-	split(String.fields (fn c => c = #".") s)
-      end
+    fun eof() =
+	if !nesting = 0 then
+	    Tokens.EOF(~1, ~1)
+	else
+	    raise Source.Error((0,0), "unclosed comment")
 
 
-  (* Convert constants *)
 
-  fun toInt s     = s
-  fun toHexInt s  = if String.sub(s, 0) = #"~" then
-                      "~" ^ String.extract(s, 3, NONE)
-                    else
-                      String.extract(s, 2, NONE)
-  fun toWord s    = String.extract(s, 2, NONE)
-  fun toHexWord s = String.extract(s, 3, NONE)
-  fun toReal s    = s
-  fun toString s  = String.extract(s, 1, SOME(String.size s - 2))
-  fun toChar s    = String.extract(s, 2, SOME(String.size s - 3))
+    (* Some helpers to create tokens *)
+
+    open Tokens
+
+
+    fun toLRPos(yypos, yytext) =
+	let
+	    val yypos = yypos - 2	(* bug in ML-Lex... *)
+	in
+	    (yypos, yypos + String.size yytext)
+	end
+
+    fun token(TOKEN, yypos, yytext) =
+        TOKEN(toLRPos(yypos, yytext))
+
+    fun tokenOf(TOKEN, toVal, yypos, yytext) =
+	let
+	    val i as (l,r) = toLRPos(yypos, yytext)
+	in
+	    TOKEN(toVal yytext, l, r)
+	end
+
+    fun error(yypos, yytext, s) =
+	    raise Source.Error(toLRPos(yypos,yytext), s)
+
+    fun invalid(yypos, yytext) =
+	let
+	    val s = "invalid character `" ^ String.toString yytext ^ "'"
+	in
+	    error(yypos, yytext, s)
+	end
+
+
+
+    (* Convert identifiers *)
+
+    fun toId s = s
+
+    fun toLongId s =
+	let
+	    fun split  []    = raise Fail "Lexer.toLongId: empty longid"
+	      | split [x]    = ([],x)
+	      | split(x::xs) = let val (ys,y) = split xs in (x::ys,y) end
+	in
+	    split(String.fields (fn c => c = #".") s)
+	end
+
+
+    (* Convert constants *)
+
+    fun toInt s     = s
+    fun toHexInt s  = if String.sub(s, 0) = #"~" then
+                          "~" ^ String.substring(s, 3, String.size s-3)
+                      else
+                          String.substring(s, 2, String.size s-2)
+    fun toBinInt s  = String.substring(s, 2, String.size s-2)
+    fun toWord s    = s
+    fun toHexWord s = String.substring(s, 3, String.size s-3)
+    fun toBinWord s = String.substring(s, 3, String.size s-3)
+    fun toReal s    = s
+    fun toString s  = String.substring(s, 1, String.size s-2)
+    fun toChar s    = String.substring(s, 2, String.size s-3)
+
 
 %%
 
-%header	(
-  functor LexerFn(
-    structure Tokens : Parser_TOKENS
-    exception RawError of (int * int) * string
-  )
-);
 
-%s COMMENT;
+%header	( functor LexerFn(structure Tokens : Parser_TOKENS) );
+
+%s COMMENT LCOMMENT;
 
 %full
 
@@ -114,18 +130,24 @@
   symbol     = [-!%&$#+/:<=>?@\\~`|*^];
   digit      = [0-9];
   hexdigit   = [0-9a-fA-F];
+  bindigit   = [0-1];
 
-  posdecint  = {digit}+;
-  poshexint  = "0x"{hexdigit}+;
+  posdecint  = {digit}(({digit}|"_")*{digit})?;
+  poshexint  = "0x"({hexdigit}|"_")*{hexdigit};
+  posbinint  = "0b"({bindigit}|"_")*{bindigit};
   negdecint  = "~"{posdecint};
   neghexint  = "~"{poshexint};
+  negbinint  = "~"{posbinint};
   decint     = {posdecint} | {negdecint};
   hexint     = {poshexint} | {neghexint};
-  decword    = "0w"{digit}+;
-  hexword    = "0wx"{hexdigit}+;
+  binint     = {posbinint} | {negbinint};
+  decword    = "0w"({digit}|"_")*{digit};
+  hexword    = ("0wx"|"0xw")({hexdigit}|"_")*{hexdigit};
+  binword    = ("0wb"|"0bw")({bindigit}|"_")*{bindigit};
 
   exp        = "E" | "e";
-  real       = ({decint}"."{digit}+ ({exp}{decint})?) | ({decint}{exp}{decint});
+  real       = ({decint}"."({digit}|"_")*{digit}({digit}|"_")*({exp}{decint})?)
+	       | ({decint}{exp}{decint});
 
   numericlab = [1-9]{digit}*;
   alphanumid = {letter}({letter} | {digit} | [_'])*;
@@ -143,92 +165,110 @@
   string     = "\""({stringchar} | {gap})*"\"";
   char       = "#\""{gap}*{stringchar}{gap}*"\"";
 
+
+
 %%
+
 
   <INITIAL>{formatting}	=> ( continue() );
 
 
-  <INITIAL>"#"		=> ( token(yypos, yytext, HASH) );
-  <INITIAL>"("		=> ( token(yypos, yytext, LPAR) );
-  <INITIAL>")"		=> ( token(yypos, yytext, RPAR) );
-  <INITIAL>"*"		=> ( token(yypos, yytext, STAR) );
-  <INITIAL>","		=> ( token(yypos, yytext, COMMA) );
-  <INITIAL>"->"		=> ( token(yypos, yytext, ARROW) );
-  <INITIAL>"..."	=> ( token(yypos, yytext, DOTS) );
-  <INITIAL>":"		=> ( token(yypos, yytext, COLON) );
-  <INITIAL>":>"		=> ( token(yypos, yytext, SEAL) );
-  <INITIAL>";"		=> ( token(yypos, yytext, SEMICOLON) );
-  <INITIAL>"="		=> ( token(yypos, yytext, EQUALS) );
-  <INITIAL>"=>"		=> ( token(yypos, yytext, DARROW) );
-  <INITIAL>"["		=> ( token(yypos, yytext, LBRACK) );
-  <INITIAL>"]"		=> ( token(yypos, yytext, RBRACK) );
-  <INITIAL>"_"		=> ( token(yypos, yytext, UNDERBAR) );
-  <INITIAL>"{"		=> ( token(yypos, yytext, LBRACE) );
-  <INITIAL>"|"		=> ( token(yypos, yytext, BAR) );
-  <INITIAL>"}"		=> ( token(yypos, yytext, RBRACE) );
+  <INITIAL>"#"		=> ( token(HASH,      yypos, yytext) );
+  <INITIAL>"("		=> ( token(LPAR,      yypos, yytext) );
+  <INITIAL>")"		=> ( token(RPAR,      yypos, yytext) );
+  <INITIAL>"*"		=> ( token(STAR,      yypos, yytext) );
+  <INITIAL>","		=> ( token(COMMA,     yypos, yytext) );
+  <INITIAL>"->"		=> ( token(ARROW,     yypos, yytext) );
+  <INITIAL>"..."	=> ( token(DOTS,      yypos, yytext) );
+  <INITIAL>":"		=> ( token(COLON,     yypos, yytext) );
+  <INITIAL>":>"		=> ( token(SEAL,      yypos, yytext) );
+  <INITIAL>";"		=> ( token(SEMICOLON, yypos, yytext) );
+  <INITIAL>"="		=> ( token(EQUALS,    yypos, yytext) );
+  <INITIAL>"=>"		=> ( token(DARROW,    yypos, yytext) );
+  <INITIAL>"?"		=> ( token(QUEST,     yypos, yytext) );
+  <INITIAL>"["		=> ( token(LBRACK,    yypos, yytext) );
+  <INITIAL>"]"		=> ( token(RBRACK,    yypos, yytext) );
+  <INITIAL>"_"		=> ( token(UNDERBAR,  yypos, yytext) );
+  <INITIAL>"{"		=> ( token(LBRACE,    yypos, yytext) );
+  <INITIAL>"|"		=> ( token(BAR,       yypos, yytext) );
+  <INITIAL>"}"		=> ( token(RBRACE,    yypos, yytext) );
 
-  <INITIAL>"abstype"	=> ( token(yypos, yytext, ABSTYPE) );
-  <INITIAL>"and"	=> ( token(yypos, yytext, AND) );
-  <INITIAL>"andalso"	=> ( token(yypos, yytext, ANDALSO) );
-  <INITIAL>"as"		=> ( token(yypos, yytext, AS) );
-  <INITIAL>"case"	=> ( token(yypos, yytext, CASE) );
-  <INITIAL>"datatype"	=> ( token(yypos, yytext, DATATYPE) );
-  <INITIAL>"do"		=> ( token(yypos, yytext, DO) );
-  <INITIAL>"else"	=> ( token(yypos, yytext, ELSE) );
-  <INITIAL>"end"	=> ( token(yypos, yytext, END) );
-  <INITIAL>"eqtype"	=> ( token(yypos, yytext, EQTYPE) );
-  <INITIAL>"exception"	=> ( token(yypos, yytext, EXCEPTION) );
-  <INITIAL>"fn"		=> ( token(yypos, yytext, FN) );
-  <INITIAL>"fun"	=> ( token(yypos, yytext, FUN) );
-  <INITIAL>"functor"	=> ( token(yypos, yytext, FUNCTOR) );
-  <INITIAL>"handle"	=> ( token(yypos, yytext, HANDLE) );
-  <INITIAL>"if"		=> ( token(yypos, yytext, IF) );
-  <INITIAL>"in"		=> ( token(yypos, yytext, IN) );
-  <INITIAL>"include"	=> ( token(yypos, yytext, INCLUDE) );
-  <INITIAL>"infix"	=> ( token(yypos, yytext, INFIX) );
-  <INITIAL>"infixr"	=> ( token(yypos, yytext, INFIXR) );
-  <INITIAL>"let"	=> ( token(yypos, yytext, LET) );
-  <INITIAL>"local"	=> ( token(yypos, yytext, LOCAL) );
-  <INITIAL>"nonfix"	=> ( token(yypos, yytext, NONFIX) );
-  <INITIAL>"of"		=> ( token(yypos, yytext, OF) );
-  <INITIAL>"op"		=> ( token(yypos, yytext, OP) );
-  <INITIAL>"open"	=> ( token(yypos, yytext, OPEN) );
-  <INITIAL>"orelse"	=> ( token(yypos, yytext, ORELSE) );
-  <INITIAL>"raise"	=> ( token(yypos, yytext, RAISE) );
-  <INITIAL>"rec"	=> ( token(yypos, yytext, REC) );
-  <INITIAL>"sharing"	=> ( token(yypos, yytext, SHARING) );
-  <INITIAL>"sig"	=> ( token(yypos, yytext, SIG) );
-  <INITIAL>"signature"	=> ( token(yypos, yytext, SIGNATURE) );
-  <INITIAL>"struct"	=> ( token(yypos, yytext, STRUCT) );
-  <INITIAL>"structure"	=> ( token(yypos, yytext, STRUCTURE) );
-  <INITIAL>"then"	=> ( token(yypos, yytext, THEN) );
-  <INITIAL>"type"	=> ( token(yypos, yytext, TYPE) );
-  <INITIAL>"val"	=> ( token(yypos, yytext, VAL) );
-  <INITIAL>"where"	=> ( token(yypos, yytext, WHERE) );
-  <INITIAL>"while"	=> ( token(yypos, yytext, WHILE) );
-  <INITIAL>"with"	=> ( token(yypos, yytext, WITH) );
-  <INITIAL>"withtype"	=> ( token(yypos, yytext, WITHTYPE) );
+  <INITIAL>"abstype"	=> ( token(ABSTYPE,   yypos, yytext) );
+  <INITIAL>"and"	=> ( token(AND,       yypos, yytext) );
+  <INITIAL>"andalso"	=> ( token(ANDALSO,   yypos, yytext) );
+  <INITIAL>"as"		=> ( token(AS,        yypos, yytext) );
+  <INITIAL>"case"	=> ( token(CASE,      yypos, yytext) );
+  <INITIAL>"datatype"	=> ( token(DATATYPE,  yypos, yytext) );
+  <INITIAL>"do"		=> ( token(DO,        yypos, yytext) );
+  <INITIAL>"else"	=> ( token(ELSE,      yypos, yytext) );
+  <INITIAL>"end"	=> ( token(END,       yypos, yytext) );
+  <INITIAL>"eqtype"	=> ( token(EQTYPE,    yypos, yytext) );
+  <INITIAL>"exception"	=> ( token(EXCEPTION, yypos, yytext) );
+  <INITIAL>"fct"	=> ( token(FCT,       yypos, yytext) );
+  <INITIAL>"fn"		=> ( token(FN,        yypos, yytext) );
+  <INITIAL>"fun"	=> ( token(FUN,       yypos, yytext) );
+  <INITIAL>"functor"	=> ( token(FUNCTOR,   yypos, yytext) );
+  <INITIAL>"handle"	=> ( token(HANDLE,    yypos, yytext) );
+  <INITIAL>"if"		=> ( token(IF,        yypos, yytext) );
+  <INITIAL>"in"		=> ( token(IN,        yypos, yytext) );
+  <INITIAL>"include"	=> ( token(INCLUDE,   yypos, yytext) );
+  <INITIAL>"infix"	=> ( token(INFIX,     yypos, yytext) );
+  <INITIAL>"infixr"	=> ( token(INFIXR,    yypos, yytext) );
+  <INITIAL>"let"	=> ( token(LET,       yypos, yytext) );
+  <INITIAL>"local"	=> ( token(LOCAL,     yypos, yytext) );
+  <INITIAL>"nonfix"	=> ( token(NONFIX,    yypos, yytext) );
+  <INITIAL>"of"		=> ( token(OF,        yypos, yytext) );
+  <INITIAL>"op"		=> ( token(OP,        yypos, yytext) );
+  <INITIAL>"open"	=> ( token(OPEN,      yypos, yytext) );
+  <INITIAL>"orelse"	=> ( token(ORELSE,    yypos, yytext) );
+  <INITIAL>"pack"	=> ( token(PACK,      yypos, yytext) );
+  <INITIAL>"raise"	=> ( token(RAISE,     yypos, yytext) );
+  <INITIAL>"rec"	=> ( token(REC,       yypos, yytext) );
+  <INITIAL>"sharing"	=> ( token(SHARING,   yypos, yytext) );
+  <INITIAL>"sig"	=> ( token(SIG,       yypos, yytext) );
+  <INITIAL>"signature"	=> ( token(SIGNATURE, yypos, yytext) );
+  <INITIAL>"struct"	=> ( token(STRUCT,    yypos, yytext) );
+  <INITIAL>"structure"	=> ( token(STRUCTURE, yypos, yytext) );
+  <INITIAL>"then"	=> ( token(THEN,      yypos, yytext) );
+  <INITIAL>"type"	=> ( token(TYPE,      yypos, yytext) );
+  <INITIAL>"unpack"	=> ( token(UNPACK,    yypos, yytext) );
+  <INITIAL>"val"	=> ( token(VAL,       yypos, yytext) );
+  <INITIAL>"viewtype"	=> ( token(VIEWTYPE,  yypos, yytext) );
+  <INITIAL>"where"	=> ( token(WHERE,     yypos, yytext) );
+  <INITIAL>"while"	=> ( token(WHILE,     yypos, yytext) );
+  <INITIAL>"with"	=> ( token(WITH,      yypos, yytext) );
+  <INITIAL>"withtype"	=> ( token(WITHTYPE,  yypos, yytext) );
 
-  <INITIAL>"0"		=> ( token(yypos, yytext, ZERO) );
-  <INITIAL>[1-9]	=> ( tokenOf(yypos, yytext, DIGIT, toInt) );
-  <INITIAL>{numericlab}	=> ( tokenOf(yypos, yytext, NUMERIC, toInt) );
-  <INITIAL>{decint}	=> ( tokenOf(yypos, yytext, INT, toInt) );
-  <INITIAL>{hexint}	=> ( tokenOf(yypos, yytext, HEXINT, toHexInt) );
-  <INITIAL>{decword}	=> ( tokenOf(yypos, yytext, WORD, toWord) );
-  <INITIAL>{hexword}	=> ( tokenOf(yypos, yytext, HEXWORD, toHexWord) );
-  <INITIAL>{real}	=> ( tokenOf(yypos, yytext, REAL, toReal) );
-  <INITIAL>{string}	=> ( tokenOf(yypos, yytext, STRING, toString) );
-  <INITIAL>{char}	=> ( tokenOf(yypos, yytext, CHAR, toChar) );
+  <INITIAL>"0"		=> ( token  (ZERO,              yypos, yytext) );
+  <INITIAL>[1-9]	=> ( tokenOf(DIGIT,   toInt,    yypos, yytext) );
+  <INITIAL>{numericlab}	=> ( tokenOf(NUMERIC, toInt,    yypos, yytext) );
+  <INITIAL>{decint}	=> ( tokenOf(INT,     toInt,    yypos, yytext) );
+  <INITIAL>{hexint}	=> ( tokenOf(HEXINT,  toHexInt, yypos, yytext) );
+  <INITIAL>{binint}	=> ( tokenOf(BININT,  toBinInt, yypos, yytext) );
+  <INITIAL>{decword}	=> ( tokenOf(WORD,    toWord,   yypos, yytext) );
+  <INITIAL>{hexword}	=> ( tokenOf(HEXWORD, toHexWord,yypos, yytext) );
+  <INITIAL>{binword}	=> ( tokenOf(BINWORD, toBinWord,yypos, yytext) );
+  <INITIAL>{real}	=> ( tokenOf(REAL,    toReal,   yypos, yytext) );
+  <INITIAL>{string}	=> ( tokenOf(STRING,  toString, yypos, yytext) );
+  <INITIAL>{char}	=> ( tokenOf(CHAR,    toChar,   yypos, yytext) );
 
-  <INITIAL>{tyvar}	=> ( tokenOf(yypos, yytext, TYVAR, toId) );
-  <INITIAL>{alphanumid}	=> ( tokenOf(yypos, yytext, ALPHA, toId) );
-  <INITIAL>{symbolicid}	=> ( tokenOf(yypos, yytext, SYMBOL, toId) );
-  <INITIAL>{longid}	=> ( tokenOf(yypos, yytext, LONGID, toLongId) );
+  <INITIAL>{tyvar}	=> ( tokenOf(TYVAR,   toId,     yypos, yytext) );
+  <INITIAL>{alphanumid}	=> ( tokenOf(ALPHA,   toId,     yypos, yytext) );
+  <INITIAL>{symbolicid}	=> ( tokenOf(SYMBOL,  toId,     yypos, yytext) );
+  <INITIAL>{longid}	=> ( tokenOf(LONGID,  toLongId, yypos, yytext) );
 
-  <INITIAL>"(*"		=> ( nesting := 1; YYBEGIN COMMENT; continue() );
-  <COMMENT>"(*"		=> ( nesting := !nesting + 1; continue() );
-  <COMMENT>"*)"		=> ( nesting := !nesting - 1;
-			     if !nesting = 0 then YYBEGIN INITIAL else ();
+  <INITIAL>"(*)"        => ( YYBEGIN LCOMMENT ; continue () );
+  <INITIAL>"(*"		=> ( nesting := 1 ; YYBEGIN COMMENT ; continue() );
+
+  <LCOMMENT>.           => ( continue () );
+  <LCOMMENT>"\n"        => ( YYBEGIN (if !nesting = 0 then INITIAL
+				 		      else COMMENT) ;
+			     continue () );
+
+  <COMMENT>"(*)"        => ( YYBEGIN LCOMMENT ; continue () );
+  <COMMENT>"(*"		=> ( nesting := !nesting+1 ; continue() );
+  <COMMENT>"*)"		=> ( nesting := !nesting-1 ;
+			     if !nesting = 0 then YYBEGIN INITIAL else () ;
 			     continue() );
   <COMMENT>.		=> ( continue() );
   <COMMENT>"\n"		=> ( continue() );

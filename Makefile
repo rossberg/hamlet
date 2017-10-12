@@ -1,25 +1,25 @@
 ################################################################################
-# (c) Andreas Rossberg 2000-2013
+# (c) Andreas Rossberg 2000-2007
 #
 # Makefile for building HaMLet. Supports (in alphabetical order):
-# - Alice ML            (make with-alice)
-# - ML Kit              (make with-mlkit)
-# - MLton               (make with-mlton)
-# - Moscow ML           (make with-mosml)
-# - Poly/ML             (make with-poly)
-# - SML of New Jersey   (make with-smlnj)
-# - SML#                (make with-smlsharp)
+# - Alice ML		(make with-alice)
+# - ML Kit		(make with-mlkit)
+# - MLton		(make with-mlton)
+# - Moscow ML		(make with-mosml)
+# - Poly/ML		(make with-poly)
+# - SML of New Jersey	(make with-smlnj)
+# - SML#		(make with-smlsharp)
 #
 # A generic file containing all modules for compilation with other systems
 # can be generated with:
-#   make hamlet-bundle.sml
+#   make hamlet-monolith.sml
 ################################################################################
 
 ################################################################################
 # Configuration (you might want to edit here)
 
 # Set the installation directory (Unix only):
-INSTALLDIR = /usr/local/hamlet
+INSTALLDIR = /usr/local/hamlet-succ
 
 # For Poly/ML, you might want to set the library path if it is not in std place:
 POLY_LIBDIR = /usr/local/lib/
@@ -45,7 +45,7 @@ EXT_smlsharp = sml
 FIXES_alice = 
 FIXES_mlkit = String Real
 FIXES_mlton = 
-FIXES_mosml = Real  # for Moscow < 2.10: Large Word Char CharVector String Real ListPair TextIO OS
+FIXES_mosml = Large Word Char String Real ListPair TextIO OS
 FIXES_poly  = 
 FIXES_smlnj = Word Char String ListPair TextIO OS
 FIXES_smlsharp = Word CommandLine
@@ -63,7 +63,7 @@ with-poly+:  SYSTEM = poly
 with-smlnj:  SYSTEM = smlnj
 with-smlnj+: SYSTEM = smlnj
 with-smlsharp: SYSTEM = smlsharp
-with-smlsharp+: SYSTEM = smlsharp
+with-smlsharp: SYSTEM = smlsharp
 
 EXT   = ${EXT_${SYSTEM}}
 FIXES = ${FIXES_${SYSTEM}}
@@ -77,16 +77,19 @@ usage:
 	@${ECHO} "  make with-alice    (for Alice ML 1.4+)"
 	@${ECHO} "  make with-mlkit    (for ML Kit 4.3+)"
 	@${ECHO} "  make with-mlton    (for MLton 20010706+)"
-	@${ECHO} "  make with-mosml    (for Moscow ML 2.10+)"
+	@${ECHO} "  make with-mosml    (for Moscow ML 2.0+)"
 	@${ECHO} "  make with-poly     (for Poly/ML 5.0+)"
 	@${ECHO} "  make with-smlnj    (for SML/NJ 110+)"
 	@${ECHO} "  make with-smlsharp (for SML# 0.20+)"
+	@${ECHO}
+	@${ECHO} "For Moscow ML, you have to first run"
+	@${ECHO} "  make mosmlize"
 	@${ECHO}
 
 ################################################################################
 # Make dependencies
 
-Makefile.depend: fix/Makefile.depend smlnj-lib/Makefile.depend syntax/Makefile.depend infrastructure/Makefile.depend parse/Makefile.depend elab/Makefile.depend eval/Makefile.depend exec/Makefile.depend lib/Makefile.depend compile-js/Makefile.depend main/Makefile.depend
+Makefile.depend: fix/Makefile.depend smlnj-lib/Makefile.depend syntax/Makefile.depend infrastructure/Makefile.depend parse/Makefile.depend elab/Makefile.depend eval/Makefile.depend exec/Makefile.depend lib/Makefile.depend main/Makefile.depend
 	${ECHO} "# DO NOT EDIT!" >$@
 	${ECHO} "# Generated from */Makefile.depend.in (${shell date -u})" >>$@
 	cat $^ >>$@
@@ -105,8 +108,6 @@ LIBFILES := $(shell grep -h '[.]sml' smlnj-lib/smlnj-lib.cm smlnj-lib/ml-yacc-li
 SRCFILES := $(shell grep -h '[.]sml' sources.cm | grep -v wrap- | grep -v fix/)
 FILES = ${FIXFILES} ${LIBFILES:%=smlnj-lib/%} ${SRCFILES}
 BOOTSTRAPFILES = ${filter-out main/Main.sml main/MAIN-sig.sml,${FILES}}
-BASISFILES = $(shell grep -h '^use ' basis/all.sml | sed 's/use //g' | sed 's/[\"\;]//g')
-BUNDLEFILE = hamlet-bundle.sml
 
 hamlet.sml: ${BOOTSTRAPFILES} sources.cm
 	@${ECHO} Generating $@
@@ -125,25 +126,21 @@ hamlet.mlb:
 ################################################################################
 # Create single file
 
-.PHONY: ${BUNDLEFILE}-init
+.PHONY: hamlet-monolith.sml-init
 
-${BUNDLEFILE}: ${BUNDLEFILE}-init main/wrap-generic.dummy
+hamlet-monolith.sml: hamlet-monolith.sml-init main/wrap-generic.dummy
 
-${BUNDLEFILE}-init:
-	@${ECHO} Generating $@
-	@${ECHO} "(* DO NOT EDIT! *)" >${BUNDLEFILE}
-	@${ECHO} "(* Generated from */Makefile.depend.in (${shell date}) *)" >>${BUNDLEFILE}
+hamlet-monolith.sml-init:
+	${ECHO} "(* DO NOT EDIT! *)" >hamlet-monolith.sml
+	${ECHO} "(* Generated from sources.cm (${shell date}) *)" >>hamlet-monolith.sml
 
 %.dummy: %.sml
-	@${ECHO} >>${BUNDLEFILE}
-	@${ECHO} "(****" $< "****)" >>${BUNDLEFILE}
-	@${ECHO} >>${BUNDLEFILE}
-	@cat $< >>${BUNDLEFILE}
+	cat $< >>hamlet-monolith.sml
 
 Makefile-dummy.depend: Makefile.depend
-	@${ECHO} "# DO NOT EDIT!" >$@
-	@${ECHO} "# Generated from sources.cm (${shell date})" >>$@
-	@sed "s/[$$][(]EXT[)]/dummy/g;s/[$$][(]SYSTEM[)]/generic/g" $< >>$@
+	${ECHO} "# DO NOT EDIT!" >$@
+	${ECHO} "# Generated from sources.cm (${shell date})" >>$@
+	sed "s/[$$][(]EXT[)]/dummy/g;s/[$$][(]SYSTEM[)]/generic/g" $< >>$@
 
 -include Makefile-dummy.depend
 
@@ -219,12 +216,11 @@ with-mlton: hamlet-mlton${EXE}
 # MLton does not support incremental build
 with-mlton+: with-mlton
 
-hamlet-mlton${EXE}: hamlet.mlb main/wrap-mlton.sml ${FILES}
-	mlton -output hamlet-mlton${EXE} hamlet.mlb
+hamlet-mlton${EXE}: main/wrap-mlton.sml ${FILES}
+	mlton -output hamlet-mlton${EXE} sources.cm
 
 clean-mlton:
 	rm -f hamlet-mlton
-	rm -f hamlet.mlb
 
 ################################################################################
 # Moscow ML
@@ -261,6 +257,42 @@ clean-mosml:
 	rm -f hamlet-mosml
 	rm -f *.u[oi] */*u[oi]
 
+.PHONY: mosmlize unmosmlize
+
+mosmlize:
+	@for FILE in ${FILES:%.sml=%} ;\
+	do \
+	    if grep -q "[(][*][*][)]where type" $$FILE.sml ;\
+	    then \
+		PATCHED=1; \
+		${ECHO} Patching $$FILE.sml; \
+		sed "s/[(][*][*][)]where type/(**)and   type/g" \
+		    $$FILE.sml >$$FILE.mosml ;\
+		mv -f $$FILE.mosml $$FILE.sml ;\
+	    fi ;\
+	done ;\
+	if [ ! $$PATCHED ] ;\
+	then \
+	    ${ECHO} Nothing to patch ;\
+	fi
+
+unmosmlize:
+	@for FILE in ${FILES:%.sml=%} ;\
+	do \
+	    if grep -q "[(][*][*][)]and   type" $$FILE.sml ;\
+	    then \
+		PATCHED=1 ;\
+		${ECHO} Unpatching $$FILE.sml ;\
+		sed "s/[(][*][*][)]and   type/(**)where type/g" \
+		    $$FILE.sml >$$FILE.unmosml ;\
+		mv -f $$FILE.unmosml $$FILE.sml ;\
+	    fi ;\
+	done ;\
+	if [ ! $$PATCHED ] ;\
+	then \
+	    ${ECHO} Nothing to patch ;\
+	fi
+
 ################################################################################
 # Poly/ML
 
@@ -291,7 +323,7 @@ with-smlnj: hamlet-smlnj${BAT}
 # SML/NJ always builds incrementally
 with-smlnj+: with-smlnj
 
-hamlet-smlnj${BAT}: sh/hamlet-smlnj.sh${BAT} main/wrap-smlnj.sml ${FILES} sources.cm
+hamlet-smlnj${BAT}: sh/hamlet-smlnj.sh${BAT} main/wrap-smlnj.sml ${FILES}
 	sml${BAT} <main/wrap-smlnj.sml && \
 	${ECHO} "# DO NOT EDIT!" >$@ && \
 	${ECHO} "# Generated from $< (${shell date})" >>$@ && \
@@ -339,59 +371,14 @@ install:
 	then \
 	    install -m 444 hamlet-image.* ${INSTALLDIR} ;\
 	fi
-	install -m 555 hamlet ${INSTALLDIR}
-
-################################################################################
-# JavaScript compilation
-
-.PHONY: clean-js distclean-js
-
-js: basis.js
-
-basis.js: compile-js/runtime.js ${BASISFILES:%=basis/%} hamlet
-	@${ECHO} Generating $@
-	@${ECHO} "// DO NOT EDIT!" >$@
-	@${ECHO} "// Generated from compile-js/runtime.js and basis/*.sml (${shell date}) *)" >>$@
-	@${ECHO} >>$@
-	@${ECHO} "//// runtime.js ////" >>$@
-	@${ECHO} >>$@
-	@cat compile-js/runtime.js >>$@
-	@${ECHO} >>$@
-	@${ECHO} "//// Compiled basis/*.sml ////" >>$@
-	@${ECHO} >>$@
-	./hamlet -b - -j ${BASISFILES:%=basis/%} >>$@ || rm $@
-
-hamlet.js: basis.js ${BUNDLEFILE} ${BASISFILES:%=basis/%} hamlet
-	@${ECHO} Generating $@
-	@cat basis.js >$@
-	@${ECHO} >>$@
-	@${ECHO} "//// Embedded file system for basis/* ////" >>$@
-	@${ECHO} >>$@
-	@${ECHO} "_SML.OS.FileSys.mkDir(\"basis\");" >>$@
-	@${ECHO} >>$@
-	@for FILE in all.sml ${BASISFILES} ;\
-	do \
-	  ${ECHO} "_SML.file(\"basis/$$FILE\", " >>$@ ;\
-	  cat basis/$$FILE | sed 's/\\/\\\\/g' | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\n\" +/g' | sed -E 's/[[:blank:]]/ /g' >>$@ ;\
-	  ${ECHO} "\"\");" >>$@ ;\
-	  ${ECHO} >>$@ ;\
-	done
-	@${ECHO} >>$@
-	@${ECHO} "//// Compiled" ${BUNDLEFILE} "////" >>$@
-	@${ECHO} >>$@
-	./hamlet -j ${BUNDLEFILE} >>$@ || rm $@
-
-clean-js:
-
-distclean-js: clean-js
-	rm -f basis.js hamlet.js
+	install -m 555 hamlet ${INSTALLDIR}/hamlet-succ
 
 ################################################################################
 # Clean-up
 
 .PHONY: clean distclean
 
-clean: clean-alice clean-mlkit clean-mlton clean-mosml clean-poly clean-smlnj clean-smlsharp clean-js
+clean: clean-alice clean-mlkit clean-mlton clean-mosml clean-poly clean-smlnj clean-smlsharp
 	rm -f Makefile.depend */Makefile.depend
 	rm -f Makefile-*.depend
 	rm -f make.bat.*
@@ -403,9 +390,9 @@ clean: clean-alice clean-mlkit clean-mlton clean-mosml clean-poly clean-smlnj cl
 	  fi ;\
 	done
 
-distclean: clean distclean-js
+distclean: clean
 	rm -f hamlet hamlet-image.* hamlet.bat *.exe
-	rm -f hamlet.sml ${BUNDLEFILE}
+	rm -f hamlet.sml hamlet-monolith.sml
 	rm -f make.bat
 
 ################################################################################

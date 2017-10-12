@@ -6,4 +6,4 @@
 
 datatype t = A | B
 fun f A () = ()
-val _ = f B  (* should succeed *)
+val _ = f B		(* should succeed *)

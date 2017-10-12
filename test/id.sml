@@ -10,7 +10,7 @@ type '1 t = unit
 type '& = ' list
 type t = int&
 type ''`` = ''
-type ('0, '_) == = '_`` &;
+type ('0,'_) == = '_`` &;
 
 fun !x=x=x
 fun ''`x:''=(x=x;x);

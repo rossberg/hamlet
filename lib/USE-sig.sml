@@ -1,11 +1,11 @@
 (*
- * (c) Andreas Rossberg 2001-2013
+ * (c) Andreas Rossberg 2001-2007
  *
  * Standard ML Basis Library `use' function
  *)
 
 signature USE =
 sig
-  val enqueue : string -> unit (* raises Path *)
-  val extract : unit -> string option
+    val enqueue : string -> unit		(* may raise Path *)
+    val extract : unit -> string option
 end;

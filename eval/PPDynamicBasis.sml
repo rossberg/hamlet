@@ -1,49 +1,27 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML pretty printing of the dynamic basis
  *)
 
 structure PPDynamicBasis : PP_DYNAMIC_BASIS =
 struct
-  (* Import *)
+    (* Import *)
 
-  type Basis = DynamicObjectsModule.Basis
-  type State = DynamicObjectsCore.State
+    type Basis = DynamicObjectsModule.Basis
+    type State = DynamicObjectsCore.State
 
-  open PrettyPrint
+    open PrettyPrint
 
-  infixr ^^ ^/^
-
-
-  (* Simple objects *)
-
-  fun ppFunId funid = text(FunId.toString funid)
-  fun ppSigId sigid = text(SigId.toString sigid)
+    infixr ^/^
 
 
-  (* Environments *)
+    (* Basis *)
 
-  fun ppFunEnv F =
-      FunIdMap.foldri
-        (fn(funid, _, doc) =>
-          hbox(text "functor" ^/^ ppFunId funid) ^/^ doc
-        ) empty F
-
-  fun ppSigEnv G =
-      SigIdMap.foldri
-        (fn(sigid, _, doc) =>
-          hbox(text "signature" ^/^ ppSigId sigid) ^/^ doc
-        ) empty G
-
-
-  (* Basis *)
-
-  fun ppBasis(s, (F, G, E)) =
-      vbox(
-        ppSigEnv G ^/^
-        ppFunEnv F ^/^
-        PPDynamicEnv.ppEnv(s, E) ^/^
-        text ""
-      )
+    fun ppBasis(s, E) =
+	    (* [RFC: Higher-order functors; RFC: Nested signatures] *)
+	    vbox(
+		PPDynamicEnv.ppEnv(s, E) ^/^
+		text ""
+	    )
 end;

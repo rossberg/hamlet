@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML functor signatures
  *
@@ -8,16 +8,18 @@
 
 signature FUNSIG =
 sig
-  (* Import *)
+    (* Import *)
 
-  type TyVarSet  = StaticObjectsCore.TyVarSet
-  type TyNameSet = StaticObjectsCore.TyNameSet
-  type FunSig    = StaticObjectsModule.FunSig
+    type TyVarSet	= StaticObjectsCore.TyVarSet
+    type TyNameSet	= StaticObjectsCore.TyNameSet
+    type FunSig		= StaticObjectsModule.FunSig
 
 
-  (* Operations *)
+    (* Operations *)
 
-  val tyvars       : FunSig -> TyVarSet
-  val tynames      : FunSig -> TyNameSet
-  val undetermined : FunSig -> bool StampMap.map
+    val tyvars :	FunSig -> TyVarSet
+    val tynames :	FunSig -> TyNameSet
+    val undetermined :	FunSig -> bool StampMap.map
+
+    val matches :	FunSig * FunSig -> bool
 end;

@@ -1,123 +1,117 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML static basis and environments of modules
  *
  * Definition, Section 5.1
+ * + RFC: Views
+ * + RFC: Higher-order functors
+ * + RFC: Nested signatures
+ * + RFC: Local modules
  *)
 
 structure StaticBasis :> STATIC_BASIS =
 struct
-  (* Import *)
+    (* Import *)
 
-  open IdsCore
-  open IdsModule
-  open StaticObjectsCore
-  open StaticObjectsModule
-
-
-  (* Calculation of type variable and type name sets [Section 4.2] *)
-
-  fun collect(empty, union, collectSig, collectFunSig, collectEnv) =
-      let
-        fun collectG(G : SigEnv) =
-            SigIdMap.foldl (fn(Sigma, S) => union(S, collectSig Sigma)) empty G
-
-        fun collectF(F : FunEnv) =
-            FunIdMap.foldl (fn(Phi, S) => union(S, collectFunSig Phi)) empty F
-
-        fun collect((T, F, G, E) : Basis) =
-            union(union(collectF F, collectG G), collectEnv E)
-      in
-        (collect, collectF, collectG)
-      end
-
-  val (tyvars, tyvarsF, tyvarsG) =
-      collect(TyVarSet.empty, TyVarSet.union,
-        Sig.tyvars, FunSig.tyvars, StaticEnv.tyvars)
-
-  val (tynames', tynamesF, tynamesG) =
-      collect(TyNameSet.empty, TyNameSet.union,
-        Sig.tynames, FunSig.tynames, StaticEnv.tynames)
-
-  fun tynames(B as (T, F, G, E)) = TyNameSet.union(T, tynames' B)
-
-  val (undetermined, undeterminedF, undeterminedG) =
-      collect(StampMap.empty, StampMap.unionWith #2,
-        Sig.undetermined, FunSig.undetermined, StaticEnv.undetermined)
+    open IdsCore
+    open IdsModule
+    open StaticObjectsCore
+    open StaticObjectsModule
 
 
-  (* Injection [Sections 4.3 and 5.1] *)
+    (* Calculation of type variable and type name sets [Section 4.2] *)
 
-  val empty = (TyNameSet.empty, FunIdMap.empty, SigIdMap.empty, StaticEnv.empty)
-
-  fun fromTandE(T, E) = (T, FunIdMap.empty, SigIdMap.empty, E)
-  fun fromTandF(T, F) = (T, F, SigIdMap.empty, StaticEnv.empty)
-  fun fromTandG(T, G) = (T, FunIdMap.empty, G, StaticEnv.empty)
+    fun tyvars (T,E)       = StaticEnv.tyvars E
+    fun tynames (T,E)      = TyNameSet.union(T, StaticEnv.tynames E)
+    fun undetermined (T,E) = StaticEnv.undetermined E
 
 
-  (* Projections [Sections 4.3 and 5.1] *)
+    (* Injection [Sections 4.3 and 5.1; RFC: Local modules] *)
 
-  fun Tof(T, F, G, E) = T
-  fun Cof(T, F, G, E) = (T, TyVarSet.empty, E)
+    val empty = ( TyNameSet.empty, StaticEnv.empty )
 
-
-  (* Modifications [Sections 4.3 and 5.1] *)
-
-  infix plus plusT oplusG oplusF oplusE oplusSE
-
-  fun (T, F, G, E) plus (T', F', G', E') =
-      ( TyNameSet.union(T, T'),
-        FunIdMap.unionWith #2 (F, F'),
-        SigIdMap.unionWith #2 (G, G'),
-        StaticEnv.plus(E, E')
-      )
-
-  fun (T, F, G, E) plusT T' = (TyNameSet.union(T, T'), F, G, E)
-
-  fun (T, F, G, E) oplusG G' =
-      (TyNameSet.union(T, tynamesG G'), F, SigIdMap.unionWith #2 (G, G'), E)
-  fun (T, F, G, E) oplusF F' =
-      (TyNameSet.union(T, tynamesF F'), FunIdMap.unionWith #2 (F, F'), G, E)
-  fun (T, F, G, E) oplusE E' =
-      (TyNameSet.union(T, StaticEnv.tynames E'), F, G, StaticEnv.plus(E, E'))
-  fun (T, F, G, E) oplusSE SE =
-      (TyNameSet.union(T, StaticEnv.tynamesSE SE),
-        F, G, StaticEnv.plusSE(E, SE))
+    fun fromTandE(T,E) = ( T, E )
+    fun fromC (T,U,E)  = ( T, E )
 
 
-  (* Application (lookup) [Sections 5.1 and 4.3] *)
+    (* Projections [Sections 4.3 and 5.1] *)
 
-  fun findStrId((T, F, G, E), strid) = StaticEnv.findStrId(E, strid)
-  fun findSigId((T, F, G, E), sigid) = SigIdMap.find(G, sigid)
-  fun findFunId((T, F, G, E), funid) = FunIdMap.find(F, funid)
-
-  fun findLongStrId((T, F, G, E), longstrid) =
-      StaticEnv.findLongStrId(E, longstrid)
-  fun findLongTyCon((T, F, G, E), longtycon) =
-      StaticEnv.findLongTyCon(E, longtycon)
+    fun Tof (T,E) = T
+    fun Cof (T,E) = (T, TyVarSet.empty, E)
 
 
-  (* Disjointness *)
+    (* Modifications [Sections 4.3 and 5.1] *)
 
-  fun disjoint((T1, F1, G1, E1), (T2, F2, G2, E2)) =
-      FunIdMap.disjoint(F1, F2) andalso
-      SigIdMap.disjoint(G1, G2) andalso
-      StaticEnv.disjoint(E1, E2)
+    infix plus plusT oplusG oplusE oplusSE
+
+    fun (T,E) plus (T',E') =
+	( TyNameSet.union(T,T')
+	, StaticEnv.plus(E,E')
+	)
+
+    fun (T,E) plusT T' = ( TyNameSet.union(T,T'), E )
+
+    fun (T,E) oplusE E' =
+	( TyNameSet.union(T, StaticEnv.tynames E')
+	, StaticEnv.plus(E,E')
+	)
+
+    fun (T,E) oplusSE SE =
+	( TyNameSet.union(T, StaticEnv.tynamesSE SE)
+	, StaticEnv.plusSE(E,SE)
+	)
+
+    fun (T,E) oplusG G =
+	( TyNameSet.union(T, StaticEnv.tynamesG G)
+	, StaticEnv.plusG(E,G)
+	)
+
+    (* Application (lookup) [Sections 5.1 and 4.3] *)
+
+    fun findStrId((T,E), strid) = StaticEnv.findStrId(E, strid)
+    fun findSigId((T,E), sigid) = case StaticEnv.findSigId(E, sigid)
+				      of SOME(Sig Sigma) => SOME Sigma
+				       | _               => NONE
+
+    fun findLongTyCon((T,E), longtycon) =
+	StaticEnv.findLongTyCon(E, longtycon)
+    fun findLongStrId((T,E), longstrid) =
+	StaticEnv.findLongStrId(E, longstrid)
+    (* [RFC: Nested signatures] *)
+    fun findLongSigId((T,E), longsigid) =
+	case StaticEnv.findLongSigId(E, longsigid)
+	  of SOME(Sig Sigma) => SOME Sigma
+	   | _               => NONE
 
 
-  (* Conversion to binding basis *)
+    (* Conversion to binding basis *)
 
-  fun toBindingValEnv VE = VIdMap.map (fn(sigma, is) => is) VE
-  fun toBindingTyEnv TE  = TyConMap.map (fn(theta, VE) => toBindingValEnv VE) TE
-  fun toBindingStrEnv SE = StrIdMap.map toBindingEnv SE
-  and toBindingEnv(Env(SE, TE, VE)) =
-      BindingObjectsCore.Env(
-        toBindingStrEnv SE, toBindingTyEnv TE, toBindingValEnv VE)
+    fun toBindingIs(IdStatus is) = is
+      | toBindingIs(TyName t)    = IdStatus.c
 
-  fun toBindingSigEnv G = SigIdMap.map (fn(T, E) => toBindingEnv E) G
-  fun toBindingFunEnv F =
-      FunIdMap.map (fn(T, (E, (T', E'))) => toBindingEnv E') F
-  fun toBindingBasis (T, F, G, E) =
-      (toBindingFunEnv F, toBindingSigEnv G, toBindingEnv E)
+    fun toBindingValEnv VE = VIdMap.map (fn(sigma,vs) => toBindingIs vs) VE
+    fun toBindingTyEnv  TE = TyConMap.map (fn(theta,VE) => toBindingValEnv VE) TE
+    fun toBindingStrEnv SE = StrIdMap.map toBindingMod SE
+    (* [RFC: Nested signatures] *)
+    and toBindingSigEnv G = SigIdMap.map toBindingSig G
+    and toBindingEnv(Env(G, SE,TE,VE)) =
+	BindingObjectsCore.Env(toBindingSigEnv G, toBindingStrEnv SE,
+			       toBindingTyEnv TE, toBindingValEnv VE)
+
+    (* [RFC: Higher-order functors] *)
+    and toBindingMod(Struct E) =
+	    BindingObjectsCore.Struct(toBindingEnv E)
+      | toBindingMod(Functor(Fct(T,(M,(T',M'))))) =
+	    BindingObjectsCore.Functor(BindingObjectsModule.Fct(toBindingMod M))
+      | toBindingMod(Functor _) =
+	    raise Fail "StaticBasis.toBindingMod: invalid functor"
+
+    (* [RFC: Nested signatures] *)
+    and toBindingSig(Sig(T,M)) =
+	    BindingObjectsModule.Sig(toBindingMod M)
+      | toBindingSig _ =
+	    raise Fail "StaticBasis.toBindingSig: invalid signature"
+
+    fun toBindingBasis (T,E) = toBindingEnv E
 end;

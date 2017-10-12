@@ -24,10 +24,10 @@ struct
      let
         val os' = TextIO.getOutstream os
         val _ = TextIO.StreamIO.flushOut os' 
-        val (writer, m) = TextIO.StreamIO.getWriter os'
-        val TextPrimIO.WR{writeVec=SOME writeVec,...} = writer
-        val _ = writeVec(CharVectorSlice.full "")
-        val os'' = TextIO.StreamIO.mkOutstream(writer, m)
+	val (writer,m) = TextIO.StreamIO.getWriter os'
+	val TextPrimIO.WR{writeVec=SOME writeVec,...} = writer
+	val _ = writeVec(CharVectorSlice.full "")
+	val os'' = TextIO.StreamIO.mkOutstream(writer,m)
      in
         TextIO.setOutstream(os, os'')
      end)

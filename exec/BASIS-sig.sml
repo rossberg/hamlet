@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML combined basis
  *
@@ -8,21 +8,21 @@
 
 signature BASIS =
 sig
-  (* Import *)
+    (* Import *)
 
-  type StaticBasis  = StaticObjectsModule.Basis                 (* [B_STAT] *)
-  type DynamicBasis = DynamicObjectsModule.Basis                (* [B_DYN] *)
-
-
-  (* Type [Section 8] *)
-
-  type Basis = StaticBasis * DynamicBasis                       (* [B] *)
+    type StaticBasis  = StaticObjectsModule.Basis		(* [B_STAT] *)
+    type DynamicBasis = DynamicObjectsModule.Basis		(* [B_DYN] *)
 
 
-  (* Operations *)
+    (* Type [Section 8] *)
 
-  val B_STATof : Basis -> StaticBasis
-  val B_DYNof  : Basis -> DynamicBasis
+    type Basis = StaticBasis * DynamicBasis			(* [B] *)
 
-  val oplus    : Basis * Basis -> Basis
+
+    (* Operations *)
+
+    val B_STATof :	Basis -> StaticBasis
+    val B_DYNof :	Basis -> DynamicBasis
+
+    val oplus :		Basis * Basis -> Basis
 end;

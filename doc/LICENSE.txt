@@ -1,4 +1,4 @@
-Copyright (c) 1999-2013 Andreas Rossberg
+Copyright (c) 1999-2007 Andreas Rossberg
 
 All rights reserved.
 

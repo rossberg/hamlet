@@ -1,6 +1,5 @@
 # System-specific library work-arounds
 Char-$(SYSTEM).$(EXT) :
-CharVector-$(SYSTEM).$(EXT) :
 CommandLine-$(SYSTEM).$(EXT) :
 Large-$(SYSTEM).$(EXT) :
 ListPair-$(SYSTEM).$(EXT) :

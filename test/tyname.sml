@@ -3,8 +3,8 @@
 (* Checks scoping of type names (should be rejected!). *)
 
 let
-  val r = ref nil
-  datatype t = C
+    val r = ref nil
+    datatype t = C
 in
-  r := [C]
+    r := [C]
 end;

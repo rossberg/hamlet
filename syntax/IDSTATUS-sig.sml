@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML identifier status
  *
@@ -8,11 +8,12 @@
 
 signature IDSTATUS =
 sig
-  (* Type [Section 4.1] *)
+    (* Type [Section 4.1] *)
 
-  datatype IdStatus = c | e | v                 (* [is] *)
+    datatype IdStatus = c | e | v			(* [is] *)
 
-  (* Operations *)
 
-  val generalises : IdStatus * IdStatus -> bool
+    (* Operations *)
+
+    val generalises : IdStatus * IdStatus -> bool
 end;

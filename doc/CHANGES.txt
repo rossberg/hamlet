@@ -1,48 +1,21 @@
-2.0.0 (2013/10/10)
+1.3.2 (???)
 
-Interpreter functionality:
-- Print source location for uncaught exceptions.
-- Abort on errors in batch modes.
-- New command line option -b to switch standard basis path (or omit it).
+Interpreter:
 - Fixed bug in lexing of negative hex constants (thanks to Matthew Fluet).
-- Fixed missing identifier status check for variable in `as' patterns.
-- Fixed missing type arity check for structure sharing derived form.
-- Slightly more faithful checking of syntactic restrictions (ignore duplicate
-  variables in matches).
-- Slightly more faithful handling of equality maximisation (don't substitute).
-- Slightly more faithful handling of sharing specifications
-  (don't generate new type names).
 
-Interpreter implementation:
-- Restructured AST to include annotations in the form of typed property list
-  (breaks all code based on HaMLet 1, sorry :( ).
-- Elaboration stores result of each rule as annotation in respective AST node.
-- Derived forms make sure to clone nodes where necessary.
-- Removed ad-hoc type annotation on SCons.
-- Split Library into StaticLibrary and DynamicLibrary, to support compilers.
-- Provide separate Elab/EvalProgram modules, to support compilers/interpreter.
-- Renamed *Grammar* structures to *Syntax*.
-- Tons of code clean-up and beautification.
 
-JavaScript compiler:
-- New HaMLet mode -j, "compile to JavaScript"".
-- Simple type-aware source-to-source translation into JavaScript.
-- JavaScript implementation of Standard Basis Library primitives.
+1.3.1/S5 (???)
 
-Basis:
-- Implemented CommandLine.
-- Skeletal implementation of OS.Process.
-- Implemented Substring.{position,tokens,fields}.
+Merged changes from 1.3.1.
 
-Building:
-- Assume Moscow ML 2.10 by default.
-- Added String.concatWith and CharVector.all for (old versions of) Moscow ML.
-- Renamed hamlet-monolith.sml to hamlet-bundle.sml.
 
-Documentation:
-- Updated manual and man page.
-- Added lax datatype replication rules to issue list (suggested by Karl Crary).
-- Updated links.
+1.3.1/S5 (2008/04/28)
+
+Merged changes from 1.3.1, plus:
+
+Interpreter:
+- Implemented RFC: Optional else branch.
+- Fixed and simplified definition of matching for RFC: Higher-order functors.
 
 
 1.3.1 (2008/04/28)
@@ -57,12 +30,31 @@ Documentation:
 - Added man page.
 
 
+1.3.0/S4 (2007/03/22)
+
+Merged changes from 1.3, plus:
+
+Interpreter:
+- Implemented RFC: Views.
+- Implemented RFC: Nested matches.
+- Implemented RFC: Transformation patterns.
+- Generalised RFC: Match guards to Pattern guards.
+- Implemented RFC: Higher-order functors.
+- Implemented RFC: Nested signatures.
+- Implemented RFC: Local modules.
+- Implemented RFC: First-class modules.
+- Extended RFC: Optional bars to cover semicolons as well.
+
+Documentation:
+- Added Appendix B documenting all extensions.
+
+
 1.3 (2007/03/22)
 
 Interpreter:
+- Fixed computation of tynames on a static basis.
 - Output abstract syntax tree in parsing mode.
 - Output type and signature environments in evaluation mode.
-- Fixed computation of tynames on a static basis.
 - Reorganised directory structure.
 - Some clean-ups.
 
@@ -79,14 +71,33 @@ Building:
 - Support for Alice ML 1.4.
 - Support for ML Kit 4.3.0.
 - Support for incremental batch compilation with Moscow ML and Alice ML.
-- Target to build a generic monolithic source file.
+- Target to build generic monolithic source file.
 - Work around calls to Unsafe structure in later versions of ML-Lex.
+
+
+1.2.4/S3 (2006/09/10)
+
+Interpreter:
+- Modified RFC: Line comments to use (*) as delimiter.
+- Extended RFC: Optional bar in matches to support datatype declarations and
+  specifications.
+
+
+1.2.4/S2 (2006/08/14)
+
+Documentation:
+- Clarified license.
 
 
 1.2.4 (2006/08/14)
 
 Documentation:
 - Clarified license.
+
+
+1.2.3/S2 (2006/07/18):
+
+Merged changes from 1.2.3.
 
 
 1.2.3 (2006/07/18):
@@ -108,6 +119,37 @@ Building:
 - Adapt to Basis library changes in newer versions of SML/NJ.
 - Adapt to ML-Lex in newer version of MLton that fix the token position bug.
 - Fixed time stamps for generated files.
+
+
+1.2.2/S2 (2006/01/02):
+
+Interpreter:
+- Implemented RFC: Do declarations.
+- Extended RFC: Record extension to support record type extension and freely
+  placed ellipses.
+- Fixed bug in record type field lookup.
+
+
+1.2.2/S1 (2005/12/12):
+
+Interpreter:
+- Implemented RFC: Syntax fixes.
+- Implemented RFC: Semantic fixes.
+- Implemented RFC: Line comments.
+- Implemented RFC: Extended literal syntax.
+- Implemented RFC: Record punning.
+- Implemented RFC: Record extension.
+- Implemented RFC: Record update.
+- Implemented RFC: Disjunctive patterns.
+- Implemented RFC: Conjunctive patterns.
+- Implemented RFC: Match guards.
+- Implemented RFC: Optional bar in matches.
+- Implemented RFC: Simplified recursive bindings.
+- Implemented RFC: Strengthened value restriction.
+- Implemented RFC: Degraded abstype.
+- Implemented RFC: Proper scoping for transparent type specifications.
+- Implemented RFC: Withtype specifications.
+- Implemented RFC: Remove "and" in type realisations.
 
 
 1.2.2 (2005/12/09):

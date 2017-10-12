@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML program derived forms
  *
@@ -8,14 +8,17 @@
 
 signature DERIVED_FORMS_PROGRAM =
 sig
-  (* Import *)
+    (* Import *)
 
-  type Exp     = SyntaxCore.Exp
-  type TopDec  = SyntaxModule.TopDec
-  type Program = SyntaxProgram.Program
+    type Info    = GrammarProgram.Info
 
-  (* Programs [Figure 18] *)
+    type Exp     = GrammarCore.Exp
+    type TopDec  = GrammarModule.TopDec
+    type Program = GrammarProgram.Program
 
-  val TOPDECProgram : TopDec * Program option -> SyntaxProgram.Program'
-  val EXPProgram    : Exp * Program option -> SyntaxProgram.Program'
+
+    (* Programs [Figure 18] *)
+
+    val TOPDECProgram :	Info * TopDec * Program option -> Program
+    val EXPProgram :	Info *  Exp   * Program option -> Program
 end;

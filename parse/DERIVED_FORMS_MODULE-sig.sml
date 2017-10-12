@@ -1,90 +1,109 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML modules derived forms
  *
  * Definition, Appendix A
+ * + RFC: Fixed manifest type specifications
+ * + RFC: Views
+ * + RFC: Withtype in signatures
+ * + RFC: Abolish sequenced type realisations
+ * + RFC: Higher-order functors
+ * + RFC: Nested signatures
+ * + RFC: Local modules
  *
  * Notes:
  * - A phrase named SynDesc has been added to factorize type synonym
  *   specifications.
- * - Similarly, a phrase named TyReaDesc has been added to factorize type
- *   realisation signature expressions.
- * - The structure sharing derived form is omitted since it cannot be resolved
- *   syntactically -- it has been moved to the bare grammar.
+ * - The structure sharing derived form is missing since it cannot be resolved
+ *   syntactically. It has been moved to the bare grammar.
+ * - Likewise, the functor signature derived form with a spec argument.
  *)
 
 signature DERIVED_FORMS_MODULE =
 sig
-  (* Import *)
+    (* Import *)
 
-  type VId       = SyntaxCore.VId
-  type TyCon     = SyntaxCore.TyCon
-  type StrId     = SyntaxCore.StrId
-  type SigId     = SyntaxModule.SigId
-  type FunId     = SyntaxModule.FunId
-  type longTyCon = SyntaxCore.longTyCon
-  type TyVar     = SyntaxCore.TyVar
+    type Info       = GrammarModule.Info
 
-  type Ty        = SyntaxCore.Ty
-  type 'a seq    = 'a SyntaxCore.seq
+    type VId        = GrammarCore.VId
+    type TyCon      = GrammarCore.TyCon
+    type StrId      = GrammarCore.StrId
+    type SigId      = GrammarModule.SigId
+    type longTyCon  = GrammarCore.longTyCon
+    type longStrId  = GrammarCore.longStrId
+    type longSigId  = GrammarModule.longSigId
 
-  type StrExp    = SyntaxModule.StrExp
-  type StrDec    = SyntaxModule.StrDec
-  type StrBind   = SyntaxModule.StrBind
-  type SigExp    = SyntaxModule.SigExp
-  type Spec      = SyntaxModule.Spec
-  type FunBind   = SyntaxModule.FunBind
+    type Ty         = GrammarCore.Ty
+    type TyVarseq   = GrammarCore.TyVarseq
+    type TypBind    = GrammarCore.TypBind
+    type Dec        = GrammarCore.Dec
+
+    type AtStrExp   = GrammarModule.StrExp
+    type AppStrExp  = GrammarModule.StrExp
+    type StrExp     = GrammarModule.StrExp
+    type StrDec     = GrammarModule.StrDec
+    type StrBind    = GrammarModule.StrBind
+    type AtSigExp   = GrammarModule.SigExp
+    type SigExp     = GrammarModule.SigExp
+    type Spec       = GrammarModule.Spec
+    type SynDesc    = GrammarModule.TypDesc * (SigExp -> SigExp)
+    type DatDesc    = GrammarModule.DatDesc
+    type FunBind    = GrammarModule.StrBind
+    type FunDesc    = GrammarModule.StrDesc
 
 
-  (* Types *)
+    (* Structure Bindings [Figure 18] *)
 
-  type SynDesc'
-  type TyReaDesc'
-  type SynDesc    = (SynDesc', unit) Annotation.phrase
-  type TyReaDesc  = (TyReaDesc', unit) Annotation.phrase
+    val TRANSStrBind :		Info * StrId * SigExp option * StrExp
+				     * StrBind option -> StrBind
+    val SEALStrBind :		Info * StrId * SigExp * StrExp
+				     * StrBind option -> StrBind
 
+    (* Structure Expressions [Figure 18; RFC: Higher-order functors;
+     *                                   RFC: Local modules] *)
 
-  (* Structure Bindings [Figure 18] *)
+    val DECStrExp :		Info * Dec -> StrExp
+    val FCTSPECStrExp :		Info * Spec * StrExp -> StrExp
 
-  val PLAINStrBind :
-      StrId * StrExp * StrBind option -> SyntaxModule.StrBind'
-  val COLONStrBind :
-      StrId * SigExp * StrExp * StrBind option -> SyntaxModule.StrBind'
-  val SEALStrBind :
-      StrId * SigExp * StrExp * StrBind option -> SyntaxModule.StrBind'
+    (* Structure Declarations [Figure 18; RFC: Higher-order functors] *)
 
-  (* Structure Expressions [Figure 18] *)
+    val FUNCTORStrDec :		Info * FunBind -> StrDec
 
-  val APPDECStrExp : FunId * StrDec -> SyntaxModule.StrExp'
+    (* Functor Arguments [Figure 18; Figure 23c; RFC: Higher-order functors] *)
 
-  (* Functor Bindings [Figure 18] *)
+    datatype FunArg =
+	  COLONFunArg of Info * StrId * SigExp
+	| SPECFunArg  of Info * Spec
 
-  val PLAINFunBind :
-      FunId * StrId * SigExp * StrExp * FunBind option -> SyntaxModule.FunBind'
-  val COLONFunBind :
-      FunId * StrId * SigExp * SigExp * StrExp * FunBind option ->
-        SyntaxModule.FunBind'
-  val SEALFunBind :
-      FunId * StrId * SigExp * SigExp * StrExp * FunBind option ->
-        SyntaxModule.FunBind'
-  val SPECFunBind :
-      FunId * Spec * StrExp * FunBind option -> SyntaxModule.FunBind'
-  val COLONSPECFunBind :
-      FunId * Spec * SigExp * StrExp * FunBind option -> SyntaxModule.FunBind'
-  val SEALSPECFunBind :
-      FunId * Spec * SigExp * StrExp * FunBind option -> SyntaxModule.FunBind'
+    (* Functor Bindings [Figure 18; RFC: Higher-order functors] *)
 
-  (* Specifications [Figure 19] *)
+    val TRANSFunBind :		Info * StrId * FunArg list * SigExp option
+				     * StrExp * FunBind option -> FunBind
+    val SEALFunBind :		Info * StrId * FunArg list * SigExp
+				     * StrExp * FunBind option -> FunBind
 
-  val SYNSpec          : SynDesc -> SyntaxModule.Spec'
-  val INCLUDEMULTISpec : SigId list -> SyntaxModule.Spec'
+    (* Functor Descriptions [Figure 19; RFC: Higher-order functors] *)
 
-  val SynDesc          : TyVar seq * TyCon * Ty * SynDesc option -> SynDesc'
+    val FunDesc :		Info * StrId * FunArg list * SigExp
+				     * FunDesc option -> FunDesc
 
-  (* Signature Expressions [Figure 19] *)
+    (* Signature Expressions [Figure 19;
+     *                        RFC: Abolish sequenced type relisations;
+     *                        RFC: Higher-order functors] *)
 
-  val WHERETYPEMULTISigExp : SigExp * TyReaDesc -> SyntaxModule.SigExp'
+    val SPECSigExp :		Info * Spec -> SigExp
+    val ARROWSigExp :		Info * SigExp * SigExp -> SigExp
+    
+    (* Specifications [Figure 19; RFC: Views; RFC: Nested signatures;
+     *                            RFC: Higher-order functors] *)
 
-  val TyReaDesc : TyVar seq * longTyCon * Ty * TyReaDesc option -> TyReaDesc'
+    val SYNSpec :		Info * SynDesc -> Spec
+    val DATATYPESpec :	 	Info * DatDesc * TypBind option -> Spec
+    val VIEWTYPE2Spec :	 	Info * TyCon * longTyCon -> Spec
+    val FUNCTORSpec :		Info * FunDesc -> Spec
+    val INCLUDEMULTISpec :	Info * longSigId list -> Spec
+
+    val SynDesc :		Info * TyVarseq * TyCon * Ty
+				     * SynDesc option -> SynDesc
 end;

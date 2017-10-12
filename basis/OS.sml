@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 2001-2013
+ * (c) Andreas Rossberg 2001-2007
  *
  * Standard ML Basis Library
  *
@@ -8,8 +8,8 @@
 
 structure OS :> OS =
 struct
-  open OS
+    open OS
 
-  type syserror = int
-  exception SysErr of string * syserror option  (* defunct dummy *)
+    type syserror = int
+    exception SysErr of string * syserror option	(* defunct dummy *)
 end;

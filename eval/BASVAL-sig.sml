@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML basic values
  *
@@ -8,17 +8,17 @@
 
 signature BASVAL =
 sig
-  (* Import *)
+    (* Import *)
 
-  type BasVal = DynamicObjectsCore.BasVal
-  type Val    = DynamicObjectsCore.Val
+    type BasVal	= DynamicObjectsCore.BasVal
+    type Val	= DynamicObjectsCore.Val
 
 
-  (* Operations *)
+    (* Operations *)
 
-  exception TypeError of string
+    exception TypeError of string
 
-  val APPLY : BasVal * Val -> Val (* raises Pack TypeError *)
+    val APPLY :    BasVal * Val -> Val (* / Pack *)
 
-  val toString : BasVal -> string
+    val toString : BasVal -> string
 end;

@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML initial static basis
  *
@@ -8,11 +8,11 @@
 
 signature INITIAL_STATIC_BASIS =
 sig
-  (* Import *)
+    (* Import *)
 
-  type Basis = StaticObjectsModule.Basis
+    type Basis = StaticObjectsModule.Basis
 
-  (* Export *)
+    (* Export *)
 
-  val B0 : Basis
+    val B0 : Basis
 end;

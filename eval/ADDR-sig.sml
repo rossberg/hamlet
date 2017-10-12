@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML addresses
  *
@@ -8,13 +8,13 @@
 
 signature ADDR =
 sig
-  (* Type [Section 6.2] *)
+    (* Type [Section 6.2] *)
 
-  eqtype Addr                                   (* [a] *)
+    eqtype Addr					(* [a] *)
 
 
-  (* Operations *)
+    (* Operations *)
 
-  val addr    : unit -> Addr
-  val compare : Addr * Addr -> order
+    val addr :     unit -> Addr
+    val compare :  Addr * Addr -> order
 end;

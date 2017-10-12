@@ -4,7 +4,7 @@
 
 fun f(r as {...}) =
 let
-  fun g() = r
+    fun g() = r
 in
-  [r, {a = 1}]
+    [r, {a=1}]
 end;

@@ -1,28 +1,27 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2007
  *
  * Standard ML pretty printing of the combined basis
  *)
 
 structure PPBasis : PP_BASIS =
 struct
-  (* Import *)
+    (* Import *)
 
-  type Basis = Basis.Basis
-  type State = DynamicObjectsCore.State
+    type Basis = Basis.Basis
+    type State = DynamicObjectsCore.State
 
-  open PrettyPrint
+    open PrettyPrint
 
-  infixr ^^ ^/^
+    infixr ^^ ^/^
 
 
-  (* Basis *)
+    (* Basis *)
 
-  fun ppBasis (s, ((T, F_STAT, G_STAT, E_STAT), (F_DYN, G_DYN, E_DYN))) =
-      vbox(
-        PPStaticBasis.ppSigEnv G_STAT ^/^
-        PPStaticBasis.ppFunEnv F_STAT ^/^
-        PPEnv.ppEnv(s, (E_STAT, E_DYN)) ^/^
-        text ""
-      )
+    fun ppBasis (s, ((T,E_STAT), E_DYN)) =
+	    (* [RFC: Higher-order functors; RFC: Nested signatures] *)
+	    vbox(
+		PPEnv.ppEnv(s, (E_STAT,E_DYN)) ^/^
+		text ""
+	    )
 end;
