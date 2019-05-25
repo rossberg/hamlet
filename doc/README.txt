@@ -5,4 +5,4 @@ the full documentation. See LICENSE.txt for licensing information.
 
 The HaMLet homepage is:
 
-	http://www.mpi-sws.org/hamlet/
+	http://www.mpi-sws.org/~rossberg/hamlet/
