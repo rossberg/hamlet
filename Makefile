@@ -335,10 +335,7 @@ install:
 	mkdir -p ${INSTALLDIR}
 	mkdir -p ${INSTALLDIR}/basis
 	install -m 444 basis/*.sml ${INSTALLDIR}/basis
-	if ls hamlet-image.* ;\
-	then \
-	    install -m 444 hamlet-image.* ${INSTALLDIR} ;\
-	fi
+	find . -name 'hamlet-image.*' -exec install -m 444 -t ${INSTALLDIR} '{}' +
 	install -m 555 hamlet ${INSTALLDIR}
 
 ################################################################################
