@@ -338,7 +338,7 @@ struct
         val Es =
             List.map (fn longstrid => findLongStrId(E, longstrid)) longstrids
       in
-        List.foldl DynamicEnv.plus DynamicEnv.empty Es
+        List.foldr DynamicEnv.plus DynamicEnv.empty Es
       end
     | evalDec((s, E), EMPTYDec@@A) =
       (* [Rule 122] *)
