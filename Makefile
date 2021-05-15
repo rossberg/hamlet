@@ -113,14 +113,14 @@ hamlet.sml: ${BOOTSTRAPFILES} sources.cm
 	@${ECHO} "(* DO NOT EDIT! *)" >$@
 	@${ECHO} "(* Generated from sources.cm (${shell date}) *)" >>$@
 	@${ECHO} >>$@
-	@${ECHO} '${BOOTSTRAPFILES:%=\use "%";}' | tr "\\" "\n" >>$@
+	@${ECHO} '${BOOTSTRAPFILES:%=|use "%";}' | tr "|" "\n" >>$@
 
 hamlet.mlb:
 	@${ECHO} Generating $@
 	@${ECHO} "(* DO NOT EDIT! *)" >$@
 	@${ECHO} "(* Generated from sources.cm (${shell date}) *)" >>$@
 	@${ECHO} >>$@
-	@${ECHO} '$$(SML_LIB)/basis/basis.mlb${FILES:%=\\%}\main/wrap-${SYSTEM}.sml' | tr "\\" "\n" >>$@
+	@${ECHO} '$$(SML_LIB)/basis/basis.mlb${FILES:%=|%}|main/wrap-${SYSTEM}.sml' | tr "|" "\n" >>$@
 
 ################################################################################
 # Create single file
