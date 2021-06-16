@@ -39,7 +39,7 @@ struct
   val tyconString = TyCon.fromString "string"
   val tyconChar   = TyCon.fromString "char"
   val tyconList   = TyCon.fromString "list"
-  val tyconRef    = TyCon.fromString "ref"
+  val tyconRef    = Type.tyconRef
   val tyconExn    = TyCon.fromString "exn"
 
 
@@ -52,7 +52,7 @@ struct
   val tString = TyName.tyname(TyCon.toString tyconString, 0, true,  0)
   val tChar   = TyName.tyname(TyCon.toString tyconChar,   0, true,  256)
   val tList   = TyName.tyname(TyCon.toString tyconList,   1, true,  2)
-  val tRef    = TyName.tyname(TyCon.toString tyconRef,    1, true,  1)
+  val tRef    = Type.tRef
   val tExn    = TyName.tyname(TyCon.toString tyconExn,    0, false, 0)
 
   val T0 =
