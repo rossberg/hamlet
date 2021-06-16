@@ -81,4 +81,10 @@ sig
   val guessRow             : unit -> RowType
   val rowFromList          : (Lab * Type) list -> RowType
   val findLab              : RowType * Lab -> Type option
+
+
+  (* References *)
+
+  val tyconRef             : IdsCore.TyCon
+  val tRef                 : TyName
 end;

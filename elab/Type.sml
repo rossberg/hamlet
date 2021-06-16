@@ -247,6 +247,9 @@ struct
 
   (* Check for equality type [Section 4.4] *)
 
+  val tyconRef = TyCon.fromString "ref"
+  val tRef = TyName.tyname(TyCon.toString tyconRef, 1, true, 1)
+
   fun admitsEquality(ref tau') = admitsEquality' tau'
   and admitsEquality'(TyVar alpha) =
         TyVar.admitsEquality alpha
@@ -258,7 +261,7 @@ struct
         false
     | admitsEquality'(ConsType(taus, t)) =
         TyName.admitsEquality t andalso List.all admitsEquality taus
-        orelse TyName.toString t = "ref"
+        orelse t = tRef
     | admitsEquality'(Undetermined{eq, ...}) =
         eq orelse raise Type
     | admitsEquality'(Overloaded O) =
@@ -397,7 +400,7 @@ struct
         (case Stamp.compare(TyName.time t, time) of
           GREATER => raise Unify
         | _ =>
-            if not eq orelse TyName.toString t = "ref" then
+            if not eq orelse t = tRef then
               ( List.app (propagate(time, false)) taus; tau' )
             else if TyName.admitsEquality t then
               ( List.app (propagate(time, eq)) taus; tau' )

@@ -191,7 +191,7 @@ struct
 	    val t = #2(Type.toConsType tau)
 	in
 	    if TyName.admitsEquality t then
-		TyName.toString t = "ref" orelse
+		t = tRef orelse
 		VIdMap.all respectsEqualityValStr VE
 	    else
 		true
