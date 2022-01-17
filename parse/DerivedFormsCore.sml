@@ -323,7 +323,7 @@ struct
 	end
 
     (* [RFC: Record update] *)
-    fun UPDATEAtExp(I, atexp, exprow) =
+    fun UPDATEAtExp(I, atexp, exprow_opt) =
 	let
 	    val I'  = C.infoAtExp atexp
 	    val vid = VId.invent()
@@ -344,10 +344,10 @@ struct
 	      | extendExpRow(SOME(C.DOTSExpRow(I, _))) =
 		    Error.error(I, "invalid record update syntax")
 
-	    val pat = C.ATPat(I', C.RECORDAtPat(I', toPatRow(SOME exprow)))
+	    val pat = C.ATPat(I', C.RECORDAtPat(I', toPatRow(exprow_opt)))
 	    val dec = C.VALDec(I', C.SANSRec, C.TyVarseq(I', []),
 			       C.ValBind(I', pat, C.ATExp(I', atexp), NONE))
-	    val exp = C.ATExp(I, C.RECORDAtExp(I, extendExpRow(SOME exprow)))
+	    val exp = C.ATExp(I, C.RECORDAtExp(I, extendExpRow(exprow_opt)))
 	in
 	    C.LETAtExp(I, dec, exp)
 	end

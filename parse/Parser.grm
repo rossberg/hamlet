@@ -480,9 +480,9 @@
 	| LBRACE exprow_opt RBRACE
 			( RECORDAtExp(I(LBRACEleft,RBRACEright), exprow_opt) )
 	(* [RFC: Record update] *)
-	| LBRACE atexp WHERE exprow RBRACE
+	| LBRACE atexp WHERE exprow_opt RBRACE
 			( UPDATEAtExp(I(LBRACEleft,RBRACEright),
-				      atexp, exprow) )
+				      atexp, exprow_opt) )
 	| HASH lab	( HASHAtExp(I(HASHleft,labright), lab) )
 	| LPAR RPAR	( UNITAtExp(I(LPARleft,RPARright)) )
 	| LPAR exp_COMMA_list2 RPAR

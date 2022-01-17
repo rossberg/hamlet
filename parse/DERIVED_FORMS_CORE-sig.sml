@@ -64,7 +64,7 @@ sig
 
     val UNITAtExp :	Info					-> AtExp
     val TUPLEAtExp :	Info * Exp list				-> AtExp
-    val UPDATEAtExp :	Info * AtExp * ExpRow			-> AtExp
+    val UPDATEAtExp :	Info * AtExp * ExpRow option		-> AtExp
     val HASHAtExp :	Info * Lab				-> AtExp
     val PACKExp :	Info * AtStrExp * AtSigExp		-> Exp
     val CASEExp :	Info * Exp * Match			-> Exp
