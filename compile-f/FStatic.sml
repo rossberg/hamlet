@@ -16,6 +16,9 @@ struct
   fun error s        = raise Error(s)
   fun errorVar(s, x) = error(s ^ " " ^ x)
 
+  fun renameVar a = error "renameVar: not implemented"
+  fun inventVar a = error "inventVar: not implemented"
+
   (* Substitution *)
   fun substTyp s (VarTyp(a)) =
         (case VarMap.find(s, a) of
@@ -38,7 +41,7 @@ struct
       let
         val a' = renameVar(a)
       in
-        (a', k, substTyp (VarMap.insert(s, a, VarTyp(a'))))
+        (a', k, substTyp (VarMap.insert(s, a, VarTyp(a'))) t)
       end
 
   (* Long-eta-normalize a type whose components are already long-eta-normal *)
@@ -48,7 +51,7 @@ struct
       let
         val a = inventVar()
       in
-        FunTyp(a, k1, longEtaNormTyp(k, AppTyp(t, VarTyp(a))))
+        FunTyp(a, k1, longEtaNormTyp(k2, AppTyp(t, VarTyp(a))))
       end
 
   (* Beta-normalize a long-eta-normal type *)
@@ -78,15 +81,15 @@ struct
     | eqNormTyp(UnitTyp, UnitTyp) =
         true
     | eqNormTyp(ArrowTyp(t11, t12), ArrowTyp(t21, t22)) =
-        eqNormTyp(t11, t21) andalse eqNormTyp(t12, t22)
+        eqNormTyp(t11, t21) andalso eqNormTyp(t12, t22)
     | eqNormTyp(ProdTyp(t11, t12), ProdTyp(t21, t22)) =
-        eqNormTyp(t11, t21) andalse eqNormTyp(t12, t22)
+        eqNormTyp(t11, t21) andalso eqNormTyp(t12, t22)
     | eqNormTyp(SumTyp(t11, t12), SumTyp(t21, t22)) =
-        eqNormTyp(t11, t21) andalse eqNormTyp(t12, t22)
+        eqNormTyp(t11, t21) andalso eqNormTyp(t12, t22)
     | eqNormTyp(UnivTyp(a1, k1, t1), UnivTyp(a2, k2, t2)) =
-        eqNormBind((a1, k1, t1), (a2, k2, t2))
+        eqNormBindTyp((a1, k1, t1), (a2, k2, t2))
     | eqNormTyp(ExistTyp(a1, k1, t1), ExistTyp(a2, k2, t2)) =
-        eqNormBind((a1, k1, t1), (a2, k2, t2))
+        eqNormBindTyp((a1, k1, t1), (a2, k2, t2))
     | eqNormTyp(ExnTyp, ExnTyp) =
         true
     | eqNormTyp(TagTyp(t1), TagTyp(t2)) =
@@ -94,9 +97,9 @@ struct
     | eqNormTyp(RefTyp(t1), RefTyp(t2)) =
         eqNormTyp(t1, t2)
     | eqNormTyp(FunTyp(a1, k1, t1), FunTyp(a2, k2, t2)) =
-        eqNormBind((a1, k1, t1), (a2, k2, t2))
+        eqNormBindTyp((a1, k1, t1), (a2, k2, t2))
     | eqNormTyp(AppTyp(t11, t12), AppTyp(t21, t22)) =
-        eqNormTyp(t11, t21) andalse eqNormTyp(t12, t22)
+        eqNormTyp(t11, t21) andalso eqNormTyp(t12, t22)
     | eqNormTyp(_, _) =
         false
   and eqNormBindTyp((a1, k1, t1), (a2, k2, t2)) =
@@ -105,7 +108,7 @@ struct
         val t1' = substTyp (VarMap.singleton(a1, ta)) t1
         val t2' = substTyp (VarMap.singleton(a2, ta)) t2
       in
-        k1 = k2 andalse eqNormTyp(t1', t2')
+        k1 = k2 andalso eqNormTyp(t1', t2')
       end
 
   fun eqTyp(t1, t2) = eqNormTyp(normTyp t1, normTyp t2)
@@ -174,7 +177,7 @@ struct
         elabTypAs(D, as_t, StarKind);
         case normTyp as_t of
           RecTyp(a, k, t') =>  (*TODO: higher kinds *)
-            elabValAs(D, G, v, substTyp (VarMap.singleton(a, t)) t)
+            elabValAs(D, G, v, substTyp (VarMap.singleton(a, as_t)) t')
         | _ => error("RollVal: malformed type annotation");
         as_t
       )
@@ -195,12 +198,10 @@ struct
       )
     | elabVal(D, G, ExnVal(v1, v2)) =
         (case elabVal(D, G, v1) of
-           TagTyp(t) => ( elabValAs(D, G, v, t); ExnTyp )
+           TagTyp(t) => ( elabValAs(D, G, v1, t); ExnTyp )
          | _ => error("ExnVal: ill-typed tag")
         )
-
-
-  and elabVal(D, G, v) =
+    | elabVal(D, G, v) =
       case v of
         VarVal(x) =>
           (case VarMap.find(G, x) of
@@ -227,7 +228,7 @@ struct
           elabTypAs(D, as_t, StarKind);
           case normTyp as_t of
             RecTyp(a, k, t') =>  (*TODO: higher kinds *)
-              elabValAs(D, G, v, substTyp (VarMap.singleton(a, t)) t)
+              elabValAs(D, G, v, substTyp (VarMap.singleton(a, as_t)) t')
           | _ => error("RollVal: malformed type annotation");
           as_t
         )
@@ -260,7 +261,7 @@ struct
         (elabExpAs(D, G, e1, UnitTyp); elabExp(D, G, e2))
     | elabExp(D, G, AppExp(e1, e2)) =
         (case elabExp(D, G, e1) of
-          ArrowTyp(t2, t) => (elabExpAs(D, e2, t2); t)
+          ArrowTyp(t2, t) => (elabExpAs(D, G, e2, t2); t)
         | _ => error("AppExp: arrow type expected")
         )
     | elabExp(D, G, ProjExp(i, e)) =
@@ -280,7 +281,7 @@ struct
         )
     | elabExp(D, G, UnrollExp(e)) =
         (case elabExp(D, G, e) of  (*TODO: higher kinds *)
-          t as RecTyp(a, k, t) => substTyp (VarMap.singleton(a, t)) t'
+          t as RecTyp(a, k, t') => substTyp (VarMap.singleton(a, t)) t'
         | _ => error("UnrollExp: recursive type expected")
         )
     | elabExp(D, G, InstExp(e, t)) =
@@ -294,7 +295,7 @@ struct
           ExistTyp(a', k, t) =>
           let
             val t' = substTyp (VarMap.singleton(a', VarTyp(a))) t
-            val t2 = elabExp(VarMap.insert(D, a, k), VarMap.insert(G, x, t'))
+            val t2 = elabExp(VarMap.insert(D, a, k), VarMap.insert(G, x, t'), e1)
           in
             elabTypAs(D, t2, StarKind); t2
           end
@@ -330,7 +331,7 @@ struct
         )
     | elabExp(D, G, WriteExp(e1, e2)) =
         (case elabExp(D, G, e1) of
-          RefTyp(t) => (elabExpAs(D, G, e2, t); UnitExp)
+          RefTyp(t) => (elabExpAs(D, G, e2, t); UnitTyp)
         | _ => error("WriteExp: reference type expected")
         )
 end;

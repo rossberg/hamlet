@@ -16,7 +16,7 @@ sig
 
     exception Error of string
 
-    val eqTyp :   typ -> typ -> bool
+    val eqTyp   : typ * typ -> bool
     val elabTyp : typ_env * typ -> kind
     val elabVal : typ_env * val_env * value -> typ
     val elabExp : typ_env * val_env * exp -> typ
