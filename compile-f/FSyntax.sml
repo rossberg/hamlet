@@ -12,7 +12,7 @@ struct
 
     datatype kind =                                (* [k] *)
         StarKind                                   (* * *)
-      | ArrowKind                                  (* k -> k *)
+      | ArrowKind of kind * kind                   (* k -> k *)
 
     datatype typ =                                 (* t *)
         VarTyp   of var                            (* a *)
@@ -42,22 +42,22 @@ struct
       | ExnVal   of value * value                  (* exn v v *)
 
     and exp =                                      (* [e] *)
-        ValExp   of value                          (* v *)
-      | SeqExp   of exp * exp                      (* e ; e *)
-      | AppExp   of exp * exp                      (* e e *)
-      | ProjExp  of side * exp                     (* #i e *)
-      | CaseExp  of exp * var * exp * var * exp    (* case e of x. e | x. e *)
+        ValExp    of value                         (* v *)
+      | SeqExp    of exp * exp                     (* e ; e *)
+      | AppExp    of exp * exp                     (* e e *)
+      | ProjExp   of index * exp                   (* #i e *)
+      | CaseExp   of exp * var * exp * var * exp   (* case e of x. e | x. e *)
       | UnrollExp of exp                           (* unroll e *)
-      | InstExp  of exp * typ                      (* e t *)
+      | InstExp   of exp * typ                     (* e t *)
       | UnpackExp of exp * var * var * exp         (* unpack e as <a, x>. e *)
-      | TestExp  of exp * exp * var * exp * exp    (* test e is e x. e | e *)
-      | ThrowExp of exp * tyo                      (* throw e : t *)
-      | CatchExp of exp * var * exp                (* try e catch x. e *)
-      | RefExp   of exp                            (* ref e *)
-      | ReadExp  of exp                            (* !e *)
-      | WriteExp of exp * exp                      (* e := e *)
+      | TestExp   of exp * exp * var * exp * exp   (* test e is e x. e | e *)
+      | ThrowExp  of exp * typ                     (* throw e : t *)
+      | CatchExp  of exp * var * exp               (* try e catch x. e *)
+      | RefExp    of exp                           (* ref e *)
+      | ReadExp   of exp                           (* !e *)
+      | WriteExp  of exp * exp                     (* e := e *)
 
-    fun LetExp(exp1, typ, var, exp2) = AppExp(FunExp(var, typ, exp2), exp1)
+    fun LetExp(exp1, typ, var, exp2) = AppExp(ValExp(FunVal(var, typ, exp2)), exp1)
 end
 
-structure VarMap = FiniteMapFn(type key = string; val compare = String.compare);
+structure VarMap = FinMapFn(type ord_key = string; val compare = String.compare);
