@@ -1,9 +1,10 @@
 (*
- * (c) Andreas Rossberg 1999-2007
+ * (c) Andreas Rossberg 1999-2023
  *
  * Standard ML consistency of patterns and matches
  *
  * Definition, Section 4.11
+ * + RFC: Record extension
  * + RFC: Conjunctive patterns
  * + RFC: Disjunctive patterns
  * + RFC: Nested matches
@@ -164,52 +165,52 @@ struct
 	(case StaticEnv.findLongVId(E, longvid)
 	   of SOME(_, IdStatus IdStatus.e) =>
 	      let
-		 val m = case view
-			   of VAR     => LongVIdMap.empty
-			    | EXCON m => m
-			    | VIEW _  =>
-				Error.error(I, "inconsistent use of view")
-			    | _       =>
-				raise Fail "CheckPattern.viewAtPat: \
-					   \invalid exception constructor"
-		 val view1  = Option.getOpt(LongVIdMap.find(m, longvid), VAR)
-		 val view1' = viewAtPat(E, view1, atpat)
-		 val m'     = LongVIdMap.insert(m, longvid, view1')
+		  val m = case view
+			    of VAR     => LongVIdMap.empty
+			     | EXCON m => m
+			     | VIEW _  =>
+			       Error.error(I, "inconsistent use of view")
+			     | _       =>
+			       raise Fail "CheckPattern.viewAtPat: \
+					  \invalid exception constructor"
+		  val view1  = Option.getOpt(LongVIdMap.find(m, longvid), VAR)
+		  val view1' = viewAtPat(E, view1, atpat)
+		  val m'     = LongVIdMap.insert(m, longvid, view1')
 	      in
 		  EXCON m'
 	      end
 
 	    | SOME(_, IdStatus IdStatus.c) =>
 	      let
-		 val vid = LongVId.toId longvid
-		 val m   = case view
-			    of VAR    => VIdMap.empty
-			     | CON m  => m
-			     | VIEW _ =>
+		  val vid = LongVId.toId longvid
+		  val m   = case view
+			     of VAR    => VIdMap.empty
+			      | CON m  => m
+			      | VIEW _ =>
 				Error.error(I, "inconsistent use of view")
-			     | _      =>
+			      | _      =>
 				raise Fail "CheckPattern.viewAtPat: \
 					   \invalid constructor"
-		 val view1  = Option.getOpt(VIdMap.find(m, vid), VAR)
-		 val view1' = viewAtPat(E, view1, atpat)
-		 val m'     = VIdMap.insert(m, vid, view1')
+		  val view1  = Option.getOpt(VIdMap.find(m, vid), VAR)
+		  val view1' = viewAtPat(E, view1, atpat)
+		  val m'     = VIdMap.insert(m, vid, view1')
 	      in
 		  CON m'
 	      end
 
 	    | SOME(_, TyName t) =>
 	      let
-		 val vid = LongVId.toId longvid
-		 val m   = case view
-			     of VAR        => VIdMap.empty
-			      | VIEW(t',m) =>
-				if t = t' then m else
-				    Error.error(I, "inconsistent use of views")
-			      | _          =>
-				Error.error(I, "inconsistent use of view")
-		 val view1  = Option.getOpt(VIdMap.find(m, vid), VAR)
-		 val view1' = viewAtPat(E, view1, atpat)
-		 val m'     = VIdMap.insert(m, vid, view1')
+		  val vid = LongVId.toId longvid
+		  val m   = case view
+			      of VAR        => VIdMap.empty
+			       | VIEW(t',m) =>
+				 if t = t' then m else
+				     Error.error(I, "inconsistent use of views")
+			       | _          =>
+				 Error.error(I, "inconsistent use of view")
+		  val view1  = Option.getOpt(VIdMap.find(m, vid), VAR)
+		  val view1' = viewAtPat(E, view1, atpat)
+		  val m'     = VIdMap.insert(m, vid, view1')
 	      in
 		  VIEW(t, m')
 	      end
@@ -291,16 +292,17 @@ struct
 	| RECORD    of description LabMap
 
     datatype context =
-	  EXCON'  of context * longVId
-	| CON'    of context * VId
-	| REF'    of context
-	| RECORD' of context * description LabMap * Lab * PatRow option
-	| AS1'    of context * Source.info * Pat
-	| AS2'    of context * Source.info
-	| BAR1'   of context * Source.info * Pat
-	| BAR2'   of context * Source.info
-	| WITH'   of context * Source.info * bool
-	| MATCH'  of Source.info * Match option
+	  EXCON'      of context * longVId
+	| CON'        of context * VId
+	| REF'        of context
+	| RECORD'     of context * description LabMap * Lab * PatRow option
+	| RECORD_ELL' of context * description LabMap
+	| AS1'        of context * Source.info * Pat
+	| AS2'        of context * Source.info
+	| BAR1'       of context * Source.info * Pat
+	| BAR2'       of context * Source.info
+	| WITH'       of context * Source.info * bool
+	| MATCH'      of Source.info * Match option
 
 
     (* Forget knowledge about references *)
@@ -531,7 +533,11 @@ struct
 			      RECORD'(context, descs, lab, patrow_opt'), sets)
 		 end
 
-	       | _ =>
+	       (* [RFC: Record extension] *)
+	       | SOME(DOTSPatRow(_, pat)) =>
+	         matchPat(E, desc, pat, RECORD_ELL'(context, descs), sets)
+
+	       | NONE =>
 		 succeed(E, RECORD(descs), context, sets)
 	end
 
@@ -675,6 +681,10 @@ struct
 	    matchPatRowOpt(E, RECORD(LabMap.insert(descs, lab, desc)),
 			   patrow_opt, context, sets)
 
+      (* [RFC: Record extension] *)
+      | succeed(E, desc, RECORD_ELL'(context, descs), sets) =
+            succeed(E, RECORD(descs), context, sets)
+
       (* [RFC: Conjunctive patterns] *)
       | succeed(E, desc, AS1'(context, I, pat), sets) =
 	    matchPat(E, desc, pat, AS2'(context, I), sets)
@@ -726,6 +736,10 @@ struct
 
       | fail(E, desc, RECORD'(context, descs, lab, patrow_opt), sets) =
 	    fail(E, RECORD(LabMap.insert(descs, lab, desc)), context, sets)
+
+      (* [RFC: Record extension] *)
+      | fail(E, desc, RECORD_ELL'(context, descs), sets) =
+	    fail(E, RECORD(descs), context, sets)
 
       (* [RFC: Conjunctive patterns] *)
       | fail(E, desc, AS1'(context, I, pat), sets) =
