@@ -314,7 +314,7 @@ struct
 			   | _ => BindingEnv.empty) (* actually an error *)
 		    longstrids
 	in
-	    List.foldl (op plus) BindingEnv.empty Es
+	    List.foldr (op plus) BindingEnv.empty Es
 	end
 
       | checkDec(C, EMPTYDec(I)) =

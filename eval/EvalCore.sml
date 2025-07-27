@@ -408,7 +408,7 @@ struct
 					       \structure ", longstrid) )
 		    longstrids
 	in
-	    List.foldl DynamicEnv.plus DynamicEnv.empty Es
+	    List.foldr DynamicEnv.plus DynamicEnv.empty Es
 	end
 
       | evalDec(s,E, EMPTYDec(I)) =

@@ -1,5 +1,5 @@
 NAME = hamlet-succ
-VERSION = 1.3.1S5
+VERSION = 1.3.2S6
 PACKAGE = ${NAME}-${VERSION}
 BUILDDIR = build/${PACKAGE}
 INSTALLDIR = /home/ps/httpd/html/hamlet
