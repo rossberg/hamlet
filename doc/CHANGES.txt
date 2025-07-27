@@ -1,9 +1,12 @@
-1.3.2/S6 (unreleased)
+1.3.2/S6 (2025/07/27)
 
 Merged changes from 1.3.2, plus:
 
 Interpreter:
-- Adjust functional record update to match spec, making exprow optional (issue #8).
+- Adjust functional record update to match spec, making exprow optional
+  (issue #8 reported by Arata Mizuki).
+- Fix exhaustiveness check for record ellipses
+  (issue #10 reported by Arata Mizuki).
 
 
 1.3.2 (unreleased)
@@ -11,9 +14,11 @@ Interpreter:
 Interpreter:
 - Fixed bug in lexing of negative hex constants (thanks to Matthew Fluet).
 - Fixed bug in evaluation order of `open` with multiple structures
-  (reported by Arata Mizuki).
-- Fixed bug in treatment of equality attribute for ref type
-  (thanks to El Pin Al).
+  (issue #4 reported by Arata Mizuki).
+
+Build:
+- Avoid backslashes in echo command, problematic on MacOS
+  (port of PR #6 thanks to Arata Mizuki).
 
 
 1.3.1/S5 (2008/04/28)

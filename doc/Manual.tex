@@ -27,8 +27,8 @@ citecolor=black,linkcolor=black,menucolor=black]{hyperref}
 % {\Large\sc Manual} \\
 
 \vspace{1cm}
-Version 1.3.1/S5 \\
-2008/04/28
+Version 1.3.2/S6 \\
+2025/07/27
 
 \vspace{3cm}
 \large
@@ -7210,6 +7210,31 @@ Interpreter:
 \begin{itemize} \setlength{\itemsep}{0em}
 \item Implemented RFC: Optional {\tt else} branch.
 \item Fixed and simplified definition of signature matching for RFC: Higher-order functors.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.3.2 (unreleased)}
+
+Interpreter:
+\begin{itemize} \setlength{\itemsep}{0em}
+\item Fixed bug in lexing of negative hex constants (thanks to Matthew Fluet).
+\item Fixed bug in evaluation order of `open` with multiple structures (reported by Arata Mizuki).
+\end{itemize}
+
+Build:
+\begin{itemize} \setlength{\itemsep}{0em}
+\item Avoid backslashes in echo command, problematic on MacOS (thanks to Arata Mizuki).
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 1.3.2/S6 (2025/07/27)}
+
+Merged changes from 1.3.2, plus:
+
+Interpreter:
+\begin{itemize} \setlength{\itemsep}{0em}
+\item Adjust functional record update to match spec, making exprow optional (reported by Arata Mizuki).
+\item Fix exhaustiveness check for record ellipses (reported by Arata Mizuki).
 \end{itemize}
 
 

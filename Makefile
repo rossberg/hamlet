@@ -1,5 +1,5 @@
 ################################################################################
-# (c) Andreas Rossberg 2000-2007
+# (c) Andreas Rossberg 2000-2025
 #
 # Makefile for building HaMLet. Supports (in alphabetical order):
 # - Alice ML		(make with-alice)
