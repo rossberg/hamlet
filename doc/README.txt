@@ -556,6 +556,6 @@ Modules
 Please see INSTALL.txt for brief instructions and the doc directory for
 the full documentation. See LICENSE.txt for licensing information.
 
-All HaMLet sources (c) 1999-2007 Andreas Rossberg.
+All HaMLet sources (c) 1999-2025 Andreas Rossberg.
 
-http://www.ps.uni-sb.de/hamlet/#successor-ml
+https://mpi-sws.org/~rossberg/hamlet/#successor-ml
