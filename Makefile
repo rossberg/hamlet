@@ -306,7 +306,7 @@ with-poly+: with-poly
 
 hamlet-poly${EXE}: main/wrap-poly.sml hamlet.sml ${FILES}
 	poly <main/wrap-poly.sml
-	cc -L${POLY_LIBDIR} -o $@ hamlet.o -lpolymain -lpolyml -lstdc++
+	polyc -o $@ hamlet.o -lpolymain -lpolyml -lstdc++
 
 clean-poly:
 	rm -f hamlet-poly
