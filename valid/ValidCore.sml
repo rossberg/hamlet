@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2011
+ * (c) Andreas Rossberg 1999-2025
  *
  * Standard ML core validoration
  *

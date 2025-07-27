@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 2002-2013
+ * (c) Andreas Rossberg 2002-2025
  *
  * Standard ML Basis Library
  *)

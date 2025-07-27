@@ -1,12 +1,12 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2025
  *
  * Standard ML implementation stand-alone
  *)
 
 structure Main : MAIN =
 struct
-  val version = "2.0.0"
+  val version = "2.0.1"
 
   fun usage() =
       ( TextIO.output(TextIO.stdErr,

@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 2013
+ * (c) Andreas Rossberg 2013-2025
  *
  * Free and bound identifiers in the module language.
  *)

@@ -1,5 +1,5 @@
 NAME = hamlet
-VERSION = 2.0.0
+VERSION = 2.0.1
 PACKAGE = ${NAME}-${VERSION}
 BUILDDIR = build/${PACKAGE}
 UPLOADURL = rossberg@contact.mpi-sws.org:homepage/${NAME}/

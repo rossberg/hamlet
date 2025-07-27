@@ -32,8 +32,8 @@
 % {\Large\sc Manual} \\
 
 \vspace{1cm}
-Version 2.0.0 \\
-2013/10/10
+Version 2.0.1 \\
+2025/07/27
 
 \vspace{3cm}
 \large
@@ -97,7 +97,7 @@ On the other hand, HaMLet is probably less suited to serve as a library for real
 \subsection{Copyright}
 \label{copyright}
 
-Copyright of the HaMLet sources 1999-2013 by Andreas Rossberg.
+Copyright of the HaMLet sources 1999-2025 by Andreas Rossberg.
 
 The HaMLet source package includes portions of the SML/NJ library, which is copyright 1989-1998 by Lucent Technologies.
 
@@ -2867,6 +2867,23 @@ Documentation:
 \item Added lax datatype replication rules to issue list (suggested by Karl Crary).
 \item Updated links.
 \end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Version 2.0.1 (2025/07/27)}
+
+Interpreter:
+\begin{itemize}[nolistsep]
+\item Fixed bug in evaluation order of `open` with multiple structures (reported by Arata Mizuki).
+\item Fixed bug in treatment of equality attribute for ref type (thanks to El Pin Al).
+\end{itemize}
+
+Building:
+\begin{itemize}[nolistsep]
+\item Use `polyc` command for more reliable build with Poly/ML (thanks to Brian Campbell).
+\item Avoid backslashes in echo command, problematic on MacOS (thanks to Arata Mizuki).
+\end{itemize}
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

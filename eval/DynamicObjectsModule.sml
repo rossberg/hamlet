@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2025
  *
  * Standard ML objects of the dynamic semantics of modules
  *

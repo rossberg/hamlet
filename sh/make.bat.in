@@ -1,9 +1,6 @@
-rem (c) Andreas Rossberg 2001-2013
+rem (c) Andreas Rossberg 2001-2025
 rem
 rem Simple minded batch file to build HaMLet under Dos/Windows
-
-rem Currently, Moscow ML target is broken under Windows - have to wait
-rem for Moscow 2.03 (hopefully)
 
 set files=
 

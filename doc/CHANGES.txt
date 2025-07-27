@@ -1,3 +1,18 @@
+2.0.1 (2025/07/27)
+
+Interpreter:
+- Fixed bug in evaluation order of `open` with multiple structures
+  (reported by Arata Mizuki).
+- Fixed bug in treatment of equality attribute for ref type
+  (thanks to El Pin Al).
+
+Building:
+- Use `polyc` command for more reliable build with Poly/ML
+  (thanks to Brian Campbell).
+- Avoid backslashes in echo command, problematic on MacOS
+  (thanks to Arata Mizuki).
+
+
 2.0.0 (2013/10/10)
 
 Interpreter functionality:

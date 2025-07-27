@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 1999-2007
+ * (c) Andreas Rossberg 1999-2025
  *
  * Standard ML scope of type variables
  *

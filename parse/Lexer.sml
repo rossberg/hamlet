@@ -8,7 +8,7 @@
     structure UserDeclarations =
       struct
 (*
- * (c) Andreas Rossberg 1999-2013
+ * (c) Andreas Rossberg 1999-2025
  *
  * Standard ML lexical analysis
  *

@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 2013
+ * (c) Andreas Rossberg 2013-2025
  *
  * System F static semantics.
  *)

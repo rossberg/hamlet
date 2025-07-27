@@ -1,5 +1,5 @@
 (*
- * (c) Andreas Rossberg 2007-2013
+ * (c) Andreas Rossberg 2007-2025
  *
  * Auxiliaries for printing syntax
  *)
