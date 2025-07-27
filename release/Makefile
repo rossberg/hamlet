@@ -44,10 +44,11 @@ tar:
 	rm -rf build
 
 upload:	tar
+	rm -rf upload && \
 	mkdir upload && \
 	cp ${PACKAGE}.tar.gz   upload && \
 	cp ${PACKAGE}.zip      upload && \
-	cp ../doc/HaMLet.html  upload/index.html && \
+	cp ../doc/homepage/*   upload && \
 	cp ../doc/Manual.ps    upload/${PACKAGE}.ps && \
 	cp ../doc/Manual.pdf   upload/${PACKAGE}.pdf && \
 	cp ../doc/Mistakes.ps  upload/defects.ps && \
