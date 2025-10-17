@@ -30,8 +30,8 @@ sig
 
     structure EvalModule :
     sig
-	val evalStrExp : (State ref * Env * GrammarModule.StrExp -> Mod) ref
-	val evalStrDec : (State ref * Env * GrammarCore.StrDec' -> Env) ref
+        val evalStrExp : (State ref * Env * GrammarModule.StrExp -> Mod) ref
+        val evalStrDec : (State ref * Env * GrammarCore.StrDec' -> Env) ref
     end
 
     (* Export *)

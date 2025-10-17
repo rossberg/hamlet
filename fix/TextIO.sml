@@ -5,7 +5,7 @@ struct
     open TextIO
 
     val inputLine = fn strm =>
-	case inputLine strm
-	 of "" => NONE
-	  | s  => SOME s
+        case inputLine strm
+         of "" => NONE
+          | s  => SOME s
 end

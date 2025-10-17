@@ -10,7 +10,7 @@ signature ADDR =
 sig
     (* Type [Section 6.2] *)
 
-    eqtype Addr					(* [a] *)
+    eqtype Addr                                 (* [a] *)
 
 
     (* Operations *)

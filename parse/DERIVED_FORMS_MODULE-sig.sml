@@ -55,55 +55,55 @@ sig
 
     (* Structure Bindings [Figure 18] *)
 
-    val TRANSStrBind :		Info * StrId * SigExp option * StrExp
-				     * StrBind option -> StrBind
-    val SEALStrBind :		Info * StrId * SigExp * StrExp
-				     * StrBind option -> StrBind
+    val TRANSStrBind :          Info * StrId * SigExp option * StrExp
+                                     * StrBind option -> StrBind
+    val SEALStrBind :           Info * StrId * SigExp * StrExp
+                                     * StrBind option -> StrBind
 
     (* Structure Expressions [Figure 18; RFC: Higher-order functors;
      *                                   RFC: Local modules] *)
 
-    val DECStrExp :		Info * Dec -> StrExp
-    val FCTSPECStrExp :		Info * Spec * StrExp -> StrExp
+    val DECStrExp :             Info * Dec -> StrExp
+    val FCTSPECStrExp :         Info * Spec * StrExp -> StrExp
 
     (* Structure Declarations [Figure 18; RFC: Higher-order functors] *)
 
-    val FUNCTORStrDec :		Info * FunBind -> StrDec
+    val FUNCTORStrDec :         Info * FunBind -> StrDec
 
     (* Functor Arguments [Figure 18; Figure 23c; RFC: Higher-order functors] *)
 
     datatype FunArg =
-	  COLONFunArg of Info * StrId * SigExp
-	| SPECFunArg  of Info * Spec
+          COLONFunArg of Info * StrId * SigExp
+        | SPECFunArg  of Info * Spec
 
     (* Functor Bindings [Figure 18; RFC: Higher-order functors] *)
 
-    val TRANSFunBind :		Info * StrId * FunArg list * SigExp option
-				     * StrExp * FunBind option -> FunBind
-    val SEALFunBind :		Info * StrId * FunArg list * SigExp
-				     * StrExp * FunBind option -> FunBind
+    val TRANSFunBind :          Info * StrId * FunArg list * SigExp option
+                                     * StrExp * FunBind option -> FunBind
+    val SEALFunBind :           Info * StrId * FunArg list * SigExp
+                                     * StrExp * FunBind option -> FunBind
 
     (* Functor Descriptions [Figure 19; RFC: Higher-order functors] *)
 
-    val FunDesc :		Info * StrId * FunArg list * SigExp
-				     * FunDesc option -> FunDesc
+    val FunDesc :               Info * StrId * FunArg list * SigExp
+                                     * FunDesc option -> FunDesc
 
     (* Signature Expressions [Figure 19;
      *                        RFC: Abolish sequenced type relisations;
      *                        RFC: Higher-order functors] *)
 
-    val SPECSigExp :		Info * Spec -> SigExp
-    val ARROWSigExp :		Info * SigExp * SigExp -> SigExp
+    val SPECSigExp :            Info * Spec -> SigExp
+    val ARROWSigExp :           Info * SigExp * SigExp -> SigExp
     
     (* Specifications [Figure 19; RFC: Views; RFC: Nested signatures;
      *                            RFC: Higher-order functors] *)
 
-    val SYNSpec :		Info * SynDesc -> Spec
-    val DATATYPESpec :	 	Info * DatDesc * TypBind option -> Spec
-    val VIEWTYPE2Spec :	 	Info * TyCon * longTyCon -> Spec
-    val FUNCTORSpec :		Info * FunDesc -> Spec
-    val INCLUDEMULTISpec :	Info * longSigId list -> Spec
+    val SYNSpec :               Info * SynDesc -> Spec
+    val DATATYPESpec :          Info * DatDesc * TypBind option -> Spec
+    val VIEWTYPE2Spec :         Info * TyCon * longTyCon -> Spec
+    val FUNCTORSpec :           Info * FunDesc -> Spec
+    val INCLUDEMULTISpec :      Info * longSigId list -> Spec
 
-    val SynDesc :		Info * TyVarseq * TyCon * Ty
-				     * SynDesc option -> SynDesc
+    val SynDesc :               Info * TyVarseq * TyCon * Ty
+                                     * SynDesc option -> SynDesc
 end;

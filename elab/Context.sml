@@ -33,28 +33,28 @@ struct
     fun (T,U,E) plusVE VE = ( T, U, StaticEnv.plusVE(E,VE) )
 
     fun (T,U,E) oplusE E' =
-	( TyNameSet.union(T, StaticEnv.tynames E')
-	, U
-	, StaticEnv.plus(E,E')
-	)
+        ( TyNameSet.union(T, StaticEnv.tynames E')
+        , U
+        , StaticEnv.plus(E,E')
+        )
 
     fun (T,U,E) oplusTE TE =
-	( TyNameSet.union(T, StaticEnv.tynamesTE TE)
-	, U
-	, StaticEnv.plusTE(E,TE)
-	)
+        ( TyNameSet.union(T, StaticEnv.tynamesTE TE)
+        , U
+        , StaticEnv.plusTE(E,TE)
+        )
 
     fun (T,U,E) oplusSE SE =
-	( TyNameSet.union(T, StaticEnv.tynamesSE SE)
-	, U
-	, StaticEnv.plusSE(E,SE)
-	)
+        ( TyNameSet.union(T, StaticEnv.tynamesSE SE)
+        , U
+        , StaticEnv.plusSE(E,SE)
+        )
 
     fun (T,U,E) oplusVEandTE (VE,TE) =
-	( TyNameSet.union(T, StaticEnv.tynamesTE TE)
-	, U
-	, StaticEnv.plusVEandTE(E, (VE,TE))
-	)
+        ( TyNameSet.union(T, StaticEnv.tynamesTE TE)
+        , U
+        , StaticEnv.plusVEandTE(E, (VE,TE))
+        )
 
 
     (* Application (lookup) [Section 4.3] *)

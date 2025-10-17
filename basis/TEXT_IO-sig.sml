@@ -13,9 +13,9 @@ signature TEXT_IO =
 sig
     structure StreamIO : TEXT_STREAM_IO
 (*
-	where type reader = TextPrimIO.reader
-	where type writer = TextPrimIO.writer
-	where type pos = TextPrimIO.pos
+        where type reader = TextPrimIO.reader
+        where type writer = TextPrimIO.writer
+        where type pos = TextPrimIO.pos
 *)
     (* include IMPERATIVE_IO *)
     type vector = StreamIO.vector

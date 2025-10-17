@@ -18,37 +18,37 @@ struct
     structure LrVals = LrValsFn(structure Token      = LrParser.Token)
     structure Lexer  = LexerFn (structure Tokens     = LrVals.Tokens)
     structure Lexer' = LineAwareLexer(structure Lexer = Lexer
-				      exception Error = Source.Error)
+                                      exception Error = Source.Error)
     structure Parser = Join    (structure LrParser   = LrParser
-				structure ParserData = LrVals.ParserData
-				structure Lex        = Lexer')
+                                structure ParserData = LrVals.ParserData
+                                structure Lex        = Lexer')
 
 
     (* The actual parsing function *)
 
     fun parse(J, source, filename) =
-	let
-	    val yyread = ref false
-	    fun yyinput _ =
-		if !yyread then
-		    ""
-		else
-		    ( yyread := true; source )
+        let
+            val yyread = ref false
+            fun yyinput _ =
+                if !yyread then
+                    ""
+                else
+                    ( yyread := true; source )
 
-	    val lexer = Parser.makeLexer yyinput
+            val lexer = Parser.makeLexer yyinput
 
-	    fun onError(s, pos1, pos2) =
-		Error.error({file = filename, region = (pos1,pos2)}, s)
+            fun onError(s, pos1, pos2) =
+                Error.error({file = filename, region = (pos1,pos2)}, s)
 
-	    fun I(left, right) : Source.info =
-		{ file = filename,
-		  region = (left, if right = (0,0) then left else right) }
+            fun I(left, right) : Source.info =
+                { file = filename,
+                  region = (left, if right = (0,0) then left else right) }
 
-	    val ((program,J'),_) =
-		Parser.parse(0, lexer, onError, (I, J))
-		handle Lexer'.Error(region, e) =>
-		    Error.error({file = filename, region = region}, e)
-	in
-	    (J',program)
-	end
+            val ((program,J'),_) =
+                Parser.parse(0, lexer, onError, (I, J))
+                handle Lexer'.Error(region, e) =>
+                    Error.error({file = filename, region = region}, e)
+        in
+            (J',program)
+        end
 end;

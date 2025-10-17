@@ -41,14 +41,14 @@ struct
 
     fun findStrId(E, strid) = DynamicEnv.findStrId(E, strid)
     fun findSigId(E, sigid) = case DynamicEnv.findSigId(E, sigid)
-				of SOME(Sig I) => SOME I
-				 | _           => NONE
+                                of SOME(Sig I) => SOME I
+                                 | _           => NONE
     fun findLongTyCon(E, longtycon) =
-	DynamicEnv.findLongTyCon(E, longtycon)
+        DynamicEnv.findLongTyCon(E, longtycon)
     fun findLongStrId(E, longstrid) =
-	DynamicEnv.findLongStrId(E, longstrid)
+        DynamicEnv.findLongStrId(E, longstrid)
     fun findLongSigId(E, longsigid) =
-	case DynamicEnv.findLongSigId(E, longsigid)
-	  of SOME(Sig I) => SOME I
-	   | _           => NONE
+        case DynamicEnv.findLongSigId(E, longsigid)
+          of SOME(Sig I) => SOME I
+           | _           => NONE
 end;

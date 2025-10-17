@@ -15,7 +15,7 @@ sig
 
     (* Type [Section 6.2] *)
 
-    eqtype ExName					(* [en] *)
+    eqtype ExName                                       (* [en] *)
 
 
     (* Operations *)

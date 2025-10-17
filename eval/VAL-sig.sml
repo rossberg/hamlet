@@ -15,17 +15,17 @@ signature VAL =
 sig
     (* Import *)
 
-    type Val		= DynamicObjectsCore.Val
-    type ExVal		= DynamicObjectsCore.ExVal
-    type ExName		= DynamicObjectsCore.ExName
+    type Val            = DynamicObjectsCore.Val
+    type ExVal          = DynamicObjectsCore.ExVal
+    type ExName         = DynamicObjectsCore.ExName
 
 
     (* Operations *)
 
-    val equal :		Val * Val -> bool
+    val equal :         Val * Val -> bool
 
-    val exname :	ExVal -> ExName
+    val exname :        ExVal -> ExName
 
-    val toPair :	Val -> (Val * Val) option
-    val toList :	Val -> Val list option
+    val toPair :        Val -> (Val * Val) option
+    val toList :        Val -> Val list option
 end;

@@ -6,6 +6,6 @@
 
 signature USE =
 sig
-    val enqueue : string -> unit		(* may raise Path *)
+    val enqueue : string -> unit                (* may raise Path *)
     val extract : unit -> string option
 end;

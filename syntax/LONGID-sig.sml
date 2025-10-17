@@ -22,21 +22,21 @@ sig
 
     (* Type [Section 2.4] *)
 
-    eqtype longId				(* [longid] *)
+    eqtype longId                               (* [longid] *)
 
 
     (* Operations *)
 
-    val invent :	unit   -> longId
-    val fromId :	Id     -> longId
-    val toId :		longId -> Id
-    val toString :	longId -> string
+    val invent :        unit   -> longId
+    val fromId :        Id     -> longId
+    val toId :          longId -> Id
+    val toString :      longId -> string
 
-    val strengthen :	StrId * longId -> longId
-    val implode :	StrId list * Id -> longId
-    val explode :	longId -> StrId list * Id
+    val strengthen :    StrId * longId -> longId
+    val implode :       StrId list * Id -> longId
+    val explode :       longId -> StrId list * Id
 
-    val isUnqualified :	longId -> bool
+    val isUnqualified : longId -> bool
 
-    val compare :	longId * longId -> order
+    val compare :       longId * longId -> order
 end;

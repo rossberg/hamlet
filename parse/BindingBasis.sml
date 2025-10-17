@@ -45,12 +45,12 @@ struct
 
     fun findStrId(E, strid) = BindingEnv.findStrId(E, strid)
     fun findSigId(E, sigid) = case BindingEnv.findSigId(E, sigid)
-				of SOME(Sig M) => SOME M
-				 | _ => NONE
+                                of SOME(Sig M) => SOME M
+                                 | _ => NONE
 
     fun findLongTyCon(E, longtycon) = BindingEnv.findLongTyCon(E, longtycon)
     fun findLongStrId(E, longstrid) = BindingEnv.findLongStrId(E, longstrid)
     fun findLongSigId(E, longsigid) = case BindingEnv.findLongSigId(E,longsigid)
-					of SOME(Sig M) => SOME M
-					 | _ => NONE
+                                        of SOME(Sig M) => SOME M
+                                         | _ => NONE
 end;

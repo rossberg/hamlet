@@ -14,10 +14,10 @@
 functor FinSetFn(Key : ORD_KEY) :>
 FIN_SET where type Key.ord_key = Key.ord_key =
 struct
-    structure BinarySet	= BinarySetFn(Key)
+    structure BinarySet = BinarySetFn(Key)
     open BinarySet
 
-    exception NotFound	= LibBase.NotFound
+    exception NotFound  = LibBase.NotFound
 
-    fun fromList xs	= addList(empty, xs)
+    fun fromList xs     = addList(empty, xs)
 end;

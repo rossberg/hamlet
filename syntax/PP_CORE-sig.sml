@@ -24,11 +24,11 @@ sig
     structure PPModule :
     sig
         val ppLongSigId :
-	    (TextIO.outstream * int * IdsModule.longSigId -> unit) ref
+            (TextIO.outstream * int * IdsModule.longSigId -> unit) ref
         val ppStrExp :
-	    (TextIO.outstream * int * GrammarModule.StrExp -> unit) ref
+            (TextIO.outstream * int * GrammarModule.StrExp -> unit) ref
         val ppStrDec :
-	    (TextIO.outstream * int * GrammarCore.StrDec' -> unit) ref
+            (TextIO.outstream * int * GrammarCore.StrDec' -> unit) ref
     end
 
     val ppVId :       TextIO.outstream * int * VId -> unit

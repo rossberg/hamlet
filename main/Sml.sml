@@ -31,13 +31,13 @@ struct
     fun parseArg (JB,B,s) = JB
 
     fun parse (J, B_BIND) (filenameOpt, source) =
-	let
-	    val (J',program) = Parse.parse(J, source, filenameOpt)
-	    val  B_BIND'     = checkProgram(B_BIND, program)
-	    val  _           = PPProgram.ppProgram(TextIO.stdOut, 0, program)
-	in
-	    (J', B_BIND')
-	end
+        let
+            val (J',program) = Parse.parse(J, source, filenameOpt)
+            val  B_BIND'     = checkProgram(B_BIND, program)
+            val  _           = PPProgram.ppProgram(TextIO.stdOut, 0, program)
+        in
+            (J', B_BIND')
+        end
 
 
     (* Parsing and elaboration *)
@@ -45,13 +45,13 @@ struct
     fun elabArg ((J,B_BIND), (B_STAT,B_DYN), s) = (J, B_BIND, B_STAT)
 
     fun elab (J, B_BIND, B_STAT) (filenameOpt, source) =
-	let
-	    val (J',program) = Parse.parse(J, source, filenameOpt)
-	    val  B_BIND'     = checkProgram(B_BIND, program)
-	    val  B_STAT'     = Program.elabProgram true (B_STAT, program)
-	in
-	    (J', B_BIND', B_STAT')
-	end
+        let
+            val (J',program) = Parse.parse(J, source, filenameOpt)
+            val  B_BIND'     = checkProgram(B_BIND, program)
+            val  B_STAT'     = Program.elabProgram true (B_STAT, program)
+        in
+            (J', B_BIND', B_STAT')
+        end
 
 
     (* Parsing and evaluation *)
@@ -59,14 +59,14 @@ struct
     fun evalArg ((J,B_BIND), (B_STAT,B_DYN), s) = (J, B_BIND, B_DYN, s)
 
     fun eval (J, B_BIND, B_DYN, s) (filenameOpt, source) =
-	let
-	    val (J',program) = Parse.parse(J, source, filenameOpt)
-	    val  B_BIND'     = checkProgram(B_BIND, program)
-	    val  s'          = ref s
-	    val  B_DYN'      = Program.evalProgram true (s', B_DYN, program)
-	in
-	    (J', B_BIND', B_DYN', !s')
-	end
+        let
+            val (J',program) = Parse.parse(J, source, filenameOpt)
+            val  B_BIND'     = checkProgram(B_BIND, program)
+            val  s'          = ref s
+            val  B_DYN'      = Program.evalProgram true (s', B_DYN, program)
+        in
+            (J', B_BIND', B_DYN', !s')
+        end
 
 
     (* Parsing, elaboration, and evaluation *)
@@ -74,14 +74,14 @@ struct
     fun execArg arg = arg
 
     fun exec' echo ((J,B_BIND), B, s) (filenameOpt, source) =
-	let
-	    val (J',program) = Parse.parse(J, source, filenameOpt)
-	    val  B_BIND'     = checkProgram(B_BIND, program)
-	    val  s'          = ref s
-	    val  B'          = Program.execProgram echo (s', B, program)
-	in
-	    ((J',B_BIND'), B', !s' )
-	end
+        let
+            val (J',program) = Parse.parse(J, source, filenameOpt)
+            val  B_BIND'     = checkProgram(B_BIND, program)
+            val  s'          = ref s
+            val  B'          = Program.execProgram echo (s', B, program)
+        in
+            ((J',B_BIND'), B', !s' )
+        end
 
     val exec = exec' true
 
@@ -89,52 +89,52 @@ struct
     (* Process the `use' queue *)
 
     fun uses fromFile (process, arg) =
-	case Use.extract()
-	  of NONE      => arg
-	   | SOME name => uses fromFile (process, fromFile (process, arg) name)
+        case Use.extract()
+          of NONE      => arg
+           | SOME name => uses fromFile (process, fromFile (process, arg) name)
 
 
     (* Processing of strings *)
 
     fun fromString'' fromUsedFile (process, arg) (filenameOpt, source) =
-	let
-	    val arg' = process arg (filenameOpt, source)
-		       handle Error.Error => arg	(* Syntax error *)
-	in
-	    uses fromUsedFile (process, arg')
-	end
+        let
+            val arg' = process arg (filenameOpt, source)
+                       handle Error.Error => arg        (* Syntax error *)
+        in
+            uses fromUsedFile (process, arg')
+        end
 
     fun fromString' fromUsedFile (process, arg) source =
-	fromString'' fromUsedFile (process, arg) (NONE, source)
+        fromString'' fromUsedFile (process, arg) (NONE, source)
 
     fun fromInput' fromUsedFile (process, arg) (n, source) =
-	fromString'' fromUsedFile (process, arg)
-		     (SOME("(input "^Int.toString n^")"), source)
+        fromString'' fromUsedFile (process, arg)
+                     (SOME("(input "^Int.toString n^")"), source)
 
 
     (* Processing of files *)
 
     fun fromFile' fromUsedFile (process, arg) name =
-	let
-	    val file   = TextIO.openIn name
-	    val source = TextIO.inputAll file ^ ";"
-	    val _      = TextIO.closeIn file
-	    val dir    = OS.FileSys.getDir()
-	    val dir'   = case OS.Path.dir name of ""   => OS.Path.currentArc
-						| dir' => dir'
-	in
-	    OS.FileSys.chDir dir';
-	    fromString'' fromUsedFile (process, arg) (SOME name, source)
-	    before OS.FileSys.chDir dir
-	end
-	handle IO.Io _ =>
-	    ( TextIO.output(TextIO.stdErr, name ^ ": read error\n") ; arg )
+        let
+            val file   = TextIO.openIn name
+            val source = TextIO.inputAll file ^ ";"
+            val _      = TextIO.closeIn file
+            val dir    = OS.FileSys.getDir()
+            val dir'   = case OS.Path.dir name of ""   => OS.Path.currentArc
+                                                | dir' => dir'
+        in
+            OS.FileSys.chDir dir';
+            fromString'' fromUsedFile (process, arg) (SOME name, source)
+            before OS.FileSys.chDir dir
+        end
+        handle IO.Io _ =>
+            ( TextIO.output(TextIO.stdErr, name ^ ": read error\n") ; arg )
 
     fun fromFileLogged (process, arg) name =
-	( TextIO.output(TextIO.stdOut, "[processing " ^ name ^ "]\n")
-	; TextIO.flushOut TextIO.stdOut
-	; fromFile' fromFileLogged (process, arg) name
-	)
+        ( TextIO.output(TextIO.stdOut, "[processing " ^ name ^ "]\n")
+        ; TextIO.flushOut TextIO.stdOut
+        ; fromFile' fromFileLogged (process, arg) name
+        )
 
     fun fromString args    = fromString' fromFileLogged args
     fun fromInput args     = fromInput' fromFileLogged args
@@ -145,44 +145,44 @@ struct
     (* Processing several files mentioned in a list file *)
 
     fun fromFiles (process, initialArg) names =
-	List.foldl (fn (name, arg) =>
-		    fromFileLogged (process, initialArg) name) initialArg names
+        List.foldl (fn (name, arg) =>
+                    fromFileLogged (process, initialArg) name) initialArg names
 
 
     (* Session *)
 
     fun fromSession (process, initialArg) =
-	let
-	    fun inputLines prompt =
-		let
-		    val _    = TextIO.output(TextIO.stdOut, prompt)
-		    val _    = TextIO.flushOut TextIO.stdOut
-		    val line = TextIO.inputLine TextIO.stdIn
-		in
-		    case line
-		      of NONE      => nil
-		       | SOME "\n" => "\n" :: inputLines "  "
-		       | SOME text =>
-			 let
-			     val n = String.size text
-			 in
-			     if String.sub(text, n-2) = #";" andalso
-				(n < 3 orelse String.sub(text, n-3) <> #";")
-			     then
-				 text :: nil
-			     else
-				 text :: inputLines "  "
-			 end
-		end
+        let
+            fun inputLines prompt =
+                let
+                    val _    = TextIO.output(TextIO.stdOut, prompt)
+                    val _    = TextIO.flushOut TextIO.stdOut
+                    val line = TextIO.inputLine TextIO.stdIn
+                in
+                    case line
+                      of NONE      => nil
+                       | SOME "\n" => "\n" :: inputLines "  "
+                       | SOME text =>
+                         let
+                             val n = String.size text
+                         in
+                             if String.sub(text, n-2) = #";" andalso
+                                (n < 3 orelse String.sub(text, n-3) <> #";")
+                             then
+                                 text :: nil
+                             else
+                                 text :: inputLines "  "
+                         end
+                end
 
-	    fun loop(n, arg) =
-		case inputLines "- "
-		  of nil   => ()
-		   | lines => loop(n+1, fromInput (process, arg)
-						  (n, String.concat lines))
-	in
-	    loop(1, initialArg)
-	end
+            fun loop(n, arg) =
+                case inputLines "- "
+                  of nil   => ()
+                   | lines => loop(n+1, fromInput (process, arg)
+                                                  (n, String.concat lines))
+        in
+            loop(1, initialArg)
+        end
 
 
     (* Install library *)
@@ -190,21 +190,21 @@ struct
     val basisPath = ref "basis"
 
     fun loadLib() =
-	( TextIO.output(TextIO.stdOut, "[loading standard basis library]\n")
-	; TextIO.flushOut TextIO.stdOut
-	; fromFileQuiet (exec' false, initialArg')
-			(OS.Path.joinDirFile{dir  = !basisPath,
-					     file = Library.file})
-	)
-	handle IO.Io _ =>
-	( TextIO.output(TextIO.stdOut, "[library not found]\n")
-	; initialArg
-	)
+        ( TextIO.output(TextIO.stdOut, "[loading standard basis library]\n")
+        ; TextIO.flushOut TextIO.stdOut
+        ; fromFileQuiet (exec' false, initialArg')
+                        (OS.Path.joinDirFile{dir  = !basisPath,
+                                             file = Library.file})
+        )
+        handle IO.Io _ =>
+        ( TextIO.output(TextIO.stdOut, "[library not found]\n")
+        ; initialArg
+        )
 
     val libRef = ref(NONE : arg option)
 
-    fun lib() =	case !libRef of SOME arg => arg
-			      | NONE => ( libRef := SOME(loadLib()); lib() )
+    fun lib() = case !libRef of SOME arg => arg
+                              | NONE => ( libRef := SOME(loadLib()); lib() )
 
 
     (* Plumbing *)

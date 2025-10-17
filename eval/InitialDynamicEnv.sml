@@ -83,16 +83,16 @@ struct
 
     val VEUnit   = VIdMap.empty
     val VEBool   = VIdMap.fromList[(vidFalse, valstrFalse),
-				   (vidTrue,  valstrTrue)] : ValEnv
+                                   (vidTrue,  valstrTrue)] : ValEnv
     val VEInt    = VIdMap.empty
     val VEWord   = VIdMap.empty
     val VEReal   = VIdMap.empty
     val VEString = VIdMap.empty
     val VEChar   = VIdMap.empty
     val VEOption = VIdMap.fromList[(vidNONE,  valstrNONE),
-				   (vidSOME,  valstrSOME)] : ValEnv
+                                   (vidSOME,  valstrSOME)] : ValEnv
     val VEList   = VIdMap.fromList[(vidNil,   valstrNil),
-				   (vidCons,  valstrCons)] : ValEnv
+                                   (vidCons,  valstrCons)] : ValEnv
     val VERef    = VIdMap.fromList[(vidRef,   valstrRef)] : ValEnv
     val VEExn    = VIdMap.empty
 
@@ -105,28 +105,28 @@ struct
     val SE0 = StrIdMap.empty
 
     val TE0 = TyConMap.fromList[(tyconUnit,   VEUnit),
- 				(tyconBool,   VEBool),
- 				(tyconInt,    VEInt),
- 				(tyconWord,   VEWord),
- 				(tyconReal,   VEReal),
- 				(tyconString, VEString),
- 				(tyconChar,   VEChar),
- 				(tyconOption, VEOption),
- 				(tyconList,   VEList),
- 				(tyconRef,    VERef),
- 				(tyconExn,    VEExn)]
+                                (tyconBool,   VEBool),
+                                (tyconInt,    VEInt),
+                                (tyconWord,   VEWord),
+                                (tyconReal,   VEReal),
+                                (tyconString, VEString),
+                                (tyconChar,   VEChar),
+                                (tyconOption, VEOption),
+                                (tyconList,   VEList),
+                                (tyconRef,    VERef),
+                                (tyconExn,    VEExn)]
 
     val VE0 = VIdMap.fromList  [(vidEq,     valstrEq),
-				(vidAssign, valstrAssign),
-				(vidRef,    valstrRef),
-				(vidNil,    valstrNil),
-				(vidCons,   valstrCons),
-				(vidNONE,   valstrNONE),
-				(vidSOME,   valstrSOME),
-				(vidFalse,  valstrFalse),
-				(vidTrue,   valstrTrue),
-				(vidMatch,  valstrMatch),
-				(vidBind,   valstrBind)] : ValEnv
+                                (vidAssign, valstrAssign),
+                                (vidRef,    valstrRef),
+                                (vidNil,    valstrNil),
+                                (vidCons,   valstrCons),
+                                (vidNONE,   valstrNONE),
+                                (vidSOME,   valstrSOME),
+                                (vidFalse,  valstrFalse),
+                                (vidTrue,   valstrTrue),
+                                (vidMatch,  valstrMatch),
+                                (vidBind,   valstrBind)] : ValEnv
 
     val E0 = Env(G0,SE0,TE0,VE0)
 

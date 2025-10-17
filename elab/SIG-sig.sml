@@ -20,14 +20,14 @@ sig
 
     (* Operations *)
 
-    val tyvars :	Sig -> TyVarSet
-    val tynames :	Sig -> TyNameSet
-    val undetermined :	Sig -> bool StampMap.map
+    val tyvars :        Sig -> TyVarSet
+    val tynames :       Sig -> TyNameSet
+    val undetermined :  Sig -> bool StampMap.map
 
-    val rename :	Sig -> Sig
-    val realise :	Realisation -> Sig -> Sig
+    val rename :        Sig -> Sig
+    val realise :       Realisation -> Sig -> Sig
 
     exception Match
-    val match :		Mod * Sig -> Mod * Realisation (* Match *)
-    val matches :	Sig * Sig -> bool
+    val match :         Mod * Sig -> Mod * Realisation (* Match *)
+    val matches :       Sig * Sig -> bool
 end;

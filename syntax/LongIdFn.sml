@@ -11,10 +11,10 @@
  *)
 
 functor LongIdFn(structure Id :    ID
-		 structure StrId : ID
-		) :> LONGID where type Id.Id    = Id.Id
-			(**)where type StrId.Id = StrId.Id
-		  =
+                 structure StrId : ID
+                ) :> LONGID where type Id.Id    = Id.Id
+                        (**)where type StrId.Id = StrId.Id
+                  =
 struct
 
     (* Import *)
@@ -28,7 +28,7 @@ struct
 
     (* Type [Section 2.4] *)
 
-    type longId	= StrId list * Id			(* [longid] *)
+    type longId = StrId list * Id                       (* [longid] *)
 
 
     (* Conversions *)
@@ -38,12 +38,12 @@ struct
     fun invent()        = ([],Id.invent())
 
     fun toString(strids, id) =
-	let
-	    fun prefix   []     = Id.toString id
-	      | prefix(id::ids) = StrId.toString id ^ "." ^ prefix ids
-	in
-	    prefix strids
-	end
+        let
+            fun prefix   []     = Id.toString id
+              | prefix(id::ids) = StrId.toString id ^ "." ^ prefix ids
+        in
+            prefix strids
+        end
 
     fun strengthen(strid, (strids, id)) = (strid::strids, id)
 
@@ -56,5 +56,5 @@ struct
     (* Ordering *)
 
     fun compare(longid1, longid2) =
-	    String.compare(toString longid1, toString longid2)
+            String.compare(toString longid1, toString longid2)
 end;

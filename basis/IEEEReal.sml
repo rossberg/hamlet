@@ -10,9 +10,9 @@ structure IEEEReal :> IEEE_REAL =
 struct
     exception Unordered
 
-    datatype real_order		= LESS | EQUAL | GREATER | UNORDERED
-    datatype rounding_mode	= TO_NEAREST | TO_NEGINF | TO_POSINF | TO_ZERO
-    datatype float_class	= NAN | INF | ZERO | NORMAL | SUBNORMAL
+    datatype real_order         = LESS | EQUAL | GREATER | UNORDERED
+    datatype rounding_mode      = TO_NEAREST | TO_NEGINF | TO_POSINF | TO_ZERO
+    datatype float_class        = NAN | INF | ZERO | NORMAL | SUBNORMAL
 (*
     val setRoundingMode : rounding_mode -> unit
     val getRoundingMode : unit -> rounding_mode

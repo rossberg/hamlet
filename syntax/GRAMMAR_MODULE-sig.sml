@@ -26,20 +26,20 @@ sig
 
     type Info
 
-    type VId		= Core.VId
-    type TyCon		= Core.TyCon
-    type TyVar		= Core.TyVar
-    type StrId		= Core.StrId
-    type longVId	= Core.longVId
-    type longTyCon	= Core.longTyCon
-    type longStrId	= Core.longStrId
-    type AtExp		= Core.AtExp
-    type Dec		= Core.Dec
-    type Ty		= Core.Ty
-    type TyVarseq	= Core.TyVarseq
+    type VId            = Core.VId
+    type TyCon          = Core.TyCon
+    type TyVar          = Core.TyVar
+    type StrId          = Core.StrId
+    type longVId        = Core.longVId
+    type longTyCon      = Core.longTyCon
+    type longStrId      = Core.longStrId
+    type AtExp          = Core.AtExp
+    type Dec            = Core.Dec
+    type Ty             = Core.Ty
+    type TyVarseq       = Core.TyVarseq
 
-    type SigId		= SigId.Id
-    type longSigId	= LongSigId.longId
+    type SigId          = SigId.Id
+    type longSigId      = LongSigId.longId
 
 
     (* Structures [Figures 5 and 6; RFC: Higher-order functors;
@@ -47,15 +47,15 @@ sig
      *                              RFC: Local modules] *)
 
     datatype StrExp =
-	  STRUCTStrExp    of Info * Dec
-	| IDStrExp        of Info * longStrId
-	| COLONStrExp     of Info * StrExp * SigExp
-	| SEALStrExp      of Info * StrExp * SigExp
-	| UNPACKStrExp    of Info * AtExp * SigExp
-	| APPStrExp       of Info * StrExp * StrExp
-	| LETStrExp       of Info * Dec * StrExp
-	| FCTStrExp       of Info * StrId * SigExp * StrExp
-	| PARStrExp       of Info * StrExp
+          STRUCTStrExp    of Info * Dec
+        | IDStrExp        of Info * longStrId
+        | COLONStrExp     of Info * StrExp * SigExp
+        | SEALStrExp      of Info * StrExp * SigExp
+        | UNPACKStrExp    of Info * AtExp * SigExp
+        | APPStrExp       of Info * StrExp * StrExp
+        | LETStrExp       of Info * Dec * StrExp
+        | FCTStrExp       of Info * StrId * SigExp * StrExp
+        | PARStrExp       of Info * StrExp
 
     and StrDec =
           STRUCTUREStrDec of Info * StrBind
@@ -69,11 +69,11 @@ sig
 
     and SigExp =
           SIGSigExp       of Info * Spec
-	| IDSigExp        of Info * longSigId
+        | IDSigExp        of Info * longSigId
         | WHERETYPESigExp of Info * SigExp * TyVarseq * longTyCon * Ty
-	| FCTSigExp       of Info * StrId * SigExp * SigExp
-	| FCTSPECSigExp   of Info * Spec * SigExp
-	| PARSigExp       of Info * SigExp
+        | FCTSigExp       of Info * StrId * SigExp * SigExp
+        | FCTSPECSigExp   of Info * Spec * SigExp
+        | PARSigExp       of Info * SigExp
 
     (* Removed SigDec [RFC: Nested signatures] *)
 
@@ -83,35 +83,35 @@ sig
     (* Specifications [Figures 5 and 7; RFC: Nested signatures] *)
 
     and Spec =
-	  VALSpec         of Info * ValDesc
-	| TYPESpec        of Info * TypDesc
-	| EQTYPESpec      of Info * TypDesc
-	| DATATYPESpec    of Info * DatDesc
-	| VIEWTYPESpec    of Info * TyVarseq * TyCon * Ty * ConDesc
-	| DATATYPE2Spec   of Info * TyCon * longTyCon
-	| EXCEPTIONSpec   of Info * ExDesc
-	| STRUCTURESpec   of Info * StrDesc
+          VALSpec         of Info * ValDesc
+        | TYPESpec        of Info * TypDesc
+        | EQTYPESpec      of Info * TypDesc
+        | DATATYPESpec    of Info * DatDesc
+        | VIEWTYPESpec    of Info * TyVarseq * TyCon * Ty * ConDesc
+        | DATATYPE2Spec   of Info * TyCon * longTyCon
+        | EXCEPTIONSpec   of Info * ExDesc
+        | STRUCTURESpec   of Info * StrDesc
         | SIGNATURESpec   of Info * SigDesc
-	| INCLUDESpec     of Info * SigExp
-	| EMPTYSpec       of Info
-	| SEQSpec         of Info * Spec * Spec
-	| SHARINGTYPESpec of Info * Spec * longTyCon list
-	| SHARINGSpec     of Info * Spec * longStrId list
+        | INCLUDESpec     of Info * SigExp
+        | EMPTYSpec       of Info
+        | SEQSpec         of Info * Spec * Spec
+        | SHARINGTYPESpec of Info * Spec * longTyCon list
+        | SHARINGSpec     of Info * Spec * longStrId list
 
     and ValDesc =
-	  ValDesc         of Info * VId * Ty * ValDesc option
+          ValDesc         of Info * VId * Ty * ValDesc option
 
     and TypDesc =
-	  TypDesc         of Info * TyVarseq * TyCon * TypDesc option
+          TypDesc         of Info * TyVarseq * TyCon * TypDesc option
 
     and DatDesc =
-	  DatDesc         of Info * TyVarseq * TyCon * ConDesc * DatDesc option
+          DatDesc         of Info * TyVarseq * TyCon * ConDesc * DatDesc option
 
     and ConDesc =
-	  ConDesc         of Info * VId * Ty option * ConDesc option
+          ConDesc         of Info * VId * Ty option * ConDesc option
 
     and ExDesc =
-	  ExDesc          of Info * VId * Ty option * ExDesc option
+          ExDesc          of Info * VId * Ty option * ExDesc option
 
     and StrDesc =
           StrDesc         of Info * StrId * SigExp * StrDesc option
@@ -139,18 +139,18 @@ sig
 
     (* Operations *)
 
-    val infoStrExp :	StrExp  -> Info
-    val infoStrDec :	StrDec  -> Info
-    val infoStrBind :	StrBind -> Info
-    val infoSigExp :	SigExp  -> Info
-    val infoSigBind :	SigBind -> Info
-    val infoSpec :	Spec    -> Info
-    val infoValDesc :	ValDesc -> Info
-    val infoTypDesc :	TypDesc -> Info
-    val infoDatDesc :	DatDesc -> Info
-    val infoConDesc :	ConDesc -> Info
-    val infoExDesc :	ExDesc  -> Info
-    val infoStrDesc :	StrDesc -> Info
-    val infoSigDesc :	SigDesc -> Info
-    val infoTopDec :	TopDec  -> Info
+    val infoStrExp :    StrExp  -> Info
+    val infoStrDec :    StrDec  -> Info
+    val infoStrBind :   StrBind -> Info
+    val infoSigExp :    SigExp  -> Info
+    val infoSigBind :   SigBind -> Info
+    val infoSpec :      Spec    -> Info
+    val infoValDesc :   ValDesc -> Info
+    val infoTypDesc :   TypDesc -> Info
+    val infoDatDesc :   DatDesc -> Info
+    val infoConDesc :   ConDesc -> Info
+    val infoExDesc :    ExDesc  -> Info
+    val infoStrDesc :   StrDesc -> Info
+    val infoSigDesc :   SigDesc -> Info
+    val infoTopDec :    TopDec  -> Info
 end;

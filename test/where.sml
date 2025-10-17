@@ -8,7 +8,7 @@ sig
     type s = t
 end where type s = int;
 
-signature T =	(* due to Martin Elsman, also see SML/NJ bug 1330 *)
+signature T =   (* due to Martin Elsman, also see SML/NJ bug 1330 *)
 sig
     type s
     structure U :

@@ -13,7 +13,7 @@ structure Word8Array : MONO_ARRAY
 struct
     open Array
 
-    type elem	= Word8.word
-    type vector	= Word8Vector.vector
-    type array	= elem array
+    type elem   = Word8.word
+    type vector = Word8Vector.vector
+    type array  = elem array
 end;

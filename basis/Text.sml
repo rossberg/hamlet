@@ -15,11 +15,11 @@ structure Text :> TEXT
     where type CharVectorSlice.slice = CharVectorSlice.slice
     where type CharArraySlice.slice = CharArraySlice.slice =
 struct
-    structure Char	      = Char
-    structure String	      = String
-    structure Substring	      = Substring
+    structure Char            = Char
+    structure String          = String
+    structure Substring       = Substring
     structure CharVector      = CharVector
-    structure CharArray	      = CharArray
+    structure CharArray       = CharArray
     structure CharVectorSlice = CharVectorSlice
     structure CharArraySlice  = CharArraySlice
 end;

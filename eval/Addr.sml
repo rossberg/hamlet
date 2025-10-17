@@ -10,7 +10,7 @@ structure Addr :> ADDR =
 struct
     (* Type [Section 6.2] *)
 
-    type Addr =	Stamp.stamp				(* [a] *)
+    type Addr = Stamp.stamp                             (* [a] *)
 
     (* Operations *)
 
@@ -19,4 +19,4 @@ struct
 end
 
 structure AddrMap = FinMapFn(type ord_key = Addr.Addr
-			     val  compare = Addr.compare);
+                             val  compare = Addr.compare);

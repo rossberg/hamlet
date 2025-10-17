@@ -11,5 +11,5 @@ struct
     open OS
 
     type syserror = int
-    exception SysErr of string * syserror option	(* defunct dummy *)
+    exception SysErr of string * syserror option        (* defunct dummy *)
 end;

@@ -4,14 +4,14 @@
  * Standard ML Basis Library top-level exceptions
  *)
 
-exception Bind		= Bind
-exception Chr		= Chr
-exception Div		= Div
-exception Domain	= Domain
+exception Bind          = Bind
+exception Chr           = Chr
+exception Div           = Div
+exception Domain        = Domain
 exception Empty
 exception Fail of string 
-exception Match		= Match
-exception Overflow	= Overflow
-exception Size		= Size
+exception Match         = Match
+exception Overflow      = Overflow
+exception Size          = Size
 exception Span
-exception Subscript	= Subscript;
+exception Subscript     = Subscript;

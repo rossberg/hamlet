@@ -18,15 +18,15 @@ sig
     (* [RFC: Extended literal syntax] *)
     datatype base = DEC | HEX | BIN
 
-    datatype SCon =				(* [scon] *)
-	  INT    of base * string * TyName option ref
-	| WORD   of base * string * TyName option ref
-	| STRING of string * TyName option ref
-	| CHAR   of string * TyName option ref
-	| REAL   of string * TyName option ref
+    datatype SCon =                             (* [scon] *)
+          INT    of base * string * TyName option ref
+        | WORD   of base * string * TyName option ref
+        | STRING of string * TyName option ref
+        | CHAR   of string * TyName option ref
+        | REAL   of string * TyName option ref
 
     (* Operations *)
 
-    val toString :	SCon -> string
-    val tyname :	SCon -> TyName option
+    val toString :      SCon -> string
+    val tyname :        SCon -> TyName option
 end;

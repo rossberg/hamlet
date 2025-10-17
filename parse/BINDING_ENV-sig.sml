@@ -9,9 +9,9 @@ sig
     (* Inheritance *)
 
     include GENERIC_ENV
-    where type Env	= BindingObjectsCore.Env
-(**)where type ValStr	= BindingObjectsCore.IdStatus
-(**)where type TyStr	= BindingObjectsCore.ValEnv
-(**)where type ModStr	= BindingObjectsCore.Mod
-(**)where type SigStr	= BindingObjectsCore.Sig'
+    where type Env      = BindingObjectsCore.Env
+(**)where type ValStr   = BindingObjectsCore.IdStatus
+(**)where type TyStr    = BindingObjectsCore.ValEnv
+(**)where type ModStr   = BindingObjectsCore.Mod
+(**)where type SigStr   = BindingObjectsCore.Sig'
 end;

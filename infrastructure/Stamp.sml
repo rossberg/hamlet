@@ -19,4 +19,4 @@ struct
 end
 
 structure StampMap = FinMapFn(type ord_key = Stamp.stamp
-			      val  compare = Stamp.compare);
+                              val  compare = Stamp.compare);

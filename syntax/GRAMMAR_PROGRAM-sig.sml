@@ -12,7 +12,7 @@ sig
 
     structure Module : GRAMMAR_MODULE
 
-    type Info	= Module.Info
+    type Info   = Module.Info
 
     type TopDec = Module.TopDec
 

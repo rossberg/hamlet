@@ -70,11 +70,11 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
     datatype set
       = E 
       | T of {
-	  elt : item, 
+          elt : item, 
           cnt : int, 
           left : set,
           right : set
-	}
+        }
 
     fun numItems E = 0
       | numItems (T{cnt,...}) = cnt
@@ -270,16 +270,16 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
     val add = add
 
     fun member (set, x) = let
-	  fun pk E = false
-	    | pk (T{elt=v, left=l, right=r, ...}) = (
-		case K.compare(x,v)
-		 of LESS => pk l
-		  | EQUAL => true
-		  | GREATER => pk r
-		(* end case *))
-	  in
-	    pk set
-	  end
+          fun pk E = false
+            | pk (T{elt=v, left=l, right=r, ...}) = (
+                case K.compare(x,v)
+                 of LESS => pk l
+                  | EQUAL => true
+                  | GREATER => pk r
+                (* end case *))
+          in
+            pk set
+          end
 
     local
         (* true if every item in t is in t' *)
@@ -309,24 +309,24 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
 
     local
       fun next ((t as T{right, ...})::rest) = (t, left(right, rest))
-	| next _ = (E, [])
+        | next _ = (E, [])
       and left (E, rest) = rest
-	| left (t as T{left=l, ...}, rest) = left(l, t::rest)
+        | left (t as T{left=l, ...}, rest) = left(l, t::rest)
     in
     fun compare (s1, s2) = let
-	  fun cmp (t1, t2) = (case (next t1, next t2)
-		 of ((E, _), (E, _)) => EQUAL
-		  | ((E, _), _) => LESS
-		  | (_, (E, _)) => GREATER
-		  | ((T{elt=e1, ...}, r1), (T{elt=e2, ...}, r2)) => (
-		      case Key.compare(e1, e2)
-		       of EQUAL => cmp (r1, r2)
-			| order => order
-		      (* end case *))
-		(* end case *))
-	  in
-	    cmp (left(s1, []), left(s2, []))
-	  end
+          fun cmp (t1, t2) = (case (next t1, next t2)
+                 of ((E, _), (E, _)) => EQUAL
+                  | ((E, _), _) => LESS
+                  | (_, (E, _)) => GREATER
+                  | ((T{elt=e1, ...}, r1), (T{elt=e2, ...}, r2)) => (
+                      case Key.compare(e1, e2)
+                       of EQUAL => cmp (r1, r2)
+                        | order => order
+                      (* end case *))
+                (* end case *))
+          in
+            cmp (left(s1, []), left(s2, []))
+          end
     end
 
     fun delete (E,x) = raise LibBase.NotFound
@@ -341,12 +341,12 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
     fun intersection (E, _) = E
       | intersection (_, E) = E
       | intersection (s, T{elt=v,left=l,right=r,...}) = let
-	  val l2 = split_lt(s,v)
-	  val r2 = split_gt(s,v)
+          val l2 = split_lt(s,v)
+          val r2 = split_gt(s,v)
           in
             if member(s,v)
-	      then concat3(intersection(l2,l),v,intersection(r2,r))
-	      else concat(intersection(l2,l),intersection(r2,r))
+              then concat3(intersection(l2,l),v,intersection(r2,r))
+              else concat(intersection(l2,l),intersection(r2,r))
           end
 
     fun difference (E,s) = E
@@ -359,12 +359,12 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
           end
 
     fun map f set = let
-	  fun map'(acc, E) = acc
-	    | map'(acc, T{elt,left,right,...}) =
-		map' (add (map' (acc, left), f elt), right)
-	  in 
-	    map' (E, set)
-	  end
+          fun map'(acc, E) = acc
+            | map'(acc, T{elt,left,right,...}) =
+                map' (add (map' (acc, left), f elt), right)
+          in 
+            map' (E, set)
+          end
 
     fun app apf =
          let fun apply E = ()
@@ -375,17 +375,17 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
          end
 
     fun foldl f b set = let
-	  fun foldf (E, b) = b
-	    | foldf (T{elt,left,right,...}, b) = 
-		foldf (right, f(elt, foldf (left, b)))
+          fun foldf (E, b) = b
+            | foldf (T{elt,left,right,...}, b) = 
+                foldf (right, f(elt, foldf (left, b)))
           in
             foldf (set, b)
           end
 
     fun foldr f b set = let
-	  fun foldf (E, b) = b
-	    | foldf (T{elt,left,right,...}, b) = 
-		foldf (left, f(elt, foldf (right, b)))
+          fun foldf (E, b) = b
+            | foldf (T{elt,left,right,...}, b) = 
+                foldf (left, f(elt, foldf (right, b)))
           in
             foldf (set, b)
           end
@@ -393,20 +393,20 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
     fun listItems set = foldr (op::) [] set
 
     fun filter pred set =
-	  foldl (fn (item, s) => if (pred item) then add(s, item) else s)
-	    empty set
+          foldl (fn (item, s) => if (pred item) then add(s, item) else s)
+            empty set
 
     fun find p E = NONE
       | find p (T{elt,left,right,...}) = (case find p left
-	   of NONE => if (p elt)
-		then SOME elt
-		else find p right
-	    | a => a
-	  (* end case *))
+           of NONE => if (p elt)
+                then SOME elt
+                else find p right
+            | a => a
+          (* end case *))
 
     fun exists p E = false
       | exists p (T{elt, left, right,...}) =
-	  (exists p left) orelse (p elt) orelse (exists p right)
+          (exists p left) orelse (p elt) orelse (exists p right)
 
   end (* BinarySetFn *)
 ;

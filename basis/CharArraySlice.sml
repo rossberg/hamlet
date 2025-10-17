@@ -12,20 +12,20 @@ structure CharArraySlice :> MONO_ARRAY_SLICE
 struct
     open ArraySlice
 
-    type elem		= Char.char
-    type vector		= CharVector.vector
-    type array		= elem array
-    type slice		= elem slice
-    type vector_slice	= CharVectorSlice.slice
+    type elem           = Char.char
+    type vector         = CharVector.vector
+    type array          = elem array
+    type slice          = elem slice
+    type vector_slice   = CharVectorSlice.slice
 
-    fun vector sl	= CharVector.tabulate(length sl, fn i => sub (sl,i))
+    fun vector sl       = CharVector.tabulate(length sl, fn i => sub (sl,i))
 
     fun copyVec{src, dst, di} =
-	if di < 0 orelse Array.length dst < di + CharVectorSlice.length src
-	then raise Subscript
-	else copyVec'(src, dst, di, 0)
+        if di < 0 orelse Array.length dst < di + CharVectorSlice.length src
+        then raise Subscript
+        else copyVec'(src, dst, di, 0)
     and copyVec'(src, dst, di, i) =
-	if i = CharVectorSlice.length src then () else
-	( Array.update(dst, di+i, CharVectorSlice.sub(src, i));
-	  copyVec'(src, dst, di, i+1) )
+        if i = CharVectorSlice.length src then () else
+        ( Array.update(dst, di+i, CharVectorSlice.sub(src, i));
+          copyVec'(src, dst, di, i+1) )
 end;

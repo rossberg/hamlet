@@ -11,6 +11,6 @@ structure Word8Vector : MONO_VECTOR
 struct
     open Vector
 
-    type elem	= Word8.word
-    type vector	= elem vector
+    type elem   = Word8.word
+    type vector = elem vector
 end;

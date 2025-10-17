@@ -12,7 +12,7 @@ signature REAL =
 sig
     type real
     structure Math : MATH
-	where type real = real
+        where type real = real
 (*
     val radix : int
     val precision : int

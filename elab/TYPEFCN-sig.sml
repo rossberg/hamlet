@@ -13,33 +13,33 @@ signature TYPEFCN =
 sig
     (* Import *)
 
-    type Type			= StaticObjectsCore.Type
-    type TypeFcn		= StaticObjectsCore.TypeFcn
-    type TyVar			= StaticObjectsCore.TyVar
-    type TyName			= StaticObjectsCore.TyName
-    type TyVarSet		= StaticObjectsCore.TyVarSet
-    type TyNameSet		= StaticObjectsCore.TyNameSet
-    type Realisation		= Type.Realisation
+    type Type                   = StaticObjectsCore.Type
+    type TypeFcn                = StaticObjectsCore.TypeFcn
+    type TyVar                  = StaticObjectsCore.TyVar
+    type TyName                 = StaticObjectsCore.TyName
+    type TyVarSet               = StaticObjectsCore.TyVarSet
+    type TyNameSet              = StaticObjectsCore.TyNameSet
+    type Realisation            = Type.Realisation
 
 
     (* Operations *)
 
-    val fromTyName :		TyName  -> TypeFcn
-    val toTyName :		TypeFcn -> TyName option
+    val fromTyName :            TyName  -> TypeFcn
+    val toTyName :              TypeFcn -> TyName option
 
-    val arity :			TypeFcn -> int
-    val admitsEquality :	TypeFcn -> bool
+    val arity :                 TypeFcn -> int
+    val admitsEquality :        TypeFcn -> bool
 
-    val tyvars :		TypeFcn -> TyVarSet
-    val tynames :		TypeFcn -> TyNameSet
-    val undetermined :		TypeFcn -> bool StampMap.map
-    val normalise :		TypeFcn -> TypeFcn
-    val rename :		TypeFcn -> TypeFcn
+    val tyvars :                TypeFcn -> TyVarSet
+    val tynames :               TypeFcn -> TyNameSet
+    val undetermined :          TypeFcn -> bool StampMap.map
+    val normalise :             TypeFcn -> TypeFcn
+    val rename :                TypeFcn -> TypeFcn
 
-    val equals :		TypeFcn * TypeFcn -> bool
+    val equals :                TypeFcn * TypeFcn -> bool
 
     exception Apply
-    val apply :			Type list * TypeFcn -> Type (* raises Apply *)
+    val apply :                 Type list * TypeFcn -> Type (* raises Apply *)
 
-    val realise :		Realisation -> TypeFcn -> TypeFcn
+    val realise :               Realisation -> TypeFcn -> TypeFcn
 end;

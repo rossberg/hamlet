@@ -14,14 +14,14 @@ signature ID =
 sig
     (* Type [Section 2.4] *)
 
-    eqtype Id					(* [id] *)
+    eqtype Id                                   (* [id] *)
 
     (* Operations *)
 
-    val invent :	unit -> Id
+    val invent :        unit -> Id
 
-    val fromString :	string -> Id
-    val toString :	Id -> string
+    val fromString :    string -> Id
+    val toString :      Id -> string
 
-    val compare :	Id * Id -> order
+    val compare :       Id * Id -> order
 end;

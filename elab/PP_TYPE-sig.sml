@@ -16,10 +16,10 @@ sig
     (* Recursive import *)
 
     structure PPStaticEnv :
-	sig val ppSig : (TyNameSet * Mod -> PrettyPrint.doc) ref end
+        sig val ppSig : (TyNameSet * Mod -> PrettyPrint.doc) ref end
 
     (* Export *)
 
-    val ppType :	Type -> PrettyPrint.doc
-    val ppTypeScheme :	TypeScheme -> PrettyPrint.doc
+    val ppType :        Type -> PrettyPrint.doc
+    val ppTypeScheme :  TypeScheme -> PrettyPrint.doc
 end;

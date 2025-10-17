@@ -16,13 +16,13 @@ struct
     (* Operation *)
 
     fun checkProgram(B, Program(I, topdec, program_opt)) =
-	let
-	    val B1  = SyntacticRestrictionsModule.checkTopDec(B, topdec)
-	    val B'  = BindingBasis.plus(B, B1)
-	    val B'' = case program_opt
-			of NONE         => B'
-			 | SOME program => checkProgram(B', program)
-	in
-	    B''
-	end
+        let
+            val B1  = SyntacticRestrictionsModule.checkTopDec(B, topdec)
+            val B'  = BindingBasis.plus(B, B1)
+            val B'' = case program_opt
+                        of NONE         => B'
+                         | SOME program => checkProgram(B', program)
+        in
+            B''
+        end
 end;

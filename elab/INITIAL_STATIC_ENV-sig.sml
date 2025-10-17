@@ -19,24 +19,24 @@ sig
 
     (* Predefined monomorphic types [Figure 24] *)
 
-    val tBool :		TyName
-    val tInt :		TyName
-    val tWord :		TyName
-    val tReal :		TyName
-    val tString :	TyName
-    val tChar :		TyName
-    val tExn :		TyName
+    val tBool :         TyName
+    val tInt :          TyName
+    val tWord :         TyName
+    val tReal :         TyName
+    val tString :       TyName
+    val tChar :         TyName
+    val tExn :          TyName
 
-    val tauBool :	Type
-    val tauInt :	Type
-    val tauWord :	Type
-    val tauReal :	Type
-    val tauString :	Type
-    val tauChar :	Type
-    val tauExn :	Type
+    val tauBool :       Type
+    val tauInt :        Type
+    val tauWord :       Type
+    val tauReal :       Type
+    val tauString :     Type
+    val tauChar :       Type
+    val tauExn :        Type
 
     (* Initial environment [Appendix C] *)
 
-    val T0 :		TyNameSet
-    val E0 :		Env
+    val T0 :            TyNameSet
+    val E0 :            Env
 end;

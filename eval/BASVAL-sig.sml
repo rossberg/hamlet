@@ -10,8 +10,8 @@ signature BASVAL =
 sig
     (* Import *)
 
-    type BasVal	= DynamicObjectsCore.BasVal
-    type Val	= DynamicObjectsCore.Val
+    type BasVal = DynamicObjectsCore.BasVal
+    type Val    = DynamicObjectsCore.Val
 
 
     (* Operations *)

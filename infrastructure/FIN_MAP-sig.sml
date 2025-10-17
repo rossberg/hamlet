@@ -18,15 +18,15 @@ sig
     exception NotFound
     exception Duplicate
 
-    val fromList :	(Key.ord_key * 'a) list -> 'a map
+    val fromList :      (Key.ord_key * 'a) list -> 'a map
 
-    val delete :	'a map * Key.ord_key -> 'a map
-    val difference :	'a map * 'a map -> 'a map
+    val delete :        'a map * Key.ord_key -> 'a map
+    val difference :    'a map * 'a map -> 'a map
 
-    val all :		('a -> bool) -> 'a map -> bool
-    val exists :	('a -> bool) -> 'a map -> bool
-    val alli :		(Key.ord_key * 'a -> bool) -> 'a map -> bool
-    val existsi :	(Key.ord_key * 'a -> bool) -> 'a map -> bool
+    val all :           ('a -> bool) -> 'a map -> bool
+    val exists :        ('a -> bool) -> 'a map -> bool
+    val alli :          (Key.ord_key * 'a -> bool) -> 'a map -> bool
+    val existsi :       (Key.ord_key * 'a -> bool) -> 'a map -> bool
 
-    val disjoint :	'a map * 'a map -> bool
+    val disjoint :      'a map * 'a map -> bool
 end;

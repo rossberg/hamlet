@@ -24,16 +24,16 @@ structure Fifo : FIFO =
       | dequeue (Q{rear,...}) = dequeue(Q{front=rev rear,rear=[]})
 
     fun delete (Q{front, rear}, pred) = let
-	  fun doFront [] = {front = doRear(rev rear), rear = []}
-	    | doFront (x::r) = if (pred x)
-		then {front = r, rear = rear}
-		else let val {front, rear} = doFront r
-		  in {front =  x :: front, rear = rear} end
-	  and doRear [] = []
-	    | doRear (x::r) = if (pred x) then r else x :: (doRear r)
-	  in
-	    Q(doFront front)
-	  end
+          fun doFront [] = {front = doRear(rev rear), rear = []}
+            | doFront (x::r) = if (pred x)
+                then {front = r, rear = rear}
+                else let val {front, rear} = doFront r
+                  in {front =  x :: front, rear = rear} end
+          and doRear [] = []
+            | doRear (x::r) = if (pred x) then r else x :: (doRear r)
+          in
+            Q(doFront front)
+          end
 
     fun peek (Q{front=(hd::_), ...}) = SOME hd
       | peek (Q{rear=[], ...}) = NONE

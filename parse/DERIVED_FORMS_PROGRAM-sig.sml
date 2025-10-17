@@ -19,6 +19,6 @@ sig
 
     (* Programs [Figure 18] *)
 
-    val TOPDECProgram :	Info * TopDec * Program option -> Program
-    val EXPProgram :	Info *  Exp   * Program option -> Program
+    val TOPDECProgram : Info * TopDec * Program option -> Program
+    val EXPProgram :    Info *  Exp   * Program option -> Program
 end;

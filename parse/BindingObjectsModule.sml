@@ -18,18 +18,18 @@ structure BindingObjectsModule =
 struct
     (* Import *)
 
-    type 'a SigIdMap	= 'a IdsModule.SigIdMap
+    type 'a SigIdMap    = 'a IdsModule.SigIdMap
 
-    type Env		= BindingObjectsCore.Env
-    datatype Mod	= datatype BindingObjectsCore.Mod
+    type Env            = BindingObjectsCore.Env
+    datatype Mod        = datatype BindingObjectsCore.Mod
 
     (* Types *)
 
-    type SigEnv		= exn SigIdMap
-    type Basis		= Env
+    type SigEnv         = exn SigIdMap
+    type Basis          = Env
 
     (* Recursive export *)
 
-    exception Fct	of Mod
-    exception Sig	of Mod
+    exception Fct       of Mod
+    exception Sig       of Mod
 end;

@@ -14,33 +14,33 @@ signature TYPESCHEME =
 sig
     (* Import *)
 
-    type Type			= StaticObjectsCore.Type
-    type TypeScheme		= StaticObjectsCore.TypeScheme
-    type TyVar			= StaticObjectsCore.TyVar
-    type TyName			= StaticObjectsCore.TyName
-    type TyVarSet		= StaticObjectsCore.TyVarSet
-    type TyNameSet		= StaticObjectsCore.TyNameSet
+    type Type                   = StaticObjectsCore.Type
+    type TypeScheme             = StaticObjectsCore.TypeScheme
+    type TyVar                  = StaticObjectsCore.TyVar
+    type TyName                 = StaticObjectsCore.TyName
+    type TyVarSet               = StaticObjectsCore.TyVarSet
+    type TyNameSet              = StaticObjectsCore.TyNameSet
 
-    type Substitution		= Type.Substitution
-    type Realisation		= Type.Realisation
-    type 'a TyNameMap		= 'a TyNameMap.map
+    type Substitution           = Type.Substitution
+    type Realisation            = Type.Realisation
+    type 'a TyNameMap           = 'a TyNameMap.map
 
 
     (* Operations *)
 
-    val instance :		TypeScheme -> Type list * Type
-    val Clos :			Type -> TypeScheme
-    val ClosRestricted :	TyVarSet -> Type -> TypeScheme
-    val isClosed :		TypeScheme -> bool
+    val instance :              TypeScheme -> Type list * Type
+    val Clos :                  Type -> TypeScheme
+    val ClosRestricted :        TyVarSet -> Type -> TypeScheme
+    val isClosed :              TypeScheme -> bool
 
-    val tyvars :		TypeScheme -> TyVarSet
-    val tynames :		TypeScheme -> TyNameSet
-    val undetermined :		TypeScheme -> bool StampMap.map
-    val normalise :		TypeScheme -> TypeScheme
+    val tyvars :                TypeScheme -> TyVarSet
+    val tynames :               TypeScheme -> TyNameSet
+    val undetermined :          TypeScheme -> bool StampMap.map
+    val normalise :             TypeScheme -> TypeScheme
 
-    val generalises :		TypeScheme * TypeScheme -> bool
-    val equals :		TypeScheme * TypeScheme -> bool
+    val generalises :           TypeScheme * TypeScheme -> bool
+    val equals :                TypeScheme * TypeScheme -> bool
 
-    val substitute :		Substitution -> TypeScheme -> TypeScheme
-    val realise :		Realisation  -> TypeScheme -> TypeScheme
+    val substitute :            Substitution -> TypeScheme -> TypeScheme
+    val realise :               Realisation  -> TypeScheme -> TypeScheme
 end;

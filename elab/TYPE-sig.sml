@@ -50,58 +50,58 @@ sig
     
     (* Types [Section 4.2 and 5.2] *)
 
-    type Substitution = Type TyVarMap				(* [mu] *)
-    type Realisation  = TypeFcn TyNameMap			(* [phi] *)
+    type Substitution = Type TyVarMap                           (* [mu] *)
+    type Realisation  = TypeFcn TyNameMap                       (* [phi] *)
 
 
     (* Recursive import *)
 
     structure Sig :
     sig
-	val tyvars :		(Sig' -> TyVarSet) ref
-	val tynames :		(Sig' -> TyNameSet) ref
-	val undetermined :	(Sig' -> bool StampMap.map) ref
-	val realise :		(Realisation -> Sig' -> Sig') ref
-	val matches :		(Sig' * Sig' -> bool) ref
+        val tyvars :            (Sig' -> TyVarSet) ref
+        val tynames :           (Sig' -> TyNameSet) ref
+        val undetermined :      (Sig' -> bool StampMap.map) ref
+        val realise :           (Realisation -> Sig' -> Sig') ref
+        val matches :           (Sig' * Sig' -> bool) ref
     end
 
     (* Operations *)
 
-    val guess :			bool -> Type
-    val invent :		bool -> Type
-    val fromTyVar :		TyVar -> Type
-    val fromRowType :		RowType -> Type
-    val fromFunType :		FunType -> Type
-    val fromConsType :		ConsType -> Type
-    val fromPackType :		PackType -> Type
-    val fromOverloadingClass :	OverloadingClass -> Type
+    val guess :                 bool -> Type
+    val invent :                bool -> Type
+    val fromTyVar :             TyVar -> Type
+    val fromRowType :           RowType -> Type
+    val fromFunType :           FunType -> Type
+    val fromConsType :          ConsType -> Type
+    val fromPackType :          PackType -> Type
+    val fromOverloadingClass :  OverloadingClass -> Type
 
-    val range :			Type -> Type
-    val tyname :		Type -> TyName
-    val equals :		Type * Type -> bool
+    val range :                 Type -> Type
+    val tyname :                Type -> TyName
+    val equals :                Type * Type -> bool
 
-    val substitute :		Substitution -> Type -> Type
-    val realise :		Realisation  -> Type -> Type
-    val determine :		Type StampMap.map -> Type -> Type
+    val substitute :            Substitution -> Type -> Type
+    val realise :               Realisation  -> Type -> Type
+    val determine :             Type StampMap.map -> Type -> Type
 
-    val tyvars :		Type -> TyVarSet
-    val tynames :		Type -> TyNameSet
-    val undetermined :		Type -> bool StampMap.map
-    val admitsEquality :	Type -> bool
-    val isOverloaded :		Type -> bool
+    val tyvars :                Type -> TyVarSet
+    val tynames :               Type -> TyNameSet
+    val undetermined :          Type -> bool StampMap.map
+    val admitsEquality :        Type -> bool
+    val isOverloaded :          Type -> bool
 
     exception Unify
     exception Flexible
-    val unify :			Type * Type -> unit	(* Unify *)
-    val resolve :		Type -> unit		(* Flexible *)
+    val unify :                 Type * Type -> unit     (* Unify *)
+    val resolve :               Type -> unit            (* Flexible *)
 
 
     (* Operations on rows *)
 
-    val emptyRow :		RowType
-    val singletonRow :		Lab * Type -> RowType
-    val insertRow :		RowType * Lab * Type -> RowType
-    val guessRow :		unit -> RowType
-    val findLab :		RowType * Lab -> Type option
-    val normalizeRow :		RowType -> unit
+    val emptyRow :              RowType
+    val singletonRow :          Lab * Type -> RowType
+    val insertRow :             RowType * Lab * Type -> RowType
+    val guessRow :              unit -> RowType
+    val findLab :               RowType * Lab -> Type option
+    val normalizeRow :          RowType -> unit
 end;

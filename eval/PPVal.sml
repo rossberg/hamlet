@@ -18,8 +18,8 @@ struct
 
     structure PPDynamicEnv =
     struct
-	val ppMod : (State * Mod -> PrettyPrint.doc) ref =
- 	    ref (fn _ => raise Fail "PPVal.PPDynamicEnv.ppMod")
+        val ppMod : (State * Mod -> PrettyPrint.doc) ref =
+            ref (fn _ => raise Fail "PPVal.PPDynamicEnv.ppMod")
     end
 
     (* Simple objects *)
@@ -45,84 +45,84 @@ struct
     and ppExVal(s, e) = fbox(below(nest(ppExValPrec (topPrec, s) e)))
 
     and ppValPrec (p, s) (Assign) =
-	    ppFn
+            ppFn
 
       | ppValPrec (p, s) (SVal sv) =
-	    ppSVal sv
+            ppSVal sv
 
       | ppValPrec (p, s) (BasVal b) =
-	    ppFn
+            ppFn
 
       | ppValPrec (p, s) (VId vid) =
-	    ppVId vid
+            ppVId vid
 
       | ppValPrec (p, s) (v as VIdVal(vid, v')) =
-	(case Val.toList v
-	   of SOME vs => brack(ppCommaList (ppValPrec (topPrec, s)) vs)
-	    | NONE    =>
-	      let
-		  val doc = ppVId vid ^/^ ppValPrec (applyPrec+1, s) v'
-	      in
-		  parenAt applyPrec (p, doc)
-	      end
-	)
+        (case Val.toList v
+           of SOME vs => brack(ppCommaList (ppValPrec (topPrec, s)) vs)
+            | NONE    =>
+              let
+                  val doc = ppVId vid ^/^ ppValPrec (applyPrec+1, s) v'
+              in
+                  parenAt applyPrec (p, doc)
+              end
+        )
 
       | ppValPrec (p, s) (ExVal e) =
-	    ppExValPrec (p, s) e
+            ppExValPrec (p, s) e
 
       | ppValPrec (p, s) (Record r) =
-	let
-	    fun isTuple(   [],     n) = n > 2
-	      | isTuple(lab::labs, n) =
-		    lab = Lab.fromInt n andalso isTuple(labs, n+1)
+        let
+            fun isTuple(   [],     n) = n > 2
+              | isTuple(lab::labs, n) =
+                    lab = Lab.fromInt n andalso isTuple(labs, n+1)
 
-	    val labvs     = LabMap.listItemsi r
-	    val (labs,vs) = ListPair.unzip labvs
-	in
-	    if List.null labs then
-		text "()"
-	    else if isTuple(labs, 1) then
-		paren(ppCommaList (ppValPrec (topPrec, s)) vs)
-	    else
-		brace(ppCommaList (ppLabVal s) labvs)
-	end
+            val labvs     = LabMap.listItemsi r
+            val (labs,vs) = ListPair.unzip labvs
+        in
+            if List.null labs then
+                text "()"
+            else if isTuple(labs, 1) then
+                paren(ppCommaList (ppValPrec (topPrec, s)) vs)
+            else
+                brace(ppCommaList (ppLabVal s) labvs)
+        end
 
       | ppValPrec (p, s) (Addr a) =
-	let
-	    val v   = case State.findAddr(s, a)
-			of SOME v => v
-			 | NONE   => raise Fail "PPVal.ppVal: invalid address"
+        let
+            val v   = case State.findAddr(s, a)
+                        of SOME v => v
+                         | NONE   => raise Fail "PPVal.ppVal: invalid address"
 
-	    val doc = text "ref" ^/^ ppValPrec (applyPrec+1, s) v
-	in
-	    parenAt applyPrec (p, doc)
-	end
+            val doc = text "ref" ^/^ ppValPrec (applyPrec+1, s) v
+        in
+            parenAt applyPrec (p, doc)
+        end
 
       | ppValPrec (p, s) (FcnClosure _) =
-	    ppFn
+            ppFn
 
       (* [RFC: First-class modules] *)
       | ppValPrec (p, s) (Mod M) =
-	    text "pack " ^^
-	    paren(!PPDynamicEnv.ppMod(s, M))
+            text "pack " ^^
+            paren(!PPDynamicEnv.ppMod(s, M))
 
     and ppLabVal s (lab, v) =
-	    abox(nest(
-		hbox(
-		    ppLab lab ^/^
-		    text "="
-		) ^/^
-		ppVal(s, v)
-	    ))
+            abox(nest(
+                hbox(
+                    ppLab lab ^/^
+                    text "="
+                ) ^/^
+                ppVal(s, v)
+            ))
 
 
     and ppExValPrec (p, s) (ExName en) =
-	    ppExName en
+            ppExName en
 
       | ppExValPrec (p, s) (ExNameVal(en, v)) =
-	let
-	    val doc = ppExName en ^/^ ppValPrec (applyPrec+1, s) v
-	in
-	    parenAt applyPrec (p, doc)
-	end
+        let
+            val doc = ppExName en ^/^ ppValPrec (applyPrec+1, s) v
+        in
+            parenAt applyPrec (p, doc)
+        end
 end;

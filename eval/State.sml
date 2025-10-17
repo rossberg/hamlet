@@ -16,10 +16,10 @@ structure State :> STATE =
 struct
     (* Import *)
 
-    type Addr		= DynamicObjectsCore.Addr
-    type ExName		= DynamicObjectsCore.ExName
-    type Val		= DynamicObjectsCore.Val
-    type State		= DynamicObjectsCore.State
+    type Addr           = DynamicObjectsCore.Addr
+    type ExName         = DynamicObjectsCore.ExName
+    type Val            = DynamicObjectsCore.Val
+    type State          = DynamicObjectsCore.State
 
 
     (* Operations *)

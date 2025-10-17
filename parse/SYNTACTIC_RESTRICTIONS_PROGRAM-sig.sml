@@ -8,10 +8,10 @@ signature SYNTACTIC_RESTRICTIONS_PROGRAM =
 sig
     (* Import *)
 
-    type Basis		= SyntacticRestrictionsModule.Basis
-    type Program	= GrammarProgram.Program
+    type Basis          = SyntacticRestrictionsModule.Basis
+    type Program        = GrammarProgram.Program
 
     (* Export *)
 
-    val checkProgram :	Basis * Program -> Basis
+    val checkProgram :  Basis * Program -> Basis
 end;

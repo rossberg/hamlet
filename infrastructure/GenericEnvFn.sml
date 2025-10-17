@@ -17,16 +17,16 @@ functor GenericEnvFn(
     (* [RFC: Nested signatures] *)
     type SigStr
     val Env :   SigStr SigIdMap.map * ModStr StrIdMap.map *
-		TyStr TyConMap.map * ValStr VIdMap.map -> Env
+                TyStr TyConMap.map * ValStr VIdMap.map -> Env
     val unEnv : Env -> SigStr SigIdMap.map * ModStr StrIdMap.map *
-		       TyStr TyConMap.map * ValStr VIdMap.map
+                       TyStr TyConMap.map * ValStr VIdMap.map
     val env :   ModStr -> Env option
 ) :> GENERIC_ENV
-    where type Env	= Env
-(**)where type ValStr	= ValStr
-(**)where type TyStr	= TyStr
-(**)where type ModStr	= ModStr
-(**)where type SigStr	= SigStr
+    where type Env      = Env
+(**)where type ValStr   = ValStr
+(**)where type TyStr    = TyStr
+(**)where type ModStr   = ModStr
+(**)where type SigStr   = SigStr
     =
 struct
     (* Import *)
@@ -34,15 +34,15 @@ struct
     open IdsCore
     open IdsModule
 
-    type ValStr	= ValStr
-    type TyStr	= TyStr
+    type ValStr = ValStr
+    type TyStr  = TyStr
     type ModStr = ModStr
     type SigStr = SigStr
-    type ValEnv	= ValStr VIdMap
-    type TyEnv	= TyStr TyConMap
-    type StrEnv	= ModStr StrIdMap
-    type SigEnv	= SigStr SigIdMap
-    type Env	= Env
+    type ValEnv = ValStr VIdMap
+    type TyEnv  = TyStr TyConMap
+    type StrEnv = ModStr StrIdMap
+    type SigEnv = SigStr SigIdMap
+    type Env    = Env
 
 
     (* Injections [Section 4.3; RFC: Nested signatures] *)
@@ -73,26 +73,26 @@ struct
     infix plus plusVE plusTE plusSE plusG plusVEandTE
 
     fun E plus E' =
-	Env( SigIdMap.unionWith #2 (Gof E, Gof E')
-	   , StrIdMap.unionWith #2 (SEof E, SEof E')
-	   , TyConMap.unionWith #2 (TEof E, TEof E')
-	   , VIdMap.unionWith   #2 (VEof E, VEof E')
-	   )
+        Env( SigIdMap.unionWith #2 (Gof E, Gof E')
+           , StrIdMap.unionWith #2 (SEof E, SEof E')
+           , TyConMap.unionWith #2 (TEof E, TEof E')
+           , VIdMap.unionWith   #2 (VEof E, VEof E')
+           )
 
     fun E plusVE VE =
-	Env(Gof E, SEof E, TEof E, VIdMap.unionWith #2 (VEof E,VE))
+        Env(Gof E, SEof E, TEof E, VIdMap.unionWith #2 (VEof E,VE))
     fun E plusTE TE =
-	Env(Gof E, SEof E, TyConMap.unionWith #2 (TEof E,TE), VEof E)
+        Env(Gof E, SEof E, TyConMap.unionWith #2 (TEof E,TE), VEof E)
     fun E plusSE SE =
-	Env(Gof E, StrIdMap.unionWith #2 (SEof E,SE), TEof E, VEof E)
+        Env(Gof E, StrIdMap.unionWith #2 (SEof E,SE), TEof E, VEof E)
     fun E plusG G =
-	Env(SigIdMap.unionWith #2 (Gof E,G), SEof E, TEof E, VEof E)
+        Env(SigIdMap.unionWith #2 (Gof E,G), SEof E, TEof E, VEof E)
     fun E plusVEandTE (VE,TE) =
-	Env( Gof E
-	   , SEof E
-	   , TyConMap.unionWith #2 (TEof E,TE)
-	   , VIdMap.unionWith   #2 (VEof E,VE)
-	   )
+        Env( Gof E
+           , SEof E
+           , TyConMap.unionWith #2 (TEof E,TE)
+           , VIdMap.unionWith   #2 (VEof E,VE)
+           )
 
 
     (* Application (lookup) [Section 4.3; RFC: Nested signatures] *)
@@ -104,15 +104,15 @@ struct
 
     fun findLongX'(E, findX,      [],       x) = findX(E, x)
       | findLongX'(E, findX, strid::strids, x) =
-	    Option.mapPartial (fn E => findLongX'(E, findX, strids, x))
-			      (Option.mapPartial env (findStrId(E, strid)))
+            Option.mapPartial (fn E => findLongX'(E, findX, strids, x))
+                              (Option.mapPartial env (findStrId(E, strid)))
 
     fun findLongX (explodeLongX, findX) (E, longX) =
-	let
-	    val (strids,x) = explodeLongX longX
-	in
-	    findLongX'(E, findX, strids, x)
-	end
+        let
+            val (strids,x) = explodeLongX longX
+        in
+            findLongX'(E, findX, strids, x)
+        end
 
     fun findLongVId   x = findLongX (LongVId.explode,   findVId) x
     fun findLongTyCon x = findLongX (LongTyCon.explode, findTyCon) x
@@ -123,8 +123,8 @@ struct
     (* Disjointness *)
 
     fun disjoint(E1, E2) =
-	    SigIdMap.disjoint(Gof E1, Gof E2) andalso
-	    StrIdMap.disjoint(SEof E1, SEof E2) andalso
-	    TyConMap.disjoint(TEof E1, TEof E2) andalso
-	    VIdMap.disjoint(VEof E1, VEof E2)
+            SigIdMap.disjoint(Gof E1, Gof E2) andalso
+            StrIdMap.disjoint(SEof E1, SEof E2) andalso
+            TyConMap.disjoint(TEof E1, TEof E2) andalso
+            VIdMap.disjoint(VEof E1, VEof E2)
 end;

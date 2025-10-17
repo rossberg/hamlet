@@ -10,19 +10,19 @@ signature BASIS =
 sig
     (* Import *)
 
-    type StaticBasis  = StaticObjectsModule.Basis		(* [B_STAT] *)
-    type DynamicBasis = DynamicObjectsModule.Basis		(* [B_DYN] *)
+    type StaticBasis  = StaticObjectsModule.Basis               (* [B_STAT] *)
+    type DynamicBasis = DynamicObjectsModule.Basis              (* [B_DYN] *)
 
 
     (* Type [Section 8] *)
 
-    type Basis = StaticBasis * DynamicBasis			(* [B] *)
+    type Basis = StaticBasis * DynamicBasis                     (* [B] *)
 
 
     (* Operations *)
 
-    val B_STATof :	Basis -> StaticBasis
-    val B_DYNof :	Basis -> DynamicBasis
+    val B_STATof :      Basis -> StaticBasis
+    val B_DYNof :       Basis -> DynamicBasis
 
-    val oplus :		Basis * Basis -> Basis
+    val oplus :         Basis * Basis -> Basis
 end;

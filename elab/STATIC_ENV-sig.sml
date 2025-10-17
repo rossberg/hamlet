@@ -17,52 +17,52 @@ sig
     (* Inheritance *)
 
     include GENERIC_ENV
-    where type Env		= StaticObjectsCore.Env
-(**)where type ValStr		= StaticObjectsCore.ValStr
-(**)where type TyStr		= StaticObjectsCore.TyStr
-(**)where type ModStr		= StaticObjectsCore.Mod
-(**)where type SigStr		= StaticObjectsCore.Sig'
+    where type Env              = StaticObjectsCore.Env
+(**)where type ValStr           = StaticObjectsCore.ValStr
+(**)where type TyStr            = StaticObjectsCore.TyStr
+(**)where type ModStr           = StaticObjectsCore.Mod
+(**)where type SigStr           = StaticObjectsCore.Sig'
 
 
     (* Import *)
 
-    type Mod			= StaticObjectsCore.Mod
-    type TyNameSet		= StaticObjectsCore.TyNameSet
-    type TyVarSet		= StaticObjectsCore.TyVarSet
-    type Realisation		= Type.Realisation
+    type Mod                    = StaticObjectsCore.Mod
+    type TyNameSet              = StaticObjectsCore.TyNameSet
+    type TyVarSet               = StaticObjectsCore.TyVarSet
+    type Realisation            = Type.Realisation
 
-    type Sig			= StaticObjectsModule.Sig
-    type FunSig			= StaticObjectsModule.FunSig
+    type Sig                    = StaticObjectsModule.Sig
+    type FunSig                 = StaticObjectsModule.FunSig
 
 
     (* Recursive import *)
 
-    structure Sig :		sig val matches : (Sig * Sig -> bool) ref end
-    structure FunSig :		sig val matches : (FunSig * FunSig -> bool) ref end
+    structure Sig :             sig val matches : (Sig * Sig -> bool) ref end
+    structure FunSig :          sig val matches : (FunSig * FunSig -> bool) ref end
 
 
     (* Operations *)
 
-    val tyvarsVE :		ValEnv -> TyVarSet
-    val tyvarsM :		Mod    -> TyVarSet
-    val tyvars :		Env    -> TyVarSet
-    val tynamesVE :		ValEnv -> TyNameSet
-    val tynamesTE :		TyEnv  -> TyNameSet
-    val tynamesSE :		StrEnv -> TyNameSet
-    val tynamesG :		SigEnv -> TyNameSet
-    val tynamesM :		Mod    -> TyNameSet
-    val tynames :		Env    -> TyNameSet
-    val undetermined :		Env    -> bool StampMap.map
-    val undeterminedM :		Mod    -> bool StampMap.map
+    val tyvarsVE :              ValEnv -> TyVarSet
+    val tyvarsM :               Mod    -> TyVarSet
+    val tyvars :                Env    -> TyVarSet
+    val tynamesVE :             ValEnv -> TyNameSet
+    val tynamesTE :             TyEnv  -> TyNameSet
+    val tynamesSE :             StrEnv -> TyNameSet
+    val tynamesG :              SigEnv -> TyNameSet
+    val tynamesM :              Mod    -> TyNameSet
+    val tynames :               Env    -> TyNameSet
+    val undetermined :          Env    -> bool StampMap.map
+    val undeterminedM :         Mod    -> bool StampMap.map
 
-    val isWellFormed :		Env -> bool
+    val isWellFormed :          Env -> bool
 
-    val Clos :			ValEnv -> ValEnv
-    val maximiseEquality :	TyEnv * ValEnv -> TyEnv * ValEnv
-    val realise :		Realisation -> Env -> Env
-    val realiseM :		Realisation -> Mod -> Mod
+    val Clos :                  ValEnv -> ValEnv
+    val maximiseEquality :      TyEnv * ValEnv -> TyEnv * ValEnv
+    val realise :               Realisation -> Env -> Env
+    val realiseM :              Realisation -> Mod -> Mod
 
-    val enriches :		Env * Env -> bool
-    val enrichesM :		Mod * Mod -> bool
-    val equalsVE :		ValEnv * ValEnv -> bool
+    val enriches :              Env * Env -> bool
+    val enrichesM :             Mod * Mod -> bool
+    val equalsVE :              ValEnv * ValEnv -> bool
 end;

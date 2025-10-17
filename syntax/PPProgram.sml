@@ -16,6 +16,6 @@ struct
     (* Programs *)
 
     fun ppProgram(out, i, Program(I, topdec, program_opt)) =
-	    ppElem(out, i, "Program", I,
-		   [sub PPModule.ppTopDec topdec, subo ppProgram program_opt])
+            ppElem(out, i, "Program", I,
+                   [sub PPModule.ppTopDec topdec, subo ppProgram program_opt])
 end;

@@ -15,7 +15,7 @@ val 'a rec f = fn x => x;
 
 val x =
 let
-    val rec LESS = fn x => x	(* will raise Bind *)
+    val rec LESS = fn x => x    (* will raise Bind *)
     and NONE as SOME = fn x => x
     val SOME = 1
 in

@@ -18,12 +18,12 @@ struct
     (* [RFC: Extended literal syntax] *)
     datatype base = DEC | HEX | BIN
 
-    datatype SCon =				(* [scon] *)
-	  INT    of base * string * TyName option ref
-	| WORD   of base * string * TyName option ref
-	| STRING of string * TyName option ref
-	| CHAR   of string * TyName option ref
-	| REAL   of string * TyName option ref
+    datatype SCon =                             (* [scon] *)
+          INT    of base * string * TyName option ref
+        | WORD   of base * string * TyName option ref
+        | STRING of string * TyName option ref
+        | CHAR   of string * TyName option ref
+        | REAL   of string * TyName option ref
 
 
     (* Conversions *)
@@ -34,7 +34,7 @@ struct
       | baseChar BIN               = "b"
 
     fun toString(INT(base, s, _))  = if baseChar base = "" then s
-				     else "0" ^ baseChar base ^ s
+                                     else "0" ^ baseChar base ^ s
       | toString(WORD(base, s, _)) = "0w" ^ baseChar base ^ s
       | toString(STRING(s, _))     = "\""  ^ s ^ "\""
       | toString(CHAR(s, _))       = "#\"" ^ s ^ "\""

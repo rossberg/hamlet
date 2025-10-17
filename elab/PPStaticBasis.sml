@@ -19,10 +19,10 @@ struct
     (* Basis *)
 
     fun ppBasis (T,E) =
-	    (* [RFC: Higher-order modules; RFC: Nested signatures] *)
-	    vbox(
-		PPStaticEnv.ppTyNameSet T ^/^
-		PPStaticEnv.ppEnv E ^/^
-		text ""
-	    )
+            (* [RFC: Higher-order modules; RFC: Nested signatures] *)
+            vbox(
+                PPStaticEnv.ppTyNameSet T ^/^
+                PPStaticEnv.ppEnv E ^/^
+                text ""
+            )
 end;

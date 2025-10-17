@@ -25,10 +25,10 @@ struct
     fun fromBool b = VId(VId.fromString(if b then "true" else "false"))
 
     fun APPLY("=", v) =
-	(case Val.toPair v
-	   of SOME vv => (fromBool(Val.equal vv) handle Domain =>
-			  raise TypeError "equality type expected")
-	    | NONE    => raise TypeError "pair expected"
-	)
+        (case Val.toPair v
+           of SOME vv => (fromBool(Val.equal vv) handle Domain =>
+                          raise TypeError "equality type expected")
+            | NONE    => raise TypeError "pair expected"
+        )
       | APPLY(b, v) = Library.APPLY(b, v)
 end;

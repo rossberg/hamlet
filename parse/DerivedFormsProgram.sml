@@ -27,16 +27,16 @@ struct
     (* Programs [Figure 18] *)
 
     fun TOPDECProgram(I, topdec, program_opt) =
-	    P.Program(I, topdec, program_opt)
+            P.Program(I, topdec, program_opt)
 
     fun EXPProgram(I, exp, program_opt) =
-	let
-	    val longvid = LongVId.fromId(VId.fromString "it")
-	    val pat     = C.ATPat(I, C.IDAtPat(I, C.SANSOp, longvid))
-	    val valbind = C.ValBind(I, pat, exp, NONE)
-	    val dec     = C.VALDec(I, C.SANSRec, C.TyVarseq(I, []), valbind)
-	    val topdec  = M.TopDec(I, dec)
-	in
-	    P.Program(I, topdec, program_opt)
-	end
+        let
+            val longvid = LongVId.fromId(VId.fromString "it")
+            val pat     = C.ATPat(I, C.IDAtPat(I, C.SANSOp, longvid))
+            val valbind = C.ValBind(I, pat, exp, NONE)
+            val dec     = C.VALDec(I, C.SANSRec, C.TyVarseq(I, []), valbind)
+            val topdec  = M.TopDec(I, dec)
+        in
+            P.Program(I, topdec, program_opt)
+        end
 end;

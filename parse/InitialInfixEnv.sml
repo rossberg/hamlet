@@ -21,6 +21,6 @@ struct
     (* Export *)
 
     val J0 = VIdMap.fromList[(vidCons,   (Infix.RIGHT, 5)),
-			     (vidEqual,  (Infix.LEFT,  4)),
-			     (vidAssign, (Infix.LEFT,  3))]
+                             (vidEqual,  (Infix.LEFT,  4)),
+                             (vidAssign, (Infix.LEFT,  3))]
 end;

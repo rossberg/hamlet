@@ -14,12 +14,12 @@ struct
     (* Inheritance *)
 
     structure GenericEnv = GenericEnvFn(open DynamicObjectsCore
-					type TyStr = ValEnv
-					type ModStr = Mod
-					type SigStr = Int'
-					fun env(Struct E)  = SOME E
-					  | env(Functor _) = NONE
-					fun unEnv(Env E) = E)
+                                        type TyStr = ValEnv
+                                        type ModStr = Mod
+                                        type SigStr = Int'
+                                        fun env(Struct E)  = SOME E
+                                          | env(Functor _) = NONE
+                                        fun unEnv(Env E) = E)
     open GenericEnv
     open DynamicObjectsCore
 
@@ -27,9 +27,9 @@ struct
     (* Unrolling [Section 6.6] *)
 
     fun Rec VE =
-	    VIdMap.map
-		(fn (FcnClosure(match',E',VE'), IdStatus IdStatus.v) =>
-		    (FcnClosure(match',E',VE), IdStatus IdStatus.v)
-		  | valstr => valstr
-		) VE
+            VIdMap.map
+                (fn (FcnClosure(match',E',VE'), IdStatus IdStatus.v) =>
+                    (FcnClosure(match',E',VE), IdStatus IdStatus.v)
+                  | valstr => valstr
+                ) VE
 end;

@@ -19,9 +19,9 @@ struct
     (* Basis *)
 
     fun ppBasis (s, ((T,E_STAT), E_DYN)) =
-	    (* [RFC: Higher-order functors; RFC: Nested signatures] *)
-	    vbox(
-		PPEnv.ppEnv(s, (E_STAT,E_DYN)) ^/^
-		text ""
-	    )
+            (* [RFC: Higher-order functors; RFC: Nested signatures] *)
+            vbox(
+                PPEnv.ppEnv(s, (E_STAT,E_DYN)) ^/^
+                text ""
+            )
 end;

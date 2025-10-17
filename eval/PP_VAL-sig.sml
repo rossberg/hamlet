@@ -16,7 +16,7 @@ sig
     (* Recursive import *)
 
     structure PPDynamicEnv :
-	sig val ppMod : (State * Mod -> PrettyPrint.doc) ref end
+        sig val ppMod : (State * Mod -> PrettyPrint.doc) ref end
 
     (* Export *)
 

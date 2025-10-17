@@ -21,29 +21,29 @@ structure BindingObjectsCore =
 struct
     (* Import *)
 
-    type 'a VIdMap	= 'a IdsCore.VIdMap
-    type 'a TyConMap	= 'a IdsCore.TyConMap
-    type 'a StrIdMap	= 'a IdsCore.StrIdMap
-    type 'a SigIdMap	= 'a IdsModule.SigIdMap
+    type 'a VIdMap      = 'a IdsCore.VIdMap
+    type 'a TyConMap    = 'a IdsCore.TyConMap
+    type 'a StrIdMap    = 'a IdsCore.StrIdMap
+    type 'a SigIdMap    = 'a IdsModule.SigIdMap
 
-    type IdStatus	= IdStatus.IdStatus
-    type TyVarSet	= TyVarSet.set
+    type IdStatus       = IdStatus.IdStatus
+    type TyVarSet       = TyVarSet.set
 
     (* Recursive import *)
 
-    type Sig'		= exn
+    type Sig'           = exn
     
 
     (* Types *)
 
-    type ValStr		= IdStatus
-    type ValEnv		= IdStatus VIdMap
-    type TyStr		= ValEnv
-    type TyEnv		= ValEnv TyConMap
-    type SigEnv		= Sig' SigIdMap
-    datatype Env	= Env of SigEnv * StrEnv * TyEnv * ValEnv
-    and      Mod	= Struct of Env | Functor of exn
-    withtype StrEnv	= Mod StrIdMap
+    type ValStr         = IdStatus
+    type ValEnv         = IdStatus VIdMap
+    type TyStr          = ValEnv
+    type TyEnv          = ValEnv TyConMap
+    type SigEnv         = Sig' SigIdMap
+    datatype Env        = Env of SigEnv * StrEnv * TyEnv * ValEnv
+    and      Mod        = Struct of Env | Functor of exn
+    withtype StrEnv     = Mod StrIdMap
 
-    type Context	= TyVarSet * Env
+    type Context        = TyVarSet * Env
 end;

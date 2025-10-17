@@ -6,19 +6,19 @@
 
 signature PP_STATIC_ENV =
 sig
-    type ValEnv		= StaticObjectsCore.ValEnv
-    type TyEnv		= StaticObjectsCore.TyEnv
-    type StrEnv		= StaticObjectsCore.StrEnv
-    type SigEnv		= StaticObjectsCore.SigEnv
-    type Env		= StaticObjectsCore.Env
-    type Mod		= StaticObjectsCore.Mod
-    type TyNameSet	= StaticObjectsCore.TyNameSet
+    type ValEnv         = StaticObjectsCore.ValEnv
+    type TyEnv          = StaticObjectsCore.TyEnv
+    type StrEnv         = StaticObjectsCore.StrEnv
+    type SigEnv         = StaticObjectsCore.SigEnv
+    type Env            = StaticObjectsCore.Env
+    type Mod            = StaticObjectsCore.Mod
+    type TyNameSet      = StaticObjectsCore.TyNameSet
 
-    val ppEnv :		Env -> PrettyPrint.doc
-    val ppTyNameSet :	TyNameSet -> PrettyPrint.doc
-    val ppSig :		TyNameSet * Mod -> PrettyPrint.doc
+    val ppEnv :         Env -> PrettyPrint.doc
+    val ppTyNameSet :   TyNameSet -> PrettyPrint.doc
+    val ppSig :         TyNameSet * Mod -> PrettyPrint.doc
 
-    val ppSigEnv :	TyNameSet * SigEnv -> PrettyPrint.doc
-    val ppTyEnv :	TyNameSet * TyEnv -> PrettyPrint.doc
-    val ppExEnv :	ValEnv -> PrettyPrint.doc
+    val ppSigEnv :      TyNameSet * SigEnv -> PrettyPrint.doc
+    val ppTyEnv :       TyNameSet * TyEnv -> PrettyPrint.doc
+    val ppExEnv :       ValEnv -> PrettyPrint.doc
 end;

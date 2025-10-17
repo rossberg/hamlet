@@ -6,7 +6,7 @@
 
 structure IO :> IO =
 struct
-    exception Io = IO.Io	(* primitive *)
+    exception Io = IO.Io        (* primitive *)
 
     exception BlockingNotSupported
     exception NonblockingNotSupported

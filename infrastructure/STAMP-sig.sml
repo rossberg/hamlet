@@ -8,11 +8,11 @@ signature STAMP =
 sig
     eqtype stamp
 
-    val stamp :		unit  -> stamp
-    val toString :	stamp -> string
+    val stamp :         unit  -> stamp
+    val toString :      stamp -> string
 
-    val reset :		unit -> unit
+    val reset :         unit -> unit
 
-    val compare :	stamp * stamp -> order
-    val min :		stamp * stamp -> stamp
+    val compare :       stamp * stamp -> order
+    val min :           stamp * stamp -> stamp
 end;

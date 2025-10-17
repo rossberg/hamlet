@@ -19,16 +19,16 @@ struct
     fun between'(r1 : region, r2 : region) = (#2 r1, #1 r2)
 
     fun transform f (i1 : info, i2 : info) = 
-	{file = #file i1, region = f(#region i1, #region i2)}
+        {file = #file i1, region = f(#region i1, #region i2)}
 
     val over    = transform over'
     val between = transform between'
 
     fun comparePair compare1 ((x1,y1), (x2,y2)) =
-	case compare1(x1, x2)
-	  of EQUAL => compare1(y1, y2)
-	   | order => order
+        case compare1(x1, x2)
+          of EQUAL => compare1(y1, y2)
+           | order => order
 
     fun compare(i1 : info, i2 : info) =
-	comparePair (comparePair Int.compare) (#region i1, #region i2)
+        comparePair (comparePair Int.compare) (#region i1, #region i2)
 end;

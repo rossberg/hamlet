@@ -16,16 +16,16 @@ signature STATE =
 sig
     (* Import *)
 
-    type Addr		= DynamicObjectsCore.Addr
-    type ExName		= DynamicObjectsCore.ExName
-    type Val		= DynamicObjectsCore.Val
-    type State		= DynamicObjectsCore.State
+    type Addr           = DynamicObjectsCore.Addr
+    type ExName         = DynamicObjectsCore.ExName
+    type Val            = DynamicObjectsCore.Val
+    type State          = DynamicObjectsCore.State
 
 
     (* Operations *)
 
-    val insertAddr :	State * Addr * Val -> State
-    val insertExName :	State * ExName     -> State
+    val insertAddr :    State * Addr * Val -> State
+    val insertExName :  State * ExName     -> State
 
-    val findAddr :	State * Addr -> Val option
+    val findAddr :      State * Addr -> Val option
 end;

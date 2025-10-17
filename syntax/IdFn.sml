@@ -15,7 +15,7 @@ functor IdFn() :> ID =
 struct
     (* Type [Section 2.4] *)
 
-    type Id = string				(* [id] *)
+    type Id = string                            (* [id] *)
 
 
     (* Creation *)

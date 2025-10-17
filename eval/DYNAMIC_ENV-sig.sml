@@ -13,14 +13,14 @@ sig
     (* Inheritance *)
 
     include GENERIC_ENV
-    where type Env	= DynamicObjectsCore.Env
-(**)where type ValStr	= DynamicObjectsCore.ValStr
-(**)where type TyStr	= DynamicObjectsCore.ValEnv
-(**)where type ModStr	= DynamicObjectsCore.Mod
-(**)where type SigStr	= DynamicObjectsCore.Int'
+    where type Env      = DynamicObjectsCore.Env
+(**)where type ValStr   = DynamicObjectsCore.ValStr
+(**)where type TyStr    = DynamicObjectsCore.ValEnv
+(**)where type ModStr   = DynamicObjectsCore.Mod
+(**)where type SigStr   = DynamicObjectsCore.Int'
 
 
     (* Operations *)
 
-    val Rec :		ValEnv -> ValEnv
+    val Rec :           ValEnv -> ValEnv
 end;

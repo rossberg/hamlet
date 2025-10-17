@@ -8,8 +8,8 @@
 
 
 functor GrammarProgramFn(type Info
-			 structure Module : GRAMMAR_MODULE
-			) : GRAMMAR_PROGRAM =
+                         structure Module : GRAMMAR_MODULE
+                        ) : GRAMMAR_PROGRAM =
 struct
     (* Import *)
 

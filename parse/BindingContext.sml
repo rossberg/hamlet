@@ -23,10 +23,10 @@ struct
     val op plus = BindingEnv.plus
 
     fun (U,E) plusU U'  = (TyVarSet.union(U, U'), E)
-    fun (U,E) plusE E'	= (U, E plus E')
-    fun (U,E) plusVE VE	= (U, E plus BindingEnv.fromVE VE)
-    fun (U,E) plusTE TE	= (U, E plus BindingEnv.fromTE TE)
-    fun (U,E) plusSE SE	= (U, E plus BindingEnv.fromSE SE)
+    fun (U,E) plusE E'  = (U, E plus E')
+    fun (U,E) plusVE VE = (U, E plus BindingEnv.fromVE VE)
+    fun (U,E) plusTE TE = (U, E plus BindingEnv.fromTE TE)
+    fun (U,E) plusSE SE = (U, E plus BindingEnv.fromSE SE)
     fun (U,E) plusVEandTE (VE,TE) = (U, E plus BindingEnv.fromVEandTE (VE,TE))
 
     (* Application (lookup) [Section 4.3] *)

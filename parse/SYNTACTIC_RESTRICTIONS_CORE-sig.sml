@@ -25,35 +25,35 @@ signature SYNTACTIC_RESTRICTIONS_CORE =
 sig
     (* Import *)
 
-    type VId			= IdsCore.VId
-    type 'a VIdMap		= 'a IdsCore.VIdMap
-    type 'a TyConMap		= 'a IdsCore.TyConMap
-    type 'a StrIdMap		= 'a IdsCore.StrIdMap
+    type VId                    = IdsCore.VId
+    type 'a VIdMap              = 'a IdsCore.VIdMap
+    type 'a TyConMap            = 'a IdsCore.TyConMap
+    type 'a StrIdMap            = 'a IdsCore.StrIdMap
 
-    type AtExp			= GrammarCore.AtExp
-    type Dec			= GrammarCore.Dec
-    type Ty			= GrammarCore.Ty
-    type TyVarseq		= GrammarCore.TyVarseq
-    type StrDec'		= GrammarCore.StrDec'
+    type AtExp                  = GrammarCore.AtExp
+    type Dec                    = GrammarCore.Dec
+    type Ty                     = GrammarCore.Ty
+    type TyVarseq               = GrammarCore.TyVarseq
+    type StrDec'                = GrammarCore.StrDec'
 
-    type TyVarSet		= BindingObjectsCore.TyVarSet
-    type Env			= BindingObjectsCore.Env
-    type Context		= BindingObjectsCore.Context
+    type TyVarSet               = BindingObjectsCore.TyVarSet
+    type Env                    = BindingObjectsCore.Env
+    type Context                = BindingObjectsCore.Context
 
 
     (* Recursive import *)
 
     structure SyntacticRestrictionsModule :
-	sig val checkStrDec : (Context * StrDec' -> Env) ref end
+        sig val checkStrDec : (Context * StrDec' -> Env) ref end
 
 
     (* Export *)
 
-    val checkAtExp :		Context * AtExp -> unit
-    val checkDec :		Context * Dec -> Env
-    val checkTy :		Ty -> TyVarSet
-    val checkTyVarseq :		TyVarseq -> TyVarSet
+    val checkAtExp :            Context * AtExp -> unit
+    val checkDec :              Context * Dec -> Env
+    val checkTy :               Ty -> TyVarSet
+    val checkTyVarseq :         TyVarseq -> TyVarSet
 
-    val validBindVId :		VId -> bool
-    val validConBindVId :	VId -> bool
+    val validBindVId :          VId -> bool
+    val validConBindVId :       VId -> bool
 end;

@@ -10,12 +10,12 @@ sig
 
     val ppAtom : outstream * int * string * string -> unit
     val ppElem : outstream * int * string * Source.info *
-		     (outstream * int -> unit) list -> unit
+                     (outstream * int -> unit) list -> unit
 
     val sub :    (outstream * int * 'a -> unit) -> 'a ->
-		     outstream * int -> unit
+                     outstream * int -> unit
     val subs :   (outstream * int * 'a -> unit) -> 'a list ->
-		     outstream * int -> unit
+                     outstream * int -> unit
     val subo :   (outstream * int * 'a -> unit) -> 'a option ->
-		     outstream * int -> unit
+                     outstream * int -> unit
 end;

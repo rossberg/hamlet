@@ -18,39 +18,39 @@ structure TyName :> TYNAME =
 struct
     (* Type [Section 4.1] *)
 
-    type TyName =				      (* [t] *)
-	 { tycon :	string
-	 , stamp :	Stamp.stamp
-	 , arity :	int
-	 , equality :	bool
-	 , span :	int
-	 }
+    type TyName =                                     (* [t] *)
+         { tycon :      string
+         , stamp :      Stamp.stamp
+         , arity :      int
+         , equality :   bool
+         , span :       int
+         }
 
 
     (* Creation *)
 
     fun tyname(tycon, arity, equality, span) =
-	{ tycon    = tycon
-	, stamp    = Stamp.stamp()
-	, arity    = arity
-	, equality = equality
-	, span     = span
-	}
+        { tycon    = tycon
+        , stamp    = Stamp.stamp()
+        , arity    = arity
+        , equality = equality
+        , span     = span
+        }
 
     fun invent(arity, equality) =
-	tyname("_id" ^ Stamp.toString(Stamp.stamp()), arity, equality, 0)
+        tyname("_id" ^ Stamp.toString(Stamp.stamp()), arity, equality, 0)
 
 
     (* Creation from existing *)
 
     fun rename {tycon, stamp, arity, equality, span} =
-	    tyname(tycon, arity, equality, span)
+            tyname(tycon, arity, equality, span)
 
     fun removeEquality {tycon, stamp, arity, equality, span} =
-	    tyname(tycon, arity, false, span)
+            tyname(tycon, arity, false, span)
 
     fun Abs {tycon, stamp, arity, equality, span} =
-	    tyname(tycon, arity, false, 0)
+            tyname(tycon, arity, false, 0)
 
 
     (* Attributes [Section 4.1] *)
@@ -68,6 +68,6 @@ struct
 end
 
 structure TyNameSet = FinSetFn(type ord_key = TyName.TyName
-			       val  compare = TyName.compare)
+                               val  compare = TyName.compare)
 structure TyNameMap = FinMapFn(type ord_key = TyName.TyName
-			       val  compare = TyName.compare);
+                               val  compare = TyName.compare);

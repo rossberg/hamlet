@@ -62,62 +62,62 @@ sig
      *                         RFC: Record punning; RFC: Record extension;
      *                         RFC: Record update; RFC: First-class modules] *)
 
-    val UNITAtExp :	Info					-> AtExp
-    val TUPLEAtExp :	Info * Exp list				-> AtExp
-    val UPDATEAtExp :	Info * AtExp * ExpRow option		-> AtExp
-    val HASHAtExp :	Info * Lab				-> AtExp
-    val PACKExp :	Info * AtStrExp * AtSigExp		-> Exp
-    val CASEExp :	Info * Exp * Match			-> Exp
-    val IFExp :		Info * Exp * Exp * Exp option		-> Exp
-    val ANDALSOExp :	Info * Exp * Exp			-> Exp
-    val ORELSEExp :	Info * Exp * Exp			-> Exp
-    val SEQAtExp :	Info * Exp list				-> AtExp
-    val LETAtExp :	Info * Dec * Exp list			-> AtExp
-    val WHILEExp :	Info * Exp * Exp			-> Exp
-    val LISTAtExp :	Info * Exp list				-> AtExp
+    val UNITAtExp :     Info                                    -> AtExp
+    val TUPLEAtExp :    Info * Exp list                         -> AtExp
+    val UPDATEAtExp :   Info * AtExp * ExpRow option            -> AtExp
+    val HASHAtExp :     Info * Lab                              -> AtExp
+    val PACKExp :       Info * AtStrExp * AtSigExp              -> Exp
+    val CASEExp :       Info * Exp * Match                      -> Exp
+    val IFExp :         Info * Exp * Exp * Exp option           -> Exp
+    val ANDALSOExp :    Info * Exp * Exp                        -> Exp
+    val ORELSEExp :     Info * Exp * Exp                        -> Exp
+    val SEQAtExp :      Info * Exp list                         -> AtExp
+    val LETAtExp :      Info * Dec * Exp list                   -> AtExp
+    val WHILEExp :      Info * Exp * Exp                        -> Exp
+    val LISTAtExp :     Info * Exp list                         -> AtExp
 
-    val IDExpRow :	Info * VId * Ty option * ExpRow option	-> ExpRow
-    val DOTSExpRow :	Info * Exp * ExpRow option		-> ExpRow
+    val IDExpRow :      Info * VId * Ty option * ExpRow option  -> ExpRow
+    val DOTSExpRow :    Info * Exp * ExpRow option              -> ExpRow
 
     (* Patterns [Figure 16; RFC: Record extension; RFC: Pattern guards;
      *                      RFC: Transformation patterns] *)
 
-    val UNITAtPat :	Info					-> AtPat
-    val TUPLEAtPat :	Info * Pat list				-> AtPat
-    val LISTAtPat :	Info * Pat list				-> AtPat
-    val QUESTAtPat :	Info * AtExp				-> AtPat
+    val UNITAtPat :     Info                                    -> AtPat
+    val TUPLEAtPat :    Info * Pat list                         -> AtPat
+    val LISTAtPat :     Info * Pat list                         -> AtPat
+    val QUESTAtPat :    Info * AtExp                            -> AtPat
 
-    val DOTSPatRow:	Info * Pat option * PatRow option	-> PatRow
-    val IDPatRow :	Info * VId * Ty option * Pat option * PatRow option
-								-> PatRow
+    val DOTSPatRow:     Info * Pat option * PatRow option       -> PatRow
+    val IDPatRow :      Info * VId * Ty option * Pat option * PatRow option
+                                                                -> PatRow
 
-    val QUESTCONPat :	Info * AtExp * AtPat			-> Pat
-    val IFPat :		Info * Pat * Exp			-> Pat
+    val QUESTCONPat :   Info * AtExp * AtPat                    -> Pat
+    val IFPat :         Info * Pat * Exp                        -> Pat
 
     (* Types [Figure 16; RFC: Record extension] *)
 
-    val TUPLETy :	Info * Ty list				-> Ty
+    val TUPLETy :       Info * Ty list                          -> Ty
 
-    val DOTSTyRow :	Info * Ty * TyRow option		-> TyRow
+    val DOTSTyRow :     Info * Ty * TyRow option                -> TyRow
 
     (* Function-value bindings [Figure 17; RFC: Syntax fixes;
      *                                     RFC: Pattern guards] *)
 
-    val FvalBind :	Info * Fmatch * FvalBind option		-> FvalBind
-    val Fmatch :	Info * Fmrule * Fmatch option		-> Fmatch
-    val Fmrule :	Info * Op * VId * AtPat list * Ty option
-			     * AtExp option * Exp		-> Fmrule
+    val FvalBind :      Info * Fmatch * FvalBind option         -> FvalBind
+    val Fmatch :        Info * Fmrule * Fmatch option           -> Fmatch
+    val Fmrule :        Info * Op * VId * AtPat list * Ty option
+                             * AtExp option * Exp               -> Fmrule
 
     (* Declarations [Figure 17; RFC: Do declarations; RFC: Views;
-			        RFC: Local modules] *)
+                                RFC: Local modules] *)
 
-    val DODec :		Info * Exp				-> Dec
-    val FUNDec :	Info * TyVarseq * FvalBind		-> Dec
-    val DATATYPEDec :	Info * DatBind * TypBind option		-> Dec
-    val VIEWTYPE2Dec :	Info * TyCon * longTyCon		-> Dec
-    val ABSTYPEDec :	Info * DatBind * TypBind option * Dec	-> Dec
-    val OPENDec :	Info * StrExp				-> Dec
+    val DODec :         Info * Exp                              -> Dec
+    val FUNDec :        Info * TyVarseq * FvalBind              -> Dec
+    val DATATYPEDec :   Info * DatBind * TypBind option         -> Dec
+    val VIEWTYPE2Dec :  Info * TyCon * longTyCon                -> Dec
+    val ABSTYPEDec :    Info * DatBind * TypBind option * Dec   -> Dec
+    val OPENDec :       Info * StrExp                           -> Dec
 
-    val findTyCon :	TyCon * TypBind -> (TyVarseq * Ty) option 
-    val rewriteTy :	TypBind -> Ty -> Ty
+    val findTyCon :     TyCon * TypBind -> (TyVarseq * Ty) option 
+    val rewriteTy :     TypBind -> Ty -> Ty
 end;

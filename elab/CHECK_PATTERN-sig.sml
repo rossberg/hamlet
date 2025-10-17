@@ -17,9 +17,9 @@
  *     (2) There is no requirement of consistency for constructors in
  *         sharing specifications or type realisations (actually, we
  *         consider this a serious bug). For example,
- *		datatype t1 = A | B
- *		datatype t2 = C
- *		sharing type t1 = t2
+ *              datatype t1 = A | B
+ *              datatype t2 = C
+ *              sharing type t1 = t2
  *         is a legal specification. This allows a mix of the constructors
  *         to appear in matches, rendering the terms of irredundancy and
  *         exhaustiveness meaningless. We make no attempt to detect this,
@@ -37,9 +37,9 @@ sig
 
     (* Operations *)
 
-    val isExhaustive :	Env * Pat   -> bool
-    val checkPat :	Env * Pat   -> unit
-    val checkMatch :	Env * Match -> unit
-    val viewPat :	Env * Pat   -> unit
-    val viewMatch :	Env * Match -> unit
+    val isExhaustive :  Env * Pat   -> bool
+    val checkPat :      Env * Pat   -> unit
+    val checkMatch :    Env * Match -> unit
+    val viewPat :       Env * Pat   -> unit
+    val viewMatch :     Env * Match -> unit
 end;

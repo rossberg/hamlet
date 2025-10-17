@@ -19,9 +19,9 @@ struct
     (* Basis *)
 
     fun ppBasis(s, E) =
-	    (* [RFC: Higher-order functors; RFC: Nested signatures] *)
-	    vbox(
-		PPDynamicEnv.ppEnv(s, E) ^/^
-		text ""
-	    )
+            (* [RFC: Higher-order functors; RFC: Nested signatures] *)
+            vbox(
+                PPDynamicEnv.ppEnv(s, E) ^/^
+                text ""
+            )
 end;

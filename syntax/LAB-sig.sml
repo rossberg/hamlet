@@ -10,13 +10,13 @@ signature LAB =
 sig
     (* Type [Section 2.4] *)
 
-    eqtype Lab					(* [lab] *)
+    eqtype Lab                                  (* [lab] *)
 
     (* Operations *)
 
-    val fromString :	string -> Lab
-    val fromInt :	int    -> Lab
-    val toString :	Lab    -> string
+    val fromString :    string -> Lab
+    val fromInt :       int    -> Lab
+    val toString :      Lab    -> string
 
-    val compare :	Lab * Lab -> order
+    val compare :       Lab * Lab -> order
 end;

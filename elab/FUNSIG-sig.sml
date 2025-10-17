@@ -10,16 +10,16 @@ signature FUNSIG =
 sig
     (* Import *)
 
-    type TyVarSet	= StaticObjectsCore.TyVarSet
-    type TyNameSet	= StaticObjectsCore.TyNameSet
-    type FunSig		= StaticObjectsModule.FunSig
+    type TyVarSet       = StaticObjectsCore.TyVarSet
+    type TyNameSet      = StaticObjectsCore.TyNameSet
+    type FunSig         = StaticObjectsModule.FunSig
 
 
     (* Operations *)
 
-    val tyvars :	FunSig -> TyVarSet
-    val tynames :	FunSig -> TyNameSet
-    val undetermined :	FunSig -> bool StampMap.map
+    val tyvars :        FunSig -> TyVarSet
+    val tynames :       FunSig -> TyNameSet
+    val undetermined :  FunSig -> bool StampMap.map
 
-    val matches :	FunSig * FunSig -> bool
+    val matches :       FunSig * FunSig -> bool
 end;

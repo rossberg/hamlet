@@ -35,21 +35,21 @@ sig
 
     (* Type *)
 
-    type OverloadingClass				(* [O] *)
+    type OverloadingClass                               (* [O] *)
 
 
     (* Operations *)
 
-    val make :		TyNameSet * TyName -> OverloadingClass
+    val make :          TyNameSet * TyName -> OverloadingClass
 
-    val isEmpty :	OverloadingClass -> bool
-    val set :		OverloadingClass -> TyNameSet
-    val member :	OverloadingClass * TyName -> bool
-    val default :	OverloadingClass -> TyName
+    val isEmpty :       OverloadingClass -> bool
+    val set :           OverloadingClass -> TyNameSet
+    val member :        OverloadingClass * TyName -> bool
+    val default :       OverloadingClass -> TyName
 
-    val makeEquality :	OverloadingClass -> OverloadingClass option
-    val intersection :	OverloadingClass * OverloadingClass ->
-					   OverloadingClass option
-    val union :		OverloadingClass * OverloadingClass ->
-					   OverloadingClass
+    val makeEquality :  OverloadingClass -> OverloadingClass option
+    val intersection :  OverloadingClass * OverloadingClass ->
+                                           OverloadingClass option
+    val union :         OverloadingClass * OverloadingClass ->
+                                           OverloadingClass
 end;

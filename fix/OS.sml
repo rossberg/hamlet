@@ -6,9 +6,9 @@ struct
 
     structure Path =
     struct
-	open Path
+        open Path
 
-	fun mkAbsolute{path, relativeTo} = Path.mkAbsolute(path, relativeTo)
-	fun mkRelative{path, relativeTo} = Path.mkRelative(path, relativeTo)
+        fun mkAbsolute{path, relativeTo} = Path.mkAbsolute(path, relativeTo)
+        fun mkRelative{path, relativeTo} = Path.mkRelative(path, relativeTo)
     end
 end

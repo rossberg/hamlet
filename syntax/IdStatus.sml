@@ -10,7 +10,7 @@ structure IdStatus :> IDSTATUS =
 struct
     (* Type [Section 4.1] *)
 
-    datatype IdStatus = c | e | v			(* [is] *)
+    datatype IdStatus = c | e | v                       (* [is] *)
 
 
     (* Generalisation [Section 5.5] *)

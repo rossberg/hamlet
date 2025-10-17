@@ -63,7 +63,7 @@ struct
     val tExn    = TyName.tyname(TyCon.toString tyconExn,    0, false, 0)
 
     val T0      = TyNameSet.fromList[tBool, tInt, tWord, tReal, tString, tChar,
-				     tOption, tList, tRef, tExn]
+                                     tOption, tList, tRef, tExn]
 
 
     (* Types *)
@@ -89,22 +89,22 @@ struct
     (* TypeSchemes [Figure 25; RFC: Transformation patterns] *)
 
     fun pairType(tau1,tau2) =
-	Type.fromRowType(
-	    Type.insertRow(Type.insertRow(Type.emptyRow, Lab.fromInt 1, tau1),
-							 Lab.fromInt 2, tau2))
+        Type.fromRowType(
+            Type.insertRow(Type.insertRow(Type.emptyRow, Lab.fromInt 1, tau1),
+                                                         Lab.fromInt 2, tau2))
     val funType = Type.fromFunType
 
     val sigmaEq     = ([alphaEq],
-		       funType(pairType(tauAlphaEq,tauAlphaEq), tauBool))
+                       funType(pairType(tauAlphaEq,tauAlphaEq), tauBool))
     val sigmaAssign = ([alpha],
-		       funType(pairType(tauAlphaRef,tauAlpha), tauUnit))
+                       funType(pairType(tauAlphaRef,tauAlpha), tauUnit))
     val sigmaFalse  = ([], tauBool)
     val sigmaTrue   = ([], tauBool)
     val sigmaNONE   = ([alpha], tauAlphaOption)
     val sigmaSOME   = ([alpha], funType(tauAlpha, tauAlphaOption))
     val sigmaNil    = ([alpha], tauAlphaList)
     val sigmaCons   = ([alpha],
-		       funType(pairType(tauAlpha, tauAlphaList), tauAlphaList))
+                       funType(pairType(tauAlpha, tauAlphaList), tauAlphaList))
     val sigmaRef    = ([alpha], funType(tauAlpha, tauAlphaRef))
 
     val sigmaMatch  = ([], tauExn)
@@ -147,11 +147,11 @@ struct
 
     val VEEmpty  = VIdMap.empty
     val VEBool   = VIdMap.fromList[(vidFalse, valstrFalse),
-				   (vidTrue,  valstrTrue)] : ValEnv
+                                   (vidTrue,  valstrTrue)] : ValEnv
     val VEOption = VIdMap.fromList[(vidNONE,  valstrNONE),
-				   (vidSOME,  valstrSOME)]
+                                   (vidSOME,  valstrSOME)]
     val VEList   = VIdMap.fromList[(vidNil,   valstrNil),
-				   (vidCons,  valstrCons)]
+                                   (vidCons,  valstrCons)]
     val VERef    = VIdMap.fromList[(vidRef,   valstrRef)]
 
     val tystrUnit   = (thetaUnit,   VEEmpty)
@@ -175,28 +175,28 @@ struct
     val SE0 = StrIdMap.empty
 
     val TE0 = TyConMap.fromList[(tyconUnit,   tystrUnit),
- 				(tyconBool,   tystrBool),
- 				(tyconInt,    tystrInt),
- 				(tyconWord,   tystrWord),
- 				(tyconReal,   tystrReal),
- 				(tyconString, tystrString),
- 				(tyconChar,   tystrChar),
- 				(tyconOption, tystrOption),
- 				(tyconList,   tystrList),
- 				(tyconRef,    tystrRef),
- 				(tyconExn,    tystrExn)]
+                                (tyconBool,   tystrBool),
+                                (tyconInt,    tystrInt),
+                                (tyconWord,   tystrWord),
+                                (tyconReal,   tystrReal),
+                                (tyconString, tystrString),
+                                (tyconChar,   tystrChar),
+                                (tyconOption, tystrOption),
+                                (tyconList,   tystrList),
+                                (tyconRef,    tystrRef),
+                                (tyconExn,    tystrExn)]
 
     val VE0 = VIdMap.fromList  [(vidEq,     valstrEq),
-				(vidAssign, valstrAssign),
-				(vidRef,    valstrRef),
-				(vidNil,    valstrNil),
-				(vidCons,   valstrCons),
-				(vidNONE,   valstrNONE),
-				(vidSOME,   valstrSOME),
-				(vidFalse,  valstrFalse),
-				(vidTrue,   valstrTrue),
-				(vidMatch,  valstrMatch),
-				(vidBind,   valstrBind)]
+                                (vidAssign, valstrAssign),
+                                (vidRef,    valstrRef),
+                                (vidNil,    valstrNil),
+                                (vidCons,   valstrCons),
+                                (vidNONE,   valstrNONE),
+                                (vidSOME,   valstrSOME),
+                                (vidFalse,  valstrFalse),
+                                (vidTrue,   valstrTrue),
+                                (vidMatch,  valstrMatch),
+                                (vidBind,   valstrBind)]
 
     val E0 = Env(G0,SE0,TE0,VE0)
 end;

@@ -17,10 +17,10 @@ struct
 
     (* Type [Section 6.2] *)
 
-    type ExName =				      (* [en] *)
-	 { vid :   VId
-	 , stamp : stamp
-	 }
+    type ExName =                                     (* [en] *)
+         { vid :   VId
+         , stamp : stamp
+         }
 
 
     (* Creation *)
@@ -36,8 +36,8 @@ struct
     (* Ordering *)
 
     fun compare(en1 : ExName, en2 : ExName) =
-	    Stamp.compare(#stamp en1, #stamp en2)
+            Stamp.compare(#stamp en1, #stamp en2)
 end
 
 structure ExNameSet = FinSetFn(type ord_key = ExName.ExName
-			       val  compare = ExName.compare);
+                               val  compare = ExName.compare);

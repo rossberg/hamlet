@@ -14,18 +14,18 @@ sig
 
     (* Type [Sections 2.4 and 4.1]*)
 
-    eqtype TyVar			(* [alpha] or [tyvar] *)
+    eqtype TyVar                        (* [alpha] or [tyvar] *)
 
     (* Operations *)
 
-    val invent :		bool -> TyVar
-    val fromInt :		bool -> int -> TyVar
-    val fromString :		string -> TyVar
-    val fromOverloadingClass :	string * OverloadingClass -> TyVar
-    val toString :		TyVar -> string
+    val invent :                bool -> TyVar
+    val fromInt :               bool -> int -> TyVar
+    val fromString :            string -> TyVar
+    val fromOverloadingClass :  string * OverloadingClass -> TyVar
+    val toString :              TyVar -> string
 
-    val admitsEquality :	TyVar -> bool
-    val overloadingClass :	TyVar -> OverloadingClass option
+    val admitsEquality :        TyVar -> bool
+    val overloadingClass :      TyVar -> OverloadingClass option
 
-    val compare :		TyVar * TyVar -> order
+    val compare :               TyVar * TyVar -> order
 end;

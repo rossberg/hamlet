@@ -15,14 +15,14 @@ struct
 
     (* Some PP combinators *)
 
-    val nest			= nest 2
+    val nest                    = nest 2
 
-    fun paren doc		= text "(" ^^ fbox(below doc) ^^ text ")"
-    fun brace doc		= text "{" ^^ fbox(below doc) ^^ text "}"
-    fun brack doc		= text "[" ^^ fbox(below doc) ^^ text "]"
-    fun comment doc		= text "(* " ^^ fbox(below doc) ^^ text " *)"
+    fun paren doc               = text "(" ^^ fbox(below doc) ^^ text ")"
+    fun brace doc               = text "{" ^^ fbox(below doc) ^^ text "}"
+    fun brack doc               = text "[" ^^ fbox(below doc) ^^ text "]"
+    fun comment doc             = text "(* " ^^ fbox(below doc) ^^ text " *)"
 
-    fun parenAt p (p',doc)	= if p' > p then paren doc else doc
+    fun parenAt p (p',doc)      = if p' > p then paren doc else doc
 
     fun ppCommaList ppX   []    = empty
       | ppCommaList ppX   [x]   = ppX x
@@ -36,5 +36,5 @@ struct
       | ppSeqPrec ppXPrec n [x] = ppXPrec n x
       | ppSeqPrec ppXPrec n  xs = paren(ppCommaList (ppXPrec 0) xs)
 
-    fun ppSeq ppX		= ppSeqPrec (fn _ => ppX) 0
+    fun ppSeq ppX               = ppSeqPrec (fn _ => ppX) 0
 end;

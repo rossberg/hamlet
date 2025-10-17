@@ -11,14 +11,14 @@ signature SYNTACTIC_RESTRICTIONS_MODULE =
 sig
     (* Import *)
 
-    type StrDec		= GrammarModule.StrDec
-    type TopDec		= GrammarModule.TopDec
-    type Env		= BindingObjectsCore.Env
-    type Context	= BindingObjectsCore.Context
-    type Basis		= BindingObjectsModule.Basis
+    type StrDec         = GrammarModule.StrDec
+    type TopDec         = GrammarModule.TopDec
+    type Env            = BindingObjectsCore.Env
+    type Context        = BindingObjectsCore.Context
+    type Basis          = BindingObjectsModule.Basis
 
     (* Export *)
 
-    val checkStrDec :	Context * StrDec -> Env
-    val checkTopDec :	Basis * TopDec -> Basis
+    val checkStrDec :   Context * StrDec -> Env
+    val checkTopDec :   Basis * TopDec -> Basis
 end;

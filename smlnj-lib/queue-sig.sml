@@ -13,17 +13,17 @@ signature QUEUE =
     exception Dequeue
 
     val mkQueue : unit -> 'a queue
-	(* make a new queue *)
+        (* make a new queue *)
     val clear : 'a queue -> unit
-	(* remove all elements *)
+        (* remove all elements *)
     val isEmpty : 'a queue -> bool
-	(* test for empty queue *)
+        (* test for empty queue *)
     val enqueue : 'a queue * 'a -> unit
-	(* enqueue an element at the rear *)
+        (* enqueue an element at the rear *)
     val dequeue : 'a queue -> 'a
-	(* remove the front element (raise Dequeue if empty) *)
+        (* remove the front element (raise Dequeue if empty) *)
     val delete : ('a queue * ('a -> bool)) -> unit
-	(* delete all elements satisfying the given predicate *)
+        (* delete all elements satisfying the given predicate *)
     val head : 'a queue -> 'a
     val peek : 'a queue -> 'a option
     val length : 'a queue -> int
